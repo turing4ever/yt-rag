@@ -1,9 +1,25 @@
 [project]
 name = "yt-rag"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Extract YouTube transcripts for RAG pipelines"
 readme = "README.md"
+license = { text = "MIT" }
 requires-python = ">=3.11"
+authors = [{ name = "Yi", email = "yi@example.com" }]
+keywords = ["youtube", "transcript", "rag", "llm", "ai"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "youtube-transcript-api>=1.2.3",
     "yt-dlp>=2025.11.12",
@@ -12,12 +28,23 @@ dependencies = [
     "pydantic>=2.0.0",
 ]
 
+[project.urls]
+Homepage = "https://github.com/turing4ever/yt-rag"
+Repository = "https://github.com/turing4ever/yt-rag"
+Issues = "https://github.com/turing4ever/yt-rag/issues"
+
 [project.scripts]
 yt-rag = "yt_rag.cli:app"
 
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "src/yt_rag/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/yt_rag"]
@@ -30,6 +57,4 @@ target-version = "py311"
 select = ["E", "F", "I", "UP"]
 
 [dependency-groups]
-dev = [
-    "ruff>=0.14.7",
-]
+dev = ["ruff>=0.14.7"]
