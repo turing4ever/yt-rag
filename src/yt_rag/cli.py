@@ -250,6 +250,16 @@ def status():
     db.close()
 
 
+def format_timestamp(seconds: float) -> str:
+    """Format seconds as HH:MM:SS or MM:SS."""
+    hours = int(seconds // 3600)
+    minutes = int((seconds % 3600) // 60)
+    secs = int(seconds % 60)
+    if hours > 0:
+        return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+    return f"{minutes:02d}:{secs:02d}"
+
+
 @app.command()
 def transcript(
     video_id: str = typer.Argument(..., help="Video ID to export"),
@@ -269,8 +279,8 @@ def transcript(
         db.close()
         raise typer.Exit(1)
 
-    full_text = db.get_full_text(video_id)
-    if not full_text:
+    segments = db.get_segments(video_id)
+    if not segments:
         console.print("[red]No transcript segments found[/red]")
         db.close()
         raise typer.Exit(1)
@@ -285,7 +295,9 @@ def transcript(
         f.write(f"URL: {video.url}\n")
         f.write(f"Video ID: {video_id}\n")
         f.write("-" * 60 + "\n\n")
-        f.write(full_text)
+        for seg in segments:
+            timestamp = format_timestamp(seg.start_time)
+            f.write(f"[{timestamp}] {seg.text}\n")
 
     console.print(f"[green]✓[/green] Exported transcript to {output}")
     db.close()
