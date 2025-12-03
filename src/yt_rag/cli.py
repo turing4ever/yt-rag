@@ -251,6 +251,47 @@ def status():
 
 
 @app.command()
+def transcript(
+    video_id: str = typer.Argument(..., help="Video ID to export"),
+    output: Path = typer.Option(None, "-o", "--output", help="Output file path"),
+):
+    """Export a single video's transcript to a text file."""
+    db = get_db()
+
+    video = db.get_video(video_id)
+    if not video:
+        console.print(f"[red]Video not found: {video_id}[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    if video.transcript_status != "fetched":
+        console.print(f"[red]Transcript not available (status: {video.transcript_status})[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    full_text = db.get_full_text(video_id)
+    if not full_text:
+        console.print("[red]No transcript segments found[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    # Default output path
+    if output is None:
+        safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in video.title)[:50]
+        output = Path(f"/tmp/{video_id}_{safe_title}.txt")
+
+    with open(output, "w") as f:
+        f.write(f"Title: {video.title}\n")
+        f.write(f"URL: {video.url}\n")
+        f.write(f"Video ID: {video_id}\n")
+        f.write("-" * 60 + "\n\n")
+        f.write(full_text)
+
+    console.print(f"[green]✓[/green] Exported transcript to {output}")
+    db.close()
+
+
+@app.command()
 def version():
     """Show version."""
     console.print(f"yt-rag {__version__}")
