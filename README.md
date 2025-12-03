@@ -52,6 +52,7 @@ yt-rag export -o transcripts.jsonl
 | `yt-rag sync` | Discover new videos from tracked channels |
 | `yt-rag fetch` | Download transcripts for pending videos |
 | `yt-rag export -o <file>` | Export chunks for RAG |
+| `yt-rag transcript <video_id>` | Export single video transcript with timestamps |
 | `yt-rag list channels` | List tracked channels |
 | `yt-rag list videos` | List videos |
 | `yt-rag status` | Show database statistics |
@@ -72,6 +73,21 @@ Each chunk in the JSONL output contains:
   "end_time": 180.0,
   "text": "Transcript text for this chunk..."
 }
+```
+
+## Transcript Format
+
+The `transcript` command exports a text file with timestamps:
+
+```
+Title: Video Title
+URL: https://www.youtube.com/watch?v=VIDEO_ID
+Video ID: VIDEO_ID
+------------------------------------------------------------
+
+[00:00] First segment text...
+[00:06] Second segment text...
+[01:23] Later segment text...
 ```
 
 ## Configuration
