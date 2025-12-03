@@ -52,6 +52,7 @@ packages = ["src/yt_rag"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = ["src/yt_rag/_version.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
