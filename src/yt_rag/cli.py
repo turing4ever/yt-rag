@@ -20,14 +20,20 @@ from rich.table import Table
 from . import __version__
 from .config import (
     DB_PATH,
+    DEFAULT_CHAT_MODEL,
     DEFAULT_CHUNK_OVERLAP,
     DEFAULT_CHUNK_SIZE,
+    DEFAULT_EMBEDDING_MODEL,
     DEFAULT_FETCH_WORKERS,
     ensure_data_dir,
 )
 from .db import Database
 from .discovery import extract_video_id, get_channel_info, get_video_info, list_channel_videos
+from .embed import embed_all_sections, embed_video, get_index_stats
 from .export import export_all_chunks, export_to_json, export_to_jsonl
+from .search import search as rag_search
+from .sectionize import sectionize_video
+from .summarize import summarize_video
 from .transcript import TranscriptUnavailable, fetch_transcript
 
 app = typer.Typer(
@@ -303,6 +309,8 @@ def status():
     table.add_row("  Pending", f"[yellow]{stats['videos_pending']}[/yellow]")
     table.add_row("  Unavailable", f"[red]{stats['videos_unavailable']}[/red]")
     table.add_row("Segments", str(stats["segments"]))
+    table.add_row("Sections", str(stats["sections"]))
+    table.add_row("Summaries", str(stats["summaries"]))
 
     console.print(table)
     db.close()
@@ -358,6 +366,222 @@ def transcript(
             f.write(f"[{timestamp}] {seg.text}\n")
 
     console.print(f"[green]✓[/green] Exported transcript to {output}")
+    db.close()
+
+
+@app.command()
+def process(
+    video_id: str = typer.Argument(None, help="Video ID to process (or all if omitted)"),
+    limit: int = typer.Option(None, "-l", "--limit", help="Max videos to process"),
+    sectionize_only: bool = typer.Option(False, "--sectionize", help="Only run sectionization"),
+    summarize_only: bool = typer.Option(False, "--summarize", help="Only run summarization"),
+    model: str = typer.Option(DEFAULT_CHAT_MODEL, "-m", "--model", help="Chat model to use"),
+    force: bool = typer.Option(False, "--force", help="Re-process even if already done"),
+):
+    """Process videos: sectionize and summarize transcripts using GPT."""
+    db = get_db()
+
+    # Determine which videos to process
+    if video_id:
+        video = db.get_video(video_id)
+        if not video:
+            console.print(f"[red]Video not found: {video_id}[/red]")
+            db.close()
+            raise typer.Exit(1)
+        if video.transcript_status != "fetched":
+            console.print(f"[red]Transcript not available (status: {video.transcript_status})[/]")
+            db.close()
+            raise typer.Exit(1)
+        videos = [video]
+    else:
+        videos = db.list_videos(status="fetched")
+        if limit:
+            videos = videos[:limit]
+
+    if not videos:
+        console.print("[yellow]No videos to process[/yellow]")
+        db.close()
+        return
+
+    # Determine steps to run
+    do_sectionize = not summarize_only
+    do_summarize = not sectionize_only
+
+    sectionized = 0
+    summarized = 0
+    errors = 0
+
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Processing", total=len(videos))
+
+        for video in videos:
+            title = video.title[:35] + "..." if len(video.title) > 35 else video.title
+
+            # Sectionize
+            if do_sectionize:
+                existing_sections = db.get_sections(video.id)
+                if not existing_sections or force:
+                    try:
+                        progress.update(task, description=f"Sectionizing: {title}")
+                        sectionize_video(video.id, db, model)
+                        sectionized += 1
+                    except Exception as e:
+                        console.print(f"\n[red]Sectionize error[/red] {video.id}: {e}")
+                        errors += 1
+                        progress.advance(task)
+                        continue
+
+            # Summarize
+            if do_summarize:
+                existing_summary = db.get_summary(video.id)
+                if not existing_summary or force:
+                    try:
+                        progress.update(task, description=f"Summarizing: {title}")
+                        summarize_video(video.id, db, model)
+                        summarized += 1
+                    except Exception as e:
+                        console.print(f"\n[red]Summarize error[/red] {video.id}: {e}")
+                        errors += 1
+
+            progress.advance(task)
+
+    console.print(
+        f"[green]✓[/green] Processed {len(videos)} videos: "
+        f"{sectionized} sectionized, {summarized} summarized, {errors} errors"
+    )
+    db.close()
+
+
+@app.command()
+def embed(
+    video_id: str = typer.Argument(None, help="Video ID to embed (or all if omitted)"),
+    model: str = typer.Option(DEFAULT_EMBEDDING_MODEL, "-m", "--model", help="Embedding model"),
+    rebuild: bool = typer.Option(False, "--rebuild", help="Rebuild entire index"),
+    force: bool = typer.Option(False, "--force", help="Re-embed existing sections"),
+):
+    """Embed sections into FAISS vector index for search."""
+    db = get_db()
+
+    if video_id:
+        # Embed single video
+        video = db.get_video(video_id)
+        if not video:
+            console.print(f"[red]Video not found: {video_id}[/red]")
+            db.close()
+            raise typer.Exit(1)
+
+        sections = db.get_sections(video_id)
+        if not sections:
+            console.print(f"[red]No sections found for video {video_id}[/red]")
+            console.print("Run 'yt-rag process' first to create sections.")
+            db.close()
+            raise typer.Exit(1)
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task(f"Embedding {len(sections)} sections...", total=None)
+            result = embed_video(video_id, db, model, force)
+
+        console.print(
+            f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+            f"({result.tokens_used} tokens)"
+        )
+    else:
+        # Embed all sections
+        stats = db.get_stats()
+        if stats["sections"] == 0:
+            console.print("[yellow]No sections to embed[/yellow]")
+            console.print("Run 'yt-rag process' first to create sections.")
+            db.close()
+            return
+
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            if rebuild:
+                progress.add_task("Rebuilding index...", total=None)
+            else:
+                progress.add_task("Embedding new sections...", total=None)
+
+            result = embed_all_sections(db, model, rebuild=rebuild)
+
+        if result.sections_embedded > 0:
+            console.print(
+                f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+                f"({result.tokens_used} tokens)"
+            )
+        else:
+            console.print("[green]✓[/green] All sections already embedded")
+
+    # Show index stats
+    idx_stats = get_index_stats()
+    console.print(f"Index: {idx_stats['total_vectors']} vectors")
+
+    db.close()
+
+
+@app.command()
+def ask(
+    query: str = typer.Argument(..., help="Question to ask"),
+    top_k: int = typer.Option(5, "-k", "--top-k", help="Number of sources to retrieve"),
+    video: str = typer.Option(None, "-v", "--video", help="Filter to specific video ID"),
+    channel: str = typer.Option(None, "-c", "--channel", help="Filter to specific channel ID"),
+    no_answer: bool = typer.Option(False, "--no-answer", help="Skip answer generation"),
+):
+    """Ask a question about video content using RAG."""
+    db = get_db()
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        progress.add_task("Searching...", total=None)
+        result = rag_search(
+            query=query,
+            db=db,
+            top_k=top_k,
+            video_id=video,
+            channel_id=channel,
+            generate_answer=not no_answer,
+        )
+
+    if not result.hits:
+        console.print("[yellow]No relevant content found.[/yellow]")
+        db.close()
+        return
+
+    # Show answer if generated
+    if result.answer:
+        console.print("\n[bold]Answer:[/bold]")
+        console.print(result.answer)
+        console.print()
+
+    # Show sources
+    console.print(f"[bold]Sources ({len(result.hits)}):[/bold]")
+    for i, hit in enumerate(result.hits, 1):
+        score_pct = int(hit.score * 100)
+        console.print(f"\n[cyan]{i}.[/cyan] {hit.video_title}")
+        console.print(f"   Section: {hit.section.title}")
+        console.print(f"   Score: {score_pct}% | [link={hit.timestamp_url}]{hit.timestamp_url}[/]")
+
+    # Show stats
+    console.print(
+        f"\n[dim]Latency: {result.latency_ms}ms | "
+        f"Tokens: {result.tokens_embedding} embed + {result.tokens_chat} chat[/dim]"
+    )
+
     db.close()
 
 
