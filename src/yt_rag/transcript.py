@@ -1,12 +1,16 @@
 """Transcript extraction using youtube-transcript-api."""
 
+from requests.exceptions import ConnectionError, SSLError
+from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_fixed
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import (
     NoTranscriptFound,
     TranscriptsDisabled,
     VideoUnavailable,
 )
+from youtube_transcript_api.proxies import GenericProxyConfig
 
+from .config import get_proxy_url
 from .models import Segment, Transcript
 
 
@@ -20,6 +24,17 @@ class TranscriptUnavailable(TranscriptError):
     """Transcript not available for this video."""
 
     pass
+
+
+@retry(
+    retry=retry_if_exception_type((SSLError, ConnectionError)),
+    stop=stop_after_attempt(3),
+    wait=wait_fixed(2),
+    reraise=True,
+)
+def _fetch(api: YouTubeTranscriptApi, video_id: str, languages: list[str]):
+    """Fetch transcript data from YouTube."""
+    return api.fetch(video_id, languages=languages)
 
 
 def fetch_transcript(video_id: str, languages: list[str] | None = None) -> Transcript:
@@ -38,9 +53,14 @@ def fetch_transcript(video_id: str, languages: list[str] | None = None) -> Trans
     """
     languages = languages or ["en"]
 
-    try:
+    proxy_url = get_proxy_url()
+    if proxy_url:
+        api = YouTubeTranscriptApi(proxy_config=GenericProxyConfig(http_url=proxy_url))
+    else:
         api = YouTubeTranscriptApi()
-        transcript_data = api.fetch(video_id, languages=languages)
+
+    try:
+        transcript_data = _fetch(api, video_id, languages)
 
         segments = []
         for seq, item in enumerate(transcript_data):

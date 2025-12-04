@@ -8,6 +8,16 @@ import yt_dlp
 from .models import Channel, Video
 
 
+def _parse_upload_date(upload_date: str | None) -> datetime | None:
+    """Parse yt-dlp upload date string (YYYYMMDD) to datetime."""
+    if not upload_date:
+        return None
+    try:
+        return datetime.strptime(upload_date, "%Y%m%d")
+    except ValueError:
+        return None
+
+
 def extract_channel_id(url: str) -> str | None:
     """Extract channel ID from various YouTube URL formats."""
     patterns = [
@@ -73,7 +83,6 @@ def list_channel_videos(url: str, channel_id: str | None = None) -> list[Video]:
     videos = []
     entries = info.get("entries", [])
 
-    # If it's a single video, wrap it
     if not entries and info.get("id"):
         entries = [info]
 
@@ -85,21 +94,12 @@ def list_channel_videos(url: str, channel_id: str | None = None) -> list[Video]:
         if not video_id:
             continue
 
-        # Parse upload date
-        published_at = None
-        upload_date = entry.get("upload_date")
-        if upload_date:
-            try:
-                published_at = datetime.strptime(upload_date, "%Y%m%d")
-            except ValueError:
-                pass
-
         video = Video(
             id=video_id,
             channel_id=channel_id or entry.get("channel_id"),
             title=entry.get("title", "Unknown"),
             url=f"https://www.youtube.com/watch?v={video_id}",
-            published_at=published_at,
+            published_at=_parse_upload_date(entry.get("upload_date")),
             duration_seconds=entry.get("duration"),
             transcript_status="pending",
         )
@@ -119,20 +119,12 @@ def get_video_info(url: str) -> Video:
         info = ydl.extract_info(url, download=False)
 
     video_id = info.get("id")
-    published_at = None
-    upload_date = info.get("upload_date")
-    if upload_date:
-        try:
-            published_at = datetime.strptime(upload_date, "%Y%m%d")
-        except ValueError:
-            pass
-
     return Video(
         id=video_id,
         channel_id=info.get("channel_id"),
         title=info.get("title", "Unknown"),
         url=f"https://www.youtube.com/watch?v={video_id}",
-        published_at=published_at,
+        published_at=_parse_upload_date(info.get("upload_date")),
         duration_seconds=info.get("duration"),
         transcript_status="pending",
     )

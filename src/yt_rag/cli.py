@@ -1,10 +1,18 @@
 """CLI commands for yt-rag."""
 
+import tempfile
 from pathlib import Path
 
 import typer
 from rich.console import Console
-from rich.progress import Progress, SpinnerColumn, TextColumn
+from rich.progress import (
+    BarColumn,
+    MofNCompleteColumn,
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TimeElapsedColumn,
+)
 from rich.table import Table
 
 from . import __version__
@@ -124,11 +132,20 @@ def fetch(limit: int = typer.Option(None, help="Max videos to fetch")):
 
     fetched = 0
     unavailable = 0
+    errors = 0
 
-    with Progress(console=console) as progress:
-        task = progress.add_task("Fetching transcripts...", total=len(pending))
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Fetching", total=len(pending))
 
         for video in pending:
+            title = video.title[:40] + "..." if len(video.title) > 40 else video.title
+            progress.update(task, description=f"[cyan]{title}[/cyan]")
             try:
                 transcript = fetch_transcript(video.id)
                 db.add_segments(transcript.segments)
@@ -137,12 +154,17 @@ def fetch(limit: int = typer.Option(None, help="Max videos to fetch")):
             except TranscriptUnavailable:
                 db.update_video_status(video.id, "unavailable")
                 unavailable += 1
+            except KeyboardInterrupt:
+                console.print("\n[yellow]Interrupted[/yellow]")
+                break
             except Exception as e:
-                console.print(f"[red]Error[/red] {video.title}: {e}")
+                db.update_video_status(video.id, "error")
+                console.print(f"\n[red]Error[/red] {video.title}: {e}")
+                errors += 1
 
             progress.advance(task)
 
-    console.print(f"[green]✓[/green] Fetched {fetched}, unavailable {unavailable}")
+    console.print(f"[green]✓[/green] Fetched {fetched}, unavailable {unavailable}, errors {errors}")
     db.close()
 
 
@@ -213,14 +235,12 @@ def list_items(
         table.add_column("Title", max_width=50)
         table.add_column("Status")
 
-        for v in videos[:50]:  # Limit display
+        for v in videos:
             status_color = {"fetched": "green", "pending": "yellow", "unavailable": "red"}.get(
                 v.transcript_status, "white"
             )
             table.add_row(v.id, v.title[:50], f"[{status_color}]{v.transcript_status}[/]")
 
-        if len(videos) > 50:
-            console.print(f"[dim]Showing 50 of {len(videos)} videos[/dim]")
         console.print(table)
 
     else:
@@ -288,7 +308,7 @@ def transcript(
     # Default output path
     if output is None:
         safe_title = "".join(c if c.isalnum() or c in " -_" else "_" for c in video.title)[:50]
-        output = Path(f"/tmp/{video_id}_{safe_title}.txt")
+        output = Path(tempfile.gettempdir()) / f"{video_id}_{safe_title}.txt"
 
     with open(output, "w") as f:
         f.write(f"Title: {video.title}\n")

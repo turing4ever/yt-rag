@@ -70,7 +70,6 @@ class Database:
         conn.executescript(SCHEMA)
         conn.commit()
 
-    # Channel operations
     def add_channel(self, channel: Channel) -> None:
         """Add or update a channel."""
         conn = self.connect()
@@ -110,7 +109,6 @@ class Database:
         )
         conn.commit()
 
-    # Video operations
     def add_video(self, video: Video) -> None:
         """Add or update a video."""
         conn = self.connect()
@@ -138,11 +136,20 @@ class Database:
 
     def add_videos(self, videos: list[Video]) -> int:
         """Add multiple videos, return count of new videos added."""
+        if not videos:
+            return 0
         conn = self.connect()
+        video_ids = [v.id for v in videos]
+        placeholders = ",".join("?" * len(video_ids))
+        existing = {
+            row[0]
+            for row in conn.execute(
+                f"SELECT id FROM videos WHERE id IN ({placeholders})", video_ids
+            ).fetchall()
+        }
         added = 0
         for video in videos:
-            cursor = conn.execute("SELECT id FROM videos WHERE id = ?", (video.id,))
-            if cursor.fetchone() is None:
+            if video.id not in existing:
                 added += 1
             conn.execute(
                 """
@@ -205,7 +212,6 @@ class Database:
         )
         conn.commit()
 
-    # Segment operations
     def add_segments(self, segments: list[Segment]) -> None:
         """Add transcript segments for a video."""
         if not segments:
@@ -235,7 +241,6 @@ class Database:
         segments = self.get_segments(video_id)
         return " ".join(s.text for s in segments)
 
-    # Stats
     def get_stats(self) -> dict:
         """Get database statistics."""
         conn = self.connect()
