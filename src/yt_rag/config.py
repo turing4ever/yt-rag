@@ -20,6 +20,17 @@ DEFAULT_FETCH_WORKERS = 50
 # Proxy config environment variable name
 PROXY_URL_ENV = "WEB_PROXY_URL"
 
+# RAG defaults
+FAISS_DIR = DATA_DIR / "faiss"
+DEFAULT_EMBEDDING_MODEL = "text-embedding-3-small"
+DEFAULT_CHAT_MODEL = "gpt-4o-mini"
+DEFAULT_TOP_K = 10
+DEFAULT_TOP_K_OVERSAMPLE = 50
+DEFAULT_SCORE_THRESHOLD = 0.3
+DEFAULT_TEMPERATURE = 0.3
+DEFAULT_MAX_TOKENS = 1000
+EMBEDDING_DIMENSION = 1536  # text-embedding-3-small dimension
+
 
 def get_proxy_url() -> str | None:
     """Get proxy URL from environment.

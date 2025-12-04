@@ -68,3 +68,79 @@ class Chunk(BaseModel):
     start_time: float
     end_time: float
     text: str
+
+
+ProcessStatus = Literal["pending", "sectioned", "summarized", "embedded", "error"]
+
+
+class Section(BaseModel):
+    """Semantic section of a video transcript."""
+
+    id: str  # {video_id}_section_{seq:04d}
+    video_id: str
+    seq: int
+    title: str
+    content: str
+    start_time: float | None = None
+    end_time: float | None = None
+    word_count: int | None = None
+    created_at: datetime | None = None
+
+
+class Summary(BaseModel):
+    """AI-generated video summary."""
+
+    video_id: str
+    summary: str
+    created_at: datetime | None = None
+
+
+class QueryLog(BaseModel):
+    """Log entry for a RAG query."""
+
+    id: str
+    query: str
+    scope_type: str | None = None  # 'channel', 'video', or None
+    scope_id: str | None = None
+    retrieved_ids: list[str] | None = None
+    retrieved_scores: list[float] | None = None
+    answer: str | None = None
+    latency_ms: int | None = None
+    tokens_embedding: int | None = None
+    tokens_chat: int | None = None
+    model_embedding: str | None = None
+    model_chat: str | None = None
+    created_at: datetime | None = None
+
+
+class Feedback(BaseModel):
+    """User feedback on a query."""
+
+    query_id: str
+    helpful: bool | None = None
+    source_rating: int | None = None  # 1-5
+    comment: str | None = None
+    created_at: datetime | None = None
+
+
+class TestCase(BaseModel):
+    """Benchmark test case."""
+
+    id: str
+    query: str
+    scope_type: str | None = None
+    scope_id: str | None = None
+    expected_video_ids: list[str] | None = None
+    expected_keywords: list[str] | None = None
+    reference_answer: str | None = None
+    created_at: datetime | None = None
+
+
+class SearchResult(BaseModel):
+    """A single search result from FAISS."""
+
+    section_id: str
+    video_id: str
+    channel_id: str | None = None
+    score: float
+    section: Section | None = None

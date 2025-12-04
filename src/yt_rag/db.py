@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 
 from .config import DB_PATH, ensure_data_dir
-from .models import Channel, Segment, Video
+from .models import Channel, Feedback, QueryLog, Section, Segment, Summary, TestCase, Video
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS channels (
@@ -40,6 +40,64 @@ CREATE TABLE IF NOT EXISTS segments (
 CREATE INDEX IF NOT EXISTS idx_segments_video ON segments(video_id, seq);
 CREATE INDEX IF NOT EXISTS idx_videos_channel ON videos(channel_id);
 CREATE INDEX IF NOT EXISTS idx_videos_status ON videos(transcript_status);
+
+CREATE TABLE IF NOT EXISTS sections (
+    id TEXT PRIMARY KEY,
+    video_id TEXT NOT NULL,
+    seq INTEGER NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    start_time REAL,
+    end_time REAL,
+    word_count INTEGER,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (video_id) REFERENCES videos(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_sections_video ON sections(video_id, seq);
+
+CREATE TABLE IF NOT EXISTS summaries (
+    video_id TEXT PRIMARY KEY,
+    summary TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (video_id) REFERENCES videos(id)
+);
+
+CREATE TABLE IF NOT EXISTS query_logs (
+    id TEXT PRIMARY KEY,
+    query TEXT NOT NULL,
+    scope_type TEXT,
+    scope_id TEXT,
+    retrieved_ids TEXT,
+    retrieved_scores TEXT,
+    answer TEXT,
+    latency_ms INTEGER,
+    tokens_embedding INTEGER,
+    tokens_chat INTEGER,
+    model_embedding TEXT,
+    model_chat TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS feedback (
+    query_id TEXT PRIMARY KEY,
+    helpful INTEGER,
+    source_rating INTEGER,
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (query_id) REFERENCES query_logs(id)
+);
+
+CREATE TABLE IF NOT EXISTS test_cases (
+    id TEXT PRIMARY KEY,
+    query TEXT NOT NULL,
+    scope_type TEXT,
+    scope_id TEXT,
+    expected_video_ids TEXT,
+    expected_keywords TEXT,
+    reference_answer TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 
@@ -257,5 +315,224 @@ class Database:
                 "SELECT COUNT(*) FROM videos WHERE transcript_status = 'unavailable'"
             ).fetchone()[0],
             "segments": conn.execute("SELECT COUNT(*) FROM segments").fetchone()[0],
+            "sections": conn.execute("SELECT COUNT(*) FROM sections").fetchone()[0],
+            "summaries": conn.execute("SELECT COUNT(*) FROM summaries").fetchone()[0],
         }
         return stats
+
+    # Section methods
+
+    def add_sections(self, sections: list[Section]) -> None:
+        """Add sections for a video, replacing existing ones."""
+        if not sections:
+            return
+        conn = self.connect()
+        video_id = sections[0].video_id
+        conn.execute("DELETE FROM sections WHERE video_id = ?", (video_id,))
+        conn.executemany(
+            """
+            INSERT INTO sections (id, video_id, seq, title, content,
+                                 start_time, end_time, word_count, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                (
+                    s.id,
+                    s.video_id,
+                    s.seq,
+                    s.title,
+                    s.content,
+                    s.start_time,
+                    s.end_time,
+                    s.word_count or len(s.content.split()),
+                    s.created_at or datetime.now(),
+                )
+                for s in sections
+            ],
+        )
+        conn.commit()
+
+    def get_sections(self, video_id: str) -> list[Section]:
+        """Get all sections for a video."""
+        conn = self.connect()
+        rows = conn.execute(
+            "SELECT * FROM sections WHERE video_id = ? ORDER BY seq", (video_id,)
+        ).fetchall()
+        return [Section(**dict(row)) for row in rows]
+
+    def get_section(self, section_id: str) -> Section | None:
+        """Get a section by ID."""
+        conn = self.connect()
+        row = conn.execute("SELECT * FROM sections WHERE id = ?", (section_id,)).fetchone()
+        if row:
+            return Section(**dict(row))
+        return None
+
+    def get_all_sections(self) -> list[Section]:
+        """Get all sections across all videos."""
+        conn = self.connect()
+        rows = conn.execute("SELECT * FROM sections ORDER BY video_id, seq").fetchall()
+        return [Section(**dict(row)) for row in rows]
+
+    def get_sections_by_ids(self, section_ids: list[str]) -> list[Section]:
+        """Get sections by their IDs."""
+        if not section_ids:
+            return []
+        conn = self.connect()
+        placeholders = ",".join("?" * len(section_ids))
+        rows = conn.execute(
+            f"SELECT * FROM sections WHERE id IN ({placeholders})", section_ids
+        ).fetchall()
+        return [Section(**dict(row)) for row in rows]
+
+    # Summary methods
+
+    def add_summary(self, summary: Summary) -> None:
+        """Add or update a video summary."""
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO summaries (video_id, summary, created_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(video_id) DO UPDATE SET
+                summary = excluded.summary,
+                created_at = excluded.created_at
+            """,
+            (summary.video_id, summary.summary, summary.created_at or datetime.now()),
+        )
+        conn.commit()
+
+    def get_summary(self, video_id: str) -> Summary | None:
+        """Get summary for a video."""
+        conn = self.connect()
+        row = conn.execute("SELECT * FROM summaries WHERE video_id = ?", (video_id,)).fetchone()
+        if row:
+            return Summary(**dict(row))
+        return None
+
+    def get_all_summaries(self) -> list[Summary]:
+        """Get all summaries."""
+        conn = self.connect()
+        rows = conn.execute("SELECT * FROM summaries").fetchall()
+        return [Summary(**dict(row)) for row in rows]
+
+    # Query log methods
+
+    def add_query_log(self, log: QueryLog) -> None:
+        """Add a query log entry."""
+        import json
+
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO query_logs (id, query, scope_type, scope_id, retrieved_ids,
+                                   retrieved_scores, answer, latency_ms, tokens_embedding,
+                                   tokens_chat, model_embedding, model_chat, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                log.id,
+                log.query,
+                log.scope_type,
+                log.scope_id,
+                json.dumps(log.retrieved_ids) if log.retrieved_ids else None,
+                json.dumps(log.retrieved_scores) if log.retrieved_scores else None,
+                log.answer,
+                log.latency_ms,
+                log.tokens_embedding,
+                log.tokens_chat,
+                log.model_embedding,
+                log.model_chat,
+                log.created_at or datetime.now(),
+            ),
+        )
+        conn.commit()
+
+    def get_query_logs(self, limit: int = 50) -> list[QueryLog]:
+        """Get recent query logs."""
+        import json
+
+        conn = self.connect()
+        rows = conn.execute(
+            "SELECT * FROM query_logs ORDER BY created_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        logs = []
+        for row in rows:
+            d = dict(row)
+            if d.get("retrieved_ids"):
+                d["retrieved_ids"] = json.loads(d["retrieved_ids"])
+            if d.get("retrieved_scores"):
+                d["retrieved_scores"] = json.loads(d["retrieved_scores"])
+            logs.append(QueryLog(**d))
+        return logs
+
+    # Feedback methods
+
+    def add_feedback(self, feedback: Feedback) -> None:
+        """Add feedback for a query."""
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO feedback (query_id, helpful, source_rating, comment, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            ON CONFLICT(query_id) DO UPDATE SET
+                helpful = excluded.helpful,
+                source_rating = excluded.source_rating,
+                comment = excluded.comment
+            """,
+            (
+                feedback.query_id,
+                1 if feedback.helpful else (0 if feedback.helpful is False else None),
+                feedback.source_rating,
+                feedback.comment,
+                feedback.created_at or datetime.now(),
+            ),
+        )
+        conn.commit()
+
+    # Test case methods
+
+    def add_test_case(self, test: TestCase) -> None:
+        """Add a test case."""
+        import json
+
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO test_cases (id, query, scope_type, scope_id, expected_video_ids,
+                                   expected_keywords, reference_answer, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(id) DO UPDATE SET
+                query = excluded.query,
+                expected_video_ids = excluded.expected_video_ids,
+                expected_keywords = excluded.expected_keywords,
+                reference_answer = excluded.reference_answer
+            """,
+            (
+                test.id,
+                test.query,
+                test.scope_type,
+                test.scope_id,
+                json.dumps(test.expected_video_ids) if test.expected_video_ids else None,
+                json.dumps(test.expected_keywords) if test.expected_keywords else None,
+                test.reference_answer,
+                test.created_at or datetime.now(),
+            ),
+        )
+        conn.commit()
+
+    def get_test_cases(self) -> list[TestCase]:
+        """Get all test cases."""
+        import json
+
+        conn = self.connect()
+        rows = conn.execute("SELECT * FROM test_cases").fetchall()
+        cases = []
+        for row in rows:
+            d = dict(row)
+            if d.get("expected_video_ids"):
+                d["expected_video_ids"] = json.loads(d["expected_video_ids"])
+            if d.get("expected_keywords"):
+                d["expected_keywords"] = json.loads(d["expected_keywords"])
+            cases.append(TestCase(**d))
+        return cases
