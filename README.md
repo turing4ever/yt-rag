@@ -68,6 +68,16 @@ yt-rag ask "What is tokenization?"
 | `yt-rag embed` | Build FAISS vector index from sections |
 | `yt-rag ask "<query>"` | Ask a question using RAG |
 
+### Evaluation
+
+| Command | Description |
+|---------|-------------|
+| `yt-rag logs` | View query logs |
+| `yt-rag feedback <id>` | Add feedback for a query |
+| `yt-rag eval` | Run evaluation benchmark |
+| `yt-rag test-add "<query>"` | Add a test case |
+| `yt-rag test-list` | List all test cases |
+
 ### Export
 
 | Command | Description |
@@ -147,6 +157,71 @@ Sources (3):
 
 Latency: 1523ms | Tokens: 42 embed + 1205 chat
 ```
+
+## Evaluation & Logging
+
+### Query Logs
+
+Every RAG query is automatically logged for analysis:
+
+```bash
+# View recent queries
+yt-rag logs
+
+# View more logs
+yt-rag logs -n 50
+
+# View specific query details
+yt-rag logs -q QUERY_ID
+```
+
+### Feedback
+
+Rate query results to track RAG quality:
+
+```bash
+# Mark a query as helpful/not helpful
+yt-rag feedback QUERY_ID --helpful
+yt-rag feedback QUERY_ID --not-helpful
+
+# Rate source quality (1-5)
+yt-rag feedback QUERY_ID -r 4
+
+# Add a comment
+yt-rag feedback QUERY_ID -c "Answer was accurate but missed key details"
+
+# Combine options
+yt-rag feedback QUERY_ID --helpful -r 5 -c "Great answer!"
+```
+
+### Benchmark Testing
+
+Create test cases and run benchmarks to measure RAG quality:
+
+```bash
+# Add a test case
+yt-rag test-add "What is tokenization?" --videos VIDEO_ID1,VIDEO_ID2
+yt-rag test-add "Explain attention" --keywords "attention,transformer,query,key,value"
+yt-rag test-add "How does backprop work?" --videos VIDEO_ID --keywords "gradient,chain rule"
+
+# List test cases
+yt-rag test-list
+
+# Run benchmark
+yt-rag eval
+
+# Show failed tests only
+yt-rag eval --failures
+
+# Verbose output with per-test details
+yt-rag eval -v
+```
+
+Metrics calculated:
+- **Precision@K**: Fraction of top-K results that are relevant
+- **Recall**: Fraction of relevant items found
+- **MRR**: Mean Reciprocal Rank (how high is the first relevant result)
+- **Keyword Match**: Fraction of expected keywords in the answer
 
 ## Configuration
 

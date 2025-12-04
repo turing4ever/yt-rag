@@ -30,6 +30,7 @@ from .config import (
 from .db import Database
 from .discovery import extract_video_id, get_channel_info, get_video_info, list_channel_videos
 from .embed import embed_all_sections, embed_video, get_index_stats
+from .eval import add_feedback, add_test_case, run_benchmark
 from .export import export_all_chunks, export_to_json, export_to_jsonl
 from .search import search as rag_search
 from .sectionize import sectionize_video
@@ -582,6 +583,206 @@ def ask(
         f"Tokens: {result.tokens_embedding} embed + {result.tokens_chat} chat[/dim]"
     )
 
+    db.close()
+
+
+@app.command()
+def logs(
+    limit: int = typer.Option(20, "-n", "--limit", help="Number of logs to show"),
+    query_id: str = typer.Option(None, "-q", "--query-id", help="Show specific query"),
+):
+    """View query logs."""
+    db = get_db()
+
+    if query_id:
+        # Show specific query
+        logs_list = db.get_query_logs(limit=1000)
+        log = next((entry for entry in logs_list if entry.id == query_id), None)
+        if not log:
+            console.print(f"[red]Query not found: {query_id}[/red]")
+            db.close()
+            raise typer.Exit(1)
+
+        console.print(f"\n[bold]Query ID:[/bold] {log.id}")
+        console.print(f"[bold]Query:[/bold] {log.query}")
+        console.print(f"[bold]Created:[/bold] {log.created_at}")
+        console.print(f"[bold]Latency:[/bold] {log.latency_ms}ms")
+        console.print(f"[bold]Tokens:[/bold] {log.tokens_embedding} embed + {log.tokens_chat} chat")
+
+        if log.scope_type:
+            console.print(f"[bold]Scope:[/bold] {log.scope_type}={log.scope_id}")
+
+        if log.retrieved_ids:
+            console.print(f"\n[bold]Retrieved ({len(log.retrieved_ids)}):[/bold]")
+            for i, (rid, score) in enumerate(zip(log.retrieved_ids, log.retrieved_scores or []), 1):
+                console.print(f"  {i}. {rid} (score: {score:.3f})")
+
+        if log.answer:
+            console.print(f"\n[bold]Answer:[/bold]\n{log.answer}")
+    else:
+        # List recent logs
+        logs_list = db.get_query_logs(limit=limit)
+
+        if not logs_list:
+            console.print("[yellow]No query logs found[/yellow]")
+            db.close()
+            return
+
+        table = Table(title=f"Recent Queries ({len(logs_list)})")
+        table.add_column("ID", style="dim")
+        table.add_column("Query", max_width=40)
+        table.add_column("Hits")
+        table.add_column("Latency")
+        table.add_column("Time")
+
+        for log in logs_list:
+            hits = len(log.retrieved_ids) if log.retrieved_ids else 0
+            time_str = log.created_at.strftime("%m-%d %H:%M") if log.created_at else ""
+            table.add_row(
+                log.id[:8],
+                log.query[:40] + ("..." if len(log.query) > 40 else ""),
+                str(hits),
+                f"{log.latency_ms}ms",
+                time_str,
+            )
+
+        console.print(table)
+
+    db.close()
+
+
+@app.command()
+def feedback(
+    query_id: str = typer.Argument(..., help="Query ID to rate"),
+    helpful: bool = typer.Option(None, "--helpful/--not-helpful", help="Was answer helpful?"),
+    rating: int = typer.Option(None, "-r", "--rating", help="Source quality 1-5"),
+    comment: str = typer.Option(None, "-c", "--comment", help="Optional comment"),
+):
+    """Add feedback for a query."""
+    db = get_db()
+
+    # Verify query exists
+    logs_list = db.get_query_logs(limit=1000)
+    log = next((entry for entry in logs_list if entry.id.startswith(query_id)), None)
+    if not log:
+        console.print(f"[red]Query not found: {query_id}[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    if rating and (rating < 1 or rating > 5):
+        console.print("[red]Rating must be 1-5[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    add_feedback(
+        query_id=log.id,
+        helpful=helpful,
+        source_rating=rating,
+        comment=comment,
+        db=db,
+    )
+
+    console.print(f"[green]✓[/green] Feedback saved for query {log.id[:8]}")
+    db.close()
+
+
+@app.command("eval")
+def eval_cmd(
+    show_failures: bool = typer.Option(False, "--failures", help="Show failed tests only"),
+    verbose: bool = typer.Option(False, "-v", "--verbose", help="Show detailed results"),
+):
+    """Run evaluation benchmark."""
+    db = get_db()
+
+    tests = db.get_test_cases()
+    if not tests:
+        console.print("[yellow]No test cases found[/yellow]")
+        console.print('Add test cases with: yt-rag test-add "query" --videos=id1,id2')
+        db.close()
+        return
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        console=console,
+    ) as progress:
+        progress.add_task(f"Running {len(tests)} tests...", total=None)
+        result = run_benchmark(db)
+
+    # Summary
+    console.print("\n[bold]Benchmark Results[/bold]")
+    console.print(f"  Tests: {result.passed}/{result.total_tests} passed")
+    console.print(f"  Precision@5: {result.avg_precision:.1%}")
+    console.print(f"  Recall: {result.avg_recall:.1%}")
+    console.print(f"  MRR: {result.avg_mrr:.2f}")
+    console.print(f"  Keyword Match: {result.avg_keyword_match:.1%}")
+    console.print(f"  Avg Latency: {result.avg_latency_ms:.0f}ms")
+
+    # Details
+    if verbose or show_failures:
+        console.print()
+        for r in result.results:
+            if show_failures and r.passed:
+                continue
+
+            status = "[green]PASS[/green]" if r.passed else "[red]FAIL[/red]"
+            console.print(f"\n{status} [{r.test_id}] {r.query}")
+            console.print(f"  P@5={r.precision_at_k:.1%} R={r.recall:.1%} MRR={r.mrr:.2f}")
+            if r.expected_video_ids:
+                console.print(f"  Expected: {r.expected_video_ids}")
+                console.print(f"  Got: {r.retrieved_video_ids[:5]}")
+
+    db.close()
+
+
+@app.command("test-add")
+def test_add(
+    query: str = typer.Argument(..., help="Test query"),
+    videos: str = typer.Option(None, "--videos", help="Expected video IDs (comma-separated)"),
+    keywords: str = typer.Option(None, "--keywords", help="Expected keywords (comma-separated)"),
+    answer: str = typer.Option(None, "--answer", help="Reference answer"),
+):
+    """Add a test case for evaluation."""
+    db = get_db()
+
+    video_ids = [v.strip() for v in videos.split(",")] if videos else None
+    keyword_list = [k.strip() for k in keywords.split(",")] if keywords else None
+
+    test = add_test_case(
+        query=query,
+        expected_video_ids=video_ids,
+        expected_keywords=keyword_list,
+        reference_answer=answer,
+        db=db,
+    )
+
+    console.print(f"[green]✓[/green] Added test case: {test.id}")
+    db.close()
+
+
+@app.command("test-list")
+def test_list():
+    """List all test cases."""
+    db = get_db()
+    tests = db.get_test_cases()
+
+    if not tests:
+        console.print("[yellow]No test cases[/yellow]")
+        db.close()
+        return
+
+    table = Table(title=f"Test Cases ({len(tests)})")
+    table.add_column("ID")
+    table.add_column("Query", max_width=50)
+    table.add_column("Videos")
+    table.add_column("Keywords")
+
+    for t in tests:
+        videos = ",".join(t.expected_video_ids[:2]) if t.expected_video_ids else "-"
+        keywords = ",".join(t.expected_keywords[:3]) if t.expected_keywords else "-"
+        table.add_row(t.id, t.query[:50], videos, keywords)
+
+    console.print(table)
     db.close()
 
 
