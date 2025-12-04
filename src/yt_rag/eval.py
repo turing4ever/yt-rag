@@ -145,7 +145,7 @@ def run_test_case(
     )
 
     # Extract video IDs from results
-    retrieved_video_ids = list(dict.fromkeys(h.video_id for h in result.hits))
+    retrieved_video_ids = list(dict.fromkeys(h.section.video_id for h in result.hits))
     expected_video_ids = test.expected_video_ids or []
 
     # Calculate metrics

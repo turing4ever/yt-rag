@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 
 from openai import OpenAI
-from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_exponential
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 from .config import (
     DEFAULT_CHAT_MODEL,
@@ -55,8 +55,15 @@ def get_client() -> OpenAI:
     return OpenAI(api_key=api_key)
 
 
+def _should_retry(exc: BaseException) -> bool:
+    """Check if exception should be retried."""
+    if isinstance(exc, OpenAIKeyMissing):
+        return False
+    return True
+
+
 @retry(
-    retry=retry_if_exception_type(Exception),
+    retry=_should_retry,
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=30),
     reraise=True,
@@ -87,7 +94,7 @@ def embed_text(
 
 
 @retry(
-    retry=retry_if_exception_type(Exception),
+    retry=_should_retry,
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=30),
     reraise=True,
@@ -130,7 +137,7 @@ def embed_texts(
 
 
 @retry(
-    retry=retry_if_exception_type(Exception),
+    retry=_should_retry,
     stop=stop_after_attempt(3),
     wait=wait_exponential(multiplier=1, min=2, max=30),
     reraise=True,
