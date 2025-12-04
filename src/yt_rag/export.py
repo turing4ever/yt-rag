@@ -5,7 +5,28 @@ from pathlib import Path
 
 from .config import DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE
 from .db import Database
-from .models import Chunk
+from .models import Chunk, Segment
+
+
+def build_word_to_time_map(segments: list[Segment]) -> list[tuple[float, float]]:
+    """Build a mapping from word index to (start_time, end_time) for each word.
+
+    Returns:
+        List where index i contains (start_time, end_time) for word i.
+        Time is interpolated within each segment based on word position.
+    """
+    word_times = []
+    for seg in segments:
+        words = seg.text.split()
+        if not words:
+            continue
+        # Distribute segment duration evenly across its words
+        time_per_word = seg.duration / len(words) if words else 0
+        for i, _ in enumerate(words):
+            word_start = seg.start_time + i * time_per_word
+            word_end = seg.start_time + (i + 1) * time_per_word
+            word_times.append((word_start, word_end))
+    return word_times
 
 
 def chunk_text(
@@ -38,13 +59,6 @@ def chunk_text(
     return chunks
 
 
-def estimate_time_for_word(word_idx: int, total_words: int, total_duration: float) -> float:
-    """Estimate timestamp for a word based on position."""
-    if total_words == 0:
-        return 0.0
-    return (word_idx / total_words) * total_duration
-
-
 def export_video_chunks(
     db: Database,
     video_id: str,
@@ -63,18 +77,18 @@ def export_video_chunks(
     # Get channel info
     channel = db.get_channel(video.channel_id) if video.channel_id else None
 
-    # Build full text and calculate total duration
+    # Build full text and word-to-time mapping
     full_text = " ".join(s.text for s in segments)
-    total_duration = sum(s.start_time + s.duration for s in segments[-1:]) if segments else 0
+    word_times = build_word_to_time_map(segments)
 
     # Chunk the text
     text_chunks = chunk_text(full_text, chunk_size, overlap)
-    total_words = len(full_text.split())
 
     chunks = []
     for idx, (start_word, end_word, text) in enumerate(text_chunks):
-        start_time = estimate_time_for_word(start_word, total_words, total_duration)
-        end_time = estimate_time_for_word(end_word, total_words, total_duration)
+        # Get actual times from the word mapping
+        start_time = word_times[start_word][0] if start_word < len(word_times) else 0.0
+        end_time = word_times[end_word - 1][1] if end_word <= len(word_times) else word_times[-1][1]
 
         chunk = Chunk(
             chunk_id=f"{video_id}_chunk_{idx:04d}",

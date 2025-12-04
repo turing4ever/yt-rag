@@ -1,6 +1,8 @@
 """CLI commands for yt-rag."""
 
 import tempfile
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 import typer
@@ -16,7 +18,13 @@ from rich.progress import (
 from rich.table import Table
 
 from . import __version__
-from .config import DB_PATH, DEFAULT_CHUNK_OVERLAP, DEFAULT_CHUNK_SIZE, ensure_data_dir
+from .config import (
+    DB_PATH,
+    DEFAULT_CHUNK_OVERLAP,
+    DEFAULT_CHUNK_SIZE,
+    DEFAULT_FETCH_WORKERS,
+    ensure_data_dir,
+)
 from .db import Database
 from .discovery import extract_video_id, get_channel_info, get_video_info, list_channel_videos
 from .export import export_all_chunks, export_to_json, export_to_jsonl
@@ -117,7 +125,12 @@ def sync():
 
 
 @app.command()
-def fetch(limit: int = typer.Option(None, help="Max videos to fetch")):
+def fetch(
+    limit: int = typer.Option(None, help="Max videos to fetch"),
+    workers: int = typer.Option(
+        DEFAULT_FETCH_WORKERS, "-w", "--workers", help="Number of parallel workers"
+    ),
+):
     """Fetch transcripts for pending videos."""
     db = get_db()
     pending = db.get_pending_videos()
@@ -133,6 +146,21 @@ def fetch(limit: int = typer.Option(None, help="Max videos to fetch")):
     fetched = 0
     unavailable = 0
     errors = 0
+    lock = threading.Lock()
+    interrupted = False
+
+    def process_video(video):
+        """Fetch transcript for a single video. Returns (video, result, error)."""
+        nonlocal interrupted
+        if interrupted:
+            return (video, "skipped", None)
+        try:
+            transcript = fetch_transcript(video.id)
+            return (video, "fetched", transcript)
+        except TranscriptUnavailable:
+            return (video, "unavailable", None)
+        except Exception as e:
+            return (video, "error", str(e))
 
     with Progress(
         TextColumn("[progress.description]{task.description}"),
@@ -143,26 +171,36 @@ def fetch(limit: int = typer.Option(None, help="Max videos to fetch")):
     ) as progress:
         task = progress.add_task("Fetching", total=len(pending))
 
-        for video in pending:
-            title = video.title[:40] + "..." if len(video.title) > 40 else video.title
-            progress.update(task, description=f"[cyan]{title}[/cyan]")
-            try:
-                transcript = fetch_transcript(video.id)
-                db.add_segments(transcript.segments)
-                db.update_video_status(video.id, "fetched")
-                fetched += 1
-            except TranscriptUnavailable:
-                db.update_video_status(video.id, "unavailable")
-                unavailable += 1
-            except KeyboardInterrupt:
-                console.print("\n[yellow]Interrupted[/yellow]")
-                break
-            except Exception as e:
-                db.update_video_status(video.id, "error")
-                console.print(f"\n[red]Error[/red] {video.title}: {e}")
-                errors += 1
+        try:
+            with ThreadPoolExecutor(max_workers=workers) as executor:
+                futures = {executor.submit(process_video, v): v for v in pending}
 
-            progress.advance(task)
+                for future in as_completed(futures):
+                    if interrupted:
+                        break
+
+                    video, status, result = future.result()
+                    title = video.title[:40] + "..." if len(video.title) > 40 else video.title
+
+                    with lock:
+                        if status == "fetched":
+                            db.add_segments(result.segments)
+                            db.update_video_status(video.id, "fetched")
+                            fetched += 1
+                            progress.update(task, description=f"[green]✓[/green] {title}")
+                        elif status == "unavailable":
+                            db.update_video_status(video.id, "unavailable")
+                            unavailable += 1
+                            progress.update(task, description=f"[yellow]○[/yellow] {title}")
+                        elif status == "error":
+                            db.update_video_status(video.id, "error")
+                            errors += 1
+                            console.print(f"\n[red]Error[/red] {video.title}: {result}")
+
+                        progress.advance(task)
+        except KeyboardInterrupt:
+            interrupted = True
+            console.print("\n[yellow]Interrupted, waiting for active tasks...[/yellow]")
 
     console.print(f"[green]✓[/green] Fetched {fetched}, unavailable {unavailable}, errors {errors}")
     db.close()

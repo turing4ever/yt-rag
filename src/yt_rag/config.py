@@ -14,6 +14,23 @@ CONFIG_PATH = DATA_DIR / "config.toml"
 DEFAULT_CHUNK_SIZE = 500  # words
 DEFAULT_CHUNK_OVERLAP = 50  # words
 
+# Fetch defaults
+DEFAULT_FETCH_WORKERS = 50
+
+# Proxy config environment variable name
+PROXY_URL_ENV = "WEB_PROXY_URL"
+
+
+def get_proxy_url() -> str | None:
+    """Get proxy URL from environment.
+
+    Returns:
+        Proxy URL string if set, None otherwise.
+        Example: http://user:pass@proxy.example.com:8080
+    """
+    load_env_file()
+    return os.environ.get(PROXY_URL_ENV)
+
 
 def ensure_data_dir() -> Path:
     """Create data directory if it doesn't exist."""

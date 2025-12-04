@@ -1,8 +1,11 @@
 """Pydantic models for yt-rag."""
 
 from datetime import datetime
+from typing import Literal
 
 from pydantic import BaseModel
+
+TranscriptStatus = Literal["pending", "fetched", "unavailable", "error"]
 
 
 class Channel(BaseModel):
@@ -23,7 +26,7 @@ class Video(BaseModel):
     url: str
     published_at: datetime | None = None
     duration_seconds: int | None = None
-    transcript_status: str = "pending"  # pending, fetched, unavailable
+    transcript_status: TranscriptStatus = "pending"
     created_at: datetime | None = None
 
 
