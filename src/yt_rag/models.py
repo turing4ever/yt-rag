@@ -134,13 +134,3 @@ class TestCase(BaseModel):
     expected_keywords: list[str] | None = None
     reference_answer: str | None = None
     created_at: datetime | None = None
-
-
-class SearchResult(BaseModel):
-    """A single search result from FAISS."""
-
-    section_id: str
-    video_id: str
-    channel_id: str | None = None
-    score: float
-    section: Section | None = None
