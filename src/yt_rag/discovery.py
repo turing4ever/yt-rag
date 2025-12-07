@@ -158,6 +158,7 @@ def get_video_info(url: str) -> Video:
         categories=categories if categories else None,
         language=info.get("language"),
         host=host,
+        availability=info.get("availability"),
         transcript_status="pending",
     )
 

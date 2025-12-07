@@ -39,6 +39,7 @@ class Video(BaseModel):
     language: str | None = None  # Primary language code (e.g., 'en')
     host: str | None = None  # Primary host/creator
     guests: list[str] | None = None  # Guest speakers
+    availability: str | None = None  # public, unlisted, private, premium_only, etc.
     transcript_status: TranscriptStatus = "pending"
     created_at: datetime | None = None
     metadata_refreshed_at: datetime | None = None  # Last time metadata was fetched from YouTube

@@ -64,9 +64,7 @@ class SectionizeResult:
     method: str  # "chapters" or "time_chunks"
 
 
-def _get_segment_text_in_range(
-    segments: list[Segment], start_time: float, end_time: float
-) -> str:
+def _get_segment_text_in_range(segments: list[Segment], start_time: float, end_time: float) -> str:
     """Get concatenated text from segments within a time range."""
     texts = []
     for seg in segments:

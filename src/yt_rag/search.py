@@ -102,7 +102,7 @@ def _compute_keyword_boost(
         Total boost value to add to semantic score
     """
     # Extract meaningful terms (2+ chars, alphanumeric)
-    terms = re.findall(r'\b[a-zA-Z0-9]{2,}\b', query.lower())
+    terms = re.findall(r"\b[a-zA-Z0-9]{2,}\b", query.lower())
     if not terms:
         return 0.0
 
@@ -146,7 +146,7 @@ def format_context(
         stats = db.get_stats()
         channels = db.list_channels()
         channel_names = [c.name for c in channels]
-        channels_str = ', '.join(channel_names) if channel_names else 'None'
+        channels_str = ", ".join(channel_names) if channel_names else "None"
         overview = (
             f"[Library Overview]\n"
             f"Channels: {channels_str} ({stats['channels']} total)\n"

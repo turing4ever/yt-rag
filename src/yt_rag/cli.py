@@ -1,8 +1,10 @@
 """CLI commands for yt-rag."""
 
+import asyncio
 import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import dataclass
 from pathlib import Path
 
 import typer
@@ -27,7 +29,9 @@ from .config import (
     DEFAULT_FETCH_WORKERS,
     DEFAULT_OLLAMA_MODEL,
     METADATA_FRESHNESS_DAYS,
+    RESTRICTED_AVAILABILITY,
     ensure_data_dir,
+    get_yt_dlp_batch_size,
     get_yt_dlp_delay,
 )
 from .db import Database
@@ -35,6 +39,7 @@ from .discovery import extract_video_id, get_channel_info, get_video_info, list_
 from .embed import embed_all_sections, embed_all_summaries, embed_video, get_index_stats
 from .eval import add_feedback, add_test_case, run_benchmark
 from .export import export_all_chunks, export_to_json, export_to_jsonl
+from .models import Channel, Video
 from .search import search as rag_search
 from .summarize import summarize_video
 from .transcript import TranscriptUnavailable, fetch_transcript
@@ -45,6 +50,120 @@ app = typer.Typer(
     no_args_is_help=True,
 )
 console = Console()
+
+
+@dataclass
+class MetadataRefreshResult:
+    """Result of metadata refresh operation."""
+
+    channels_updated: int = 0
+    channels_errors: int = 0
+    videos_updated: int = 0
+    videos_errors: int = 0
+
+
+async def refresh_metadata_async(
+    work_items: list[tuple[str, Channel | Video]],
+    db: Database,
+    batch_size: int | None = None,
+) -> MetadataRefreshResult:
+    """Refresh metadata for channels and videos with async batching.
+
+    Args:
+        work_items: List of (type, item) tuples where type is "channel" or "video"
+        db: Database instance for saving results
+        batch_size: Items per batch (default from config)
+
+    Returns:
+        MetadataRefreshResult with counts
+    """
+    if not work_items:
+        return MetadataRefreshResult()
+
+    batch_size = batch_size or get_yt_dlp_batch_size()
+    result = MetadataRefreshResult()
+
+    async def fetch_one(item_type: str, item: Channel | Video, index: int):
+        # Stagger requests within batch to avoid simultaneous hits
+        await asyncio.sleep(get_yt_dlp_delay() * index)
+        try:
+            if item_type == "channel":
+                data = await asyncio.to_thread(get_channel_info, item.url)
+            else:
+                data = await asyncio.to_thread(get_video_info, item.url)
+            return (item_type, item, "success", data)
+        except Exception as e:
+            return (item_type, item, "error", str(e))
+
+    async def process_batch(batch: list, progress, task):
+        tasks = [fetch_one(t, item, i) for i, (t, item) in enumerate(batch)]
+        results = await asyncio.gather(*tasks)
+
+        for item_type, item, status, data in results:
+            if item_type == "channel":
+                if status == "success":
+                    db.add_channel(data)
+                    result.channels_updated += 1
+                    progress.update(task, description=f"[green]✓[/green] {item.name}")
+                else:
+                    result.channels_errors += 1
+                    console.print(f"\n[red]Error[/red] {item.name}: {data}")
+            else:
+                title = item.title[:40] + "..." if len(item.title) > 40 else item.title
+                if status == "success":
+                    db.add_video(data)
+                    result.videos_updated += 1
+                    progress.update(task, description=f"[green]✓[/green] {title}")
+                else:
+                    result.videos_errors += 1
+                    console.print(f"\n[red]Error[/red] {title}: {data}")
+            progress.advance(task)
+
+    with Progress(
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Refreshing metadata", total=len(work_items))
+        for i in range(0, len(work_items), batch_size):
+            batch = work_items[i : i + batch_size]
+            await process_batch(batch, progress, task)
+
+    return result
+
+
+def select_test_videos(
+    db: Database, channels: list[Channel], per_channel: int = 5
+) -> tuple[set[str], dict[str, tuple[int, int]]]:
+    """Select test videos from each channel.
+
+    Prefers pending videos, fills remainder with fetched.
+
+    Returns:
+        (set of video IDs, dict of channel_name -> (new_count, existing_count))
+    """
+    test_ids: set[str] = set()
+    stats: dict[str, tuple[int, int]] = {}
+
+    pending_all = db.get_pending_videos()
+    fetched_all = db.list_videos(status="fetched")
+
+    for channel in channels:
+        pending = [v for v in pending_all if v.channel_id == channel.id]
+        fetched = [v for v in fetched_all if v.channel_id == channel.id]
+
+        selected = pending[:per_channel]
+        remaining = per_channel - len(selected)
+        if remaining > 0:
+            selected.extend(fetched[:remaining])
+
+        test_ids.update(v.id for v in selected)
+        new_count = min(len(pending), per_channel)
+        stats[channel.name] = (new_count, len(selected) - new_count)
+
+    return test_ids, stats
 
 
 def get_db() -> Database:
@@ -65,14 +184,20 @@ def init():
 
 @app.command()
 def update(
-    force_fetch: bool = typer.Option(
-        False, "--force-fetch", help="Re-fetch all transcripts, not just pending"
+    force_transcript: bool = typer.Option(
+        False, "--force-transcript", help="Re-fetch all transcripts, not just pending"
     ),
-    force_refresh_meta: bool = typer.Option(
-        False, "--force-refresh-meta", help="Force refresh all metadata, ignoring timestamps"
+    force_meta: bool = typer.Option(
+        False, "--force-meta", help="Force refresh all metadata, ignoring timestamps"
+    ),
+    force_embed: bool = typer.Option(
+        False, "--force-embed", help="Rebuild all embeddings from scratch"
     ),
     skip_sync: bool = typer.Option(False, "--skip-sync", help="Skip syncing channels"),
     skip_embed: bool = typer.Option(False, "--skip-embed", help="Skip embedding step"),
+    test: bool = typer.Option(
+        False, "--test", help="Test mode: process 5 videos per channel through entire pipeline"
+    ),
     workers: int = typer.Option(
         DEFAULT_FETCH_WORKERS, "-w", "--workers", help="Parallel workers for transcript fetch"
     ),
@@ -82,23 +207,31 @@ def update(
 
     This command runs the complete pipeline to update your library:
     1. sync-channel: Pull new videos from tracked channels
-    2. fetch-transcript: Fetch transcripts for pending videos
-    3. refresh-meta: Refresh metadata (skips if refreshed within 1 day)
+    2. refresh-meta: Refresh metadata (skips if refreshed within 1 day)
+    3. fetch-transcript: Fetch transcripts for pending videos
     4. process-transcript: Sectionize and summarize videos
     5. embed: Build/update vector index
 
+    Use --test to run a test with 5 videos per channel through the entire pipeline.
+
     Examples:
         yt-rag update                      # Run full pipeline
+        yt-rag update --test               # Test run: 5 videos per channel
         yt-rag update --skip-sync          # Skip channel sync
-        yt-rag update --force-fetch        # Re-fetch ALL transcripts
-        yt-rag update --force-refresh-meta # Force refresh all metadata
+        yt-rag update --force-transcript   # Re-fetch ALL transcripts
+        yt-rag update --force-meta         # Force refresh all metadata
+        yt-rag update --force-embed        # Rebuild all embeddings
         yt-rag update --openai             # Use OpenAI for embeddings
     """
+    from datetime import datetime, timedelta
+
     from .openai_client import check_ollama_running
 
     use_local = not openai
 
-    # Check Ollama is running if using local embeddings
+    if test:
+        console.print("[yellow]Test mode: 5 videos per channel[/yellow]")
+
     if use_local and not check_ollama_running():
         console.print("[red]Error: Ollama is not running[/red]")
         console.print("Start it with: sudo systemctl start ollama")
@@ -106,11 +239,20 @@ def update(
         raise typer.Exit(1)
 
     db = get_db()
+    channels = db.list_channels()
+
+    # Select test videos upfront
+    test_video_ids: set[str] = set()
+    if test:
+        console.print("\n[bold]Selecting test videos[/bold]")
+        test_video_ids, stats = select_test_videos(db, channels)
+        for name, (new, existing) in stats.items():
+            console.print(f"  {name}: {new} new + {existing} existing = {new + existing}")
+        console.print(f"[dim]Total: {len(test_video_ids)}[/dim]")
 
     # Step 1: Sync channels
     if not skip_sync:
         console.print("\n[bold]Step 1: Syncing channels[/bold]")
-        channels = db.list_channels()
         if not channels:
             console.print("[yellow]No channels tracked. Use 'yt-rag add <url>' first.[/yellow]")
         else:
@@ -133,16 +275,75 @@ def update(
     else:
         console.print("\n[bold]Step 1: Syncing channels[/bold] [dim](skipped)[/dim]")
 
-    # Step 2: Fetch transcripts (uses youtube_transcript_api - no rate limiting needed)
-    console.print("\n[bold]Step 2: Fetching transcripts[/bold]")
-    if force_fetch:
-        # Re-fetch all videos with fetched status
+    # Step 2: Refresh metadata
+    console.print("\n[bold]Step 2: Refreshing metadata[/bold]")
+    cutoff = datetime.now() - timedelta(days=METADATA_FRESHNESS_DAYS)
+
+    channels_to_refresh = [c for c in db.list_channels() if not c.description]
+    all_videos = db.list_videos(status="fetched")
+    pending_videos = db.get_pending_videos()
+
+    if test:
+        videos_to_refresh = [v for v in all_videos + pending_videos if v.id in test_video_ids]
+        console.print(f"[dim]Test mode: {len(videos_to_refresh)} videos[/dim]")
+    elif force_meta:
+        videos_to_refresh = all_videos
+        console.print(f"[yellow]Force: {len(videos_to_refresh)} videos[/yellow]")
+    else:
+        videos_to_refresh = [
+            v
+            for v in all_videos
+            if v.metadata_refreshed_at is None or v.metadata_refreshed_at < cutoff
+        ]
+        skipped = len(all_videos) - len(videos_to_refresh)
+        if skipped > 0:
+            console.print(f"[dim]Skipping {skipped} fresh videos[/dim]")
+
+    work_items: list[tuple[str, Channel | Video]] = []
+    work_items.extend([("channel", c) for c in channels_to_refresh])
+    work_items.extend([("video", v) for v in videos_to_refresh])
+
+    if not work_items:
+        console.print("[green]✓[/green] All metadata up to date")
+    else:
+        console.print(
+            f"[dim]{len(channels_to_refresh)} channels + {len(videos_to_refresh)} videos[/dim]"
+        )
+        result = asyncio.run(refresh_metadata_async(work_items, db))
+        parts = []
+        if result.channels_updated or result.channels_errors:
+            parts.append(f"{result.channels_updated} channels")
+        if result.videos_updated or result.videos_errors:
+            parts.append(f"{result.videos_updated} videos")
+        total_errors = result.channels_errors + result.videos_errors
+        error_msg = f", {total_errors} errors" if total_errors else ""
+        console.print(f"[green]✓[/green] Updated {', '.join(parts)}{error_msg}")
+
+    # Step 3: Fetch transcripts (uses youtube_transcript_api - parallel, no rate limiting)
+    console.print("\n[bold]Step 3: Fetching transcripts[/bold]")
+
+    def is_fetchable(v: Video) -> bool:
+        """Check if video transcript is likely accessible."""
+        return v.availability not in RESTRICTED_AVAILABILITY if v.availability else True
+
+    if test:
+        videos_to_fetch = [v for v in db.get_pending_videos() if v.id in test_video_ids]
+        console.print(f"[dim]Test mode: {len(videos_to_fetch)} pending[/dim]")
+    elif force_transcript:
         videos_to_fetch = db.list_videos(status="fetched")
-        # Also include pending
         videos_to_fetch.extend(db.get_pending_videos())
-        console.print(f"[yellow]Force mode: re-fetching {len(videos_to_fetch)} videos[/yellow]")
+        console.print(f"[yellow]Force: {len(videos_to_fetch)} videos[/yellow]")
     else:
         videos_to_fetch = db.get_pending_videos()
+
+    # Filter out restricted videos
+    restricted = [v for v in videos_to_fetch if not is_fetchable(v)]
+    videos_to_fetch = [v for v in videos_to_fetch if is_fetchable(v)]
+    if restricted:
+        console.print(f"[dim]Skipping {len(restricted)} restricted videos[/dim]")
+        # Mark them as unavailable
+        for v in restricted:
+            db.update_video_status(v.id, "unavailable")
 
     if not videos_to_fetch:
         console.print("[green]✓[/green] No pending videos to fetch")
@@ -153,7 +354,7 @@ def update(
         lock = threading.Lock()
 
         def process_video_fetch(video):
-            """Fetch transcript only - metadata is handled separately in Step 3."""
+            """Fetch transcript only - metadata is handled separately in Step 2."""
             try:
                 transcript = fetch_transcript(video.id)
                 return (video, "fetched", transcript)
@@ -197,88 +398,6 @@ def update(
             f"[green]✓[/green] Fetched {fetched}, unavailable {unavailable}, errors {errors}"
         )
 
-    # Step 3: Refresh metadata (uses yt-dlp - sequential with rate limiting)
-    console.print("\n[bold]Step 3: Refreshing metadata[/bold]")
-    import time
-    from datetime import datetime, timedelta
-
-    cutoff = datetime.now() - timedelta(days=METADATA_FRESHNESS_DAYS)
-
-    # Channels missing metadata
-    channels = [c for c in db.list_channels() if not c.description]
-    channel_errors = 0
-    if channels:
-        for channel in channels:
-            time.sleep(get_yt_dlp_delay())  # Random rate limiting
-            try:
-                updated_channel = get_channel_info(channel.url)
-                db.add_channel(updated_channel)
-                console.print(f"[green]✓[/green] {channel.name}")
-            except Exception as e:
-                channel_errors += 1
-                console.print(f"[red]Error[/red] {channel.name}: {e}")
-        if channel_errors > 0:
-            console.print(f"[yellow]Channel errors: {channel_errors}[/yellow]")
-    else:
-        console.print("[green]✓[/green] All channels have metadata")
-
-    # Videos needing metadata refresh:
-    # - No metadata_refreshed_at (NULL) = never refreshed
-    # - metadata_refreshed_at older than 1 day
-    # - force_refresh_meta = refresh all
-    all_fetched = db.list_videos(status="fetched")
-    if force_refresh_meta:
-        videos_to_refresh = all_fetched
-        console.print(
-            f"[yellow]Force mode: refreshing all {len(videos_to_refresh)} videos[/yellow]"
-        )
-    else:
-        videos_to_refresh = [
-            v for v in all_fetched
-            if v.metadata_refreshed_at is None or v.metadata_refreshed_at < cutoff
-        ]
-
-    if videos_to_refresh:
-        updated = 0
-        errors = 0
-        skipped = len(all_fetched) - len(videos_to_refresh)
-
-        if skipped > 0:
-            console.print(
-                f"[dim]Skipping {skipped} videos refreshed within "
-                f"{METADATA_FRESHNESS_DAYS} day(s)[/dim]"
-            )
-
-        with Progress(
-            TextColumn("[progress.description]{task.description}"),
-            BarColumn(),
-            MofNCompleteColumn(),
-            TimeElapsedColumn(),
-            console=console,
-        ) as progress:
-            task = progress.add_task("Refreshing video metadata", total=len(videos_to_refresh))
-
-            for video in videos_to_refresh:
-                time.sleep(get_yt_dlp_delay())  # Random rate limiting
-                title = video.title[:40] + "..." if len(video.title) > 40 else video.title
-
-                try:
-                    result = get_video_info(video.url)
-                    db.add_video(result)
-                    updated += 1
-                    progress.update(task, description=f"[green]✓[/green] {title}")
-                except Exception as e:
-                    errors += 1
-                    console.print(f"\n[red]Error[/red] {title}: {e}")
-
-                progress.advance(task)
-
-        console.print(f"[green]✓[/green] Updated {updated} videos, {errors} errors")
-    else:
-        console.print(
-            f"[green]✓[/green] All videos refreshed within {METADATA_FRESHNESS_DAYS} day(s)"
-        )
-
     # Step 4: Process transcripts (sectionize + summarize)
     console.print("\n[bold]Step 4: Processing transcripts[/bold]")
     videos = db.list_videos(status="fetched")
@@ -286,10 +405,17 @@ def update(
     # Filter to videos needing processing
     videos_to_process = []
     for v in videos:
+        # In test mode, only process test videos
+        if test and v.id not in test_video_ids:
+            continue
         existing_sections = db.get_sections(v.id)
         existing_summary = db.get_summary(v.id)
-        if not existing_sections or not existing_summary:
+        # In test mode, force reprocess even if already done
+        if test or (not existing_sections or not existing_summary):
             videos_to_process.append(v)
+
+    if test:
+        console.print(f"[dim]Test mode: {len(videos_to_process)} videos to process[/dim]")
 
     if not videos_to_process:
         console.print("[green]✓[/green] All videos already processed")
@@ -346,46 +472,74 @@ def update(
         backend_name = "local (Ollama)" if use_local else "OpenAI"
         console.print(f"[dim]Using {backend_name} embeddings[/dim]")
 
-        stats = db.get_stats()
-        if stats["sections"] == 0:
-            console.print("[yellow]No sections to embed[/yellow]")
+        if test:
+            # In test mode, embed only test videos
+            console.print(f"[dim]Test mode: embedding {len(test_video_ids)} videos[/dim]")
+            total_sections = 0
+            total_summaries = 0
+            total_tokens = 0
+
+            for video_id in test_video_ids:
+                sections = db.get_sections(video_id)
+                if sections:
+                    result = embed_video(video_id, db, model=None, force=True, use_local=use_local)
+                    total_sections += result.sections_embedded
+                    total_tokens += result.tokens_used
+                summary = db.get_summary(video_id)
+                if summary:
+                    total_summaries += 1
+
+            console.print(
+                f"[green]✓[/green] Embedded {total_sections} sections, "
+                f"{total_summaries} summaries ({total_tokens} tokens)"
+            )
         else:
-            # Embed sections
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-            ) as progress:
-                progress.add_task("Embedding sections...", total=None)
-                result = embed_all_sections(db, model=None, rebuild=False, use_local=use_local)
+            if force_embed:
+                console.print("[yellow]Force mode: rebuilding all embeddings[/yellow]")
 
-            if result.sections_embedded > 0:
-                console.print(
-                    f"[green]✓[/green] Embedded {result.sections_embedded} sections "
-                    f"({result.tokens_used} tokens)"
-                )
+            stats = db.get_stats()
+            if stats["sections"] == 0:
+                console.print("[yellow]No sections to embed[/yellow]")
             else:
-                console.print("[green]✓[/green] All sections already embedded")
-
-            # Embed summaries
-            if stats["summaries"] > 0:
+                # Embed sections
                 with Progress(
                     SpinnerColumn(),
                     TextColumn("[progress.description]{task.description}"),
                     console=console,
                 ) as progress:
-                    progress.add_task("Embedding summaries...", total=None)
-                    summary_result = embed_all_summaries(
-                        db, model=None, rebuild=False, use_local=use_local
+                    progress.add_task("Embedding sections...", total=None)
+                    result = embed_all_sections(
+                        db, model=None, rebuild=force_embed, use_local=use_local
                     )
 
-                if summary_result.sections_embedded > 0:
+                if result.sections_embedded > 0:
                     console.print(
-                        f"[green]✓[/green] Embedded {summary_result.sections_embedded} summaries "
-                        f"({summary_result.tokens_used} tokens)"
+                        f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+                        f"({result.tokens_used} tokens)"
                     )
                 else:
-                    console.print("[green]✓[/green] All summaries already embedded")
+                    console.print("[green]✓[/green] All sections already embedded")
+
+                # Embed summaries
+                if stats["summaries"] > 0:
+                    with Progress(
+                        SpinnerColumn(),
+                        TextColumn("[progress.description]{task.description}"),
+                        console=console,
+                    ) as progress:
+                        progress.add_task("Embedding summaries...", total=None)
+                        summary_result = embed_all_summaries(
+                            db, model=None, rebuild=force_embed, use_local=use_local
+                        )
+
+                    if summary_result.sections_embedded > 0:
+                        embed_count = summary_result.sections_embedded
+                        tokens = summary_result.tokens_used
+                        console.print(
+                            f"[green]✓[/green] Embedded {embed_count} summaries ({tokens} tokens)"
+                        )
+                    else:
+                        console.print("[green]✓[/green] All summaries already embedded")
     else:
         console.print("\n[bold]Step 5: Building embeddings[/bold] [dim](skipped)[/dim]")
 
@@ -942,8 +1096,8 @@ def embed(
 
     # Show index stats
     idx_stats = get_index_stats(use_local=use_local)
-    sec_count = idx_stats['sections_vectors']
-    sum_count = idx_stats['summaries_vectors']
+    sec_count = idx_stats["sections_vectors"]
+    sum_count = idx_stats["summaries_vectors"]
     console.print(f"Index: {sec_count} sections, {sum_count} summaries")
     console.print(f"[dim]Index dir: {idx_stats['index_dir']}[/dim]")
 
@@ -1396,106 +1550,47 @@ def refresh_meta(
 
     By default refreshes both videos and channels.
     Use --video or --channel to refresh only one type.
-
-    Rate limiting is controlled by YT_DLP_DELAY in .env (default: 0.2s).
-
-    Examples:
-        yt-rag refresh-meta              # Refresh all (videos + channels)
-        yt-rag refresh-meta --video      # Refresh only video metadata
-        yt-rag refresh-meta --channel    # Refresh only channel metadata
-        yt-rag refresh-meta --force      # Refresh all, even if metadata exists
     """
-    import time
-
     db = get_db()
 
-    # Determine what to refresh
     do_videos = not channel_only
     do_channels = not video_only
 
-    total_updated = 0
-    total_errors = 0
+    work_items: list[tuple[str, Channel | Video]] = []
 
-    # Refresh channels
     if do_channels:
         channels = db.list_channels()
         if not force:
             channels = [c for c in channels if not c.description]
+        work_items.extend([("channel", c) for c in channels])
 
-        if not channels:
-            console.print("[green]✓[/green] All channels have metadata")
-        else:
-            updated = 0
-            errors = 0
-
-            with Progress(
-                SpinnerColumn(),
-                TextColumn("[progress.description]{task.description}"),
-                console=console,
-            ) as progress:
-                progress.add_task("Refreshing channel metadata", total=None)
-
-                for channel in channels:
-                    time.sleep(get_yt_dlp_delay())  # Random rate limiting
-                    try:
-                        updated_channel = get_channel_info(channel.url)
-                        db.add_channel(updated_channel)
-                        updated += 1
-                        console.print(f"[green]✓[/green] {channel.name}")
-                        if updated_channel.subscriber_count:
-                            console.print(f"   Subscribers: {updated_channel.subscriber_count:,}")
-                        if updated_channel.tags:
-                            console.print(f"   Tags: {', '.join(updated_channel.tags[:5])}")
-                    except Exception as e:
-                        errors += 1
-                        console.print(f"[red]Error[/red] {channel.name}: {e}")
-
-            console.print(f"[green]✓[/green] Updated {updated} channels, {errors} errors")
-            total_updated += updated
-            total_errors += errors
-
-    # Refresh videos (sequential to respect rate limiting)
     if do_videos:
         videos = db.list_videos(status="fetched")
         if not force:
             videos = [v for v in videos if not v.description]
-
         if limit:
             videos = videos[:limit]
+        work_items.extend([("video", v) for v in videos])
 
-        if not videos:
-            console.print("[green]✓[/green] All videos have metadata")
-        else:
-            updated = 0
-            errors = 0
+    if not work_items:
+        console.print("[green]✓[/green] All metadata up to date")
+        db.close()
+        return
 
-            with Progress(
-                TextColumn("[progress.description]{task.description}"),
-                BarColumn(),
-                MofNCompleteColumn(),
-                TimeElapsedColumn(),
-                console=console,
-            ) as progress:
-                task = progress.add_task("Refreshing video metadata", total=len(videos))
+    channel_count = sum(1 for t, _ in work_items if t == "channel")
+    video_count = len(work_items) - channel_count
+    console.print(f"Refreshing {channel_count} channels + {video_count} videos")
 
-                for video in videos:
-                    time.sleep(get_yt_dlp_delay())  # Random rate limiting
-                    title = video.title[:40] + "..." if len(video.title) > 40 else video.title
+    result = asyncio.run(refresh_metadata_async(work_items, db))
 
-                    try:
-                        result = get_video_info(video.url)
-                        db.add_video(result)
-                        updated += 1
-                        progress.update(task, description=f"[green]✓[/green] {title}")
-                    except Exception as e:
-                        errors += 1
-                        console.print(f"\n[red]Error[/red] {title}: {e}")
-
-                    progress.advance(task)
-
-            console.print(f"[green]✓[/green] Updated {updated} videos, {errors} errors")
-            total_updated += updated
-            total_errors += errors
+    parts = []
+    if result.channels_updated or result.channels_errors:
+        parts.append(f"{result.channels_updated} channels")
+    if result.videos_updated or result.videos_errors:
+        parts.append(f"{result.videos_updated} videos")
+    total_errors = result.channels_errors + result.videos_errors
+    error_msg = f", {total_errors} errors" if total_errors else ""
+    console.print(f"[green]✓[/green] Updated {', '.join(parts)}{error_msg}")
 
     db.close()
 

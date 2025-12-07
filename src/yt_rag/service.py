@@ -101,7 +101,7 @@ def _format_context(
     if db:
         stats = db.get_stats()
         channels = db.list_channels()
-        total_in_library = stats['videos_fetched']
+        total_in_library = stats["videos_fetched"]
 
         # Library stats
         overview = f"[Library: {total_in_library} total videos"
@@ -127,9 +127,7 @@ def _format_context(
             seen_videos.add(vh.video_id)
             summary_text = vh.summary[:500] + "..." if len(vh.summary) > 500 else vh.summary
             video_entry = (
-                f"{i}. {vh.video_title}\n"
-                f"   URL: {vh.video_url}\n"
-                f"   Summary: {summary_text}\n\n"
+                f"{i}. {vh.video_title}\n   URL: {vh.video_url}\n   Summary: {summary_text}\n\n"
             )
             if total_chars + len(video_section) + len(video_entry) > max_chars // 2:
                 break  # Reserve space for section details
@@ -612,7 +610,7 @@ class RAGService:
             enhanced_query = query
             query_lower = query.lower()
             if "how many" in query_lower:
-                total_in_library = self.db.get_stats()['videos_fetched']
+                total_in_library = self.db.get_stats()["videos_fetched"]
                 if total_summary_matches > 0:
                     # Topic-specific count
                     enhanced_query = (
@@ -633,19 +631,23 @@ class RAGService:
             if conversation_history:
                 # Include prior conversation turns
                 # Inject context as a system message before the conversation
-                messages.append({
-                    "role": "system",
-                    "content": RAG_CONVERSATION_PROMPT.format(context=context),
-                })
+                messages.append(
+                    {
+                        "role": "system",
+                        "content": RAG_CONVERSATION_PROMPT.format(context=context),
+                    }
+                )
                 messages.extend(conversation_history)
                 # Add the current query
                 messages.append({"role": "user", "content": enhanced_query})
             else:
                 # Single-turn: use original format
-                messages.append({
-                    "role": "user",
-                    "content": RAG_USER_PROMPT.format(context=context, question=enhanced_query),
-                })
+                messages.append(
+                    {
+                        "role": "user",
+                        "content": RAG_USER_PROMPT.format(context=context, question=enhanced_query),
+                    }
+                )
 
             # Use Ollama or OpenAI for chat
             if use_ollama:
@@ -819,9 +821,7 @@ class ChatSessionManager:
             return []
         return self.db.get_chat_messages(self._current_session.id, limit=limit)
 
-    def get_messages_for_llm(
-        self, limit: int = DEFAULT_HISTORY_LIMIT
-    ) -> list[dict[str, str]]:
+    def get_messages_for_llm(self, limit: int = DEFAULT_HISTORY_LIMIT) -> list[dict[str, str]]:
         """Get conversation history formatted for LLM API.
 
         Args:

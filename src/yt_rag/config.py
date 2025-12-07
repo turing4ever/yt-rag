@@ -1,6 +1,7 @@
 """Configuration and paths for yt-rag."""
 
 import os
+import random
 import tomllib
 from pathlib import Path
 
@@ -21,6 +22,11 @@ DEFAULT_FETCH_WORKERS = 50
 # Actual delay is random between 0.1 and this value
 # Override with YT_DLP_MAX_DELAY in .env
 DEFAULT_YT_DLP_MAX_DELAY = 0.5
+
+# yt-dlp batch size for async metadata fetching
+# Controls how many concurrent requests per batch
+# Override with YT_DLP_BATCH_SIZE in .env
+DEFAULT_YT_DLP_BATCH_SIZE = 20
 
 # Metadata freshness: skip refresh if updated within this many days
 METADATA_FRESHNESS_DAYS = 1
@@ -62,6 +68,16 @@ DEFAULT_MAX_TOKENS = 1000
 KEYWORD_BOOST_VIDEO_TITLE = 0.35  # Boost if query term in video title
 KEYWORD_BOOST_SECTION_TITLE = 0.20  # Boost if query term in section title
 KEYWORD_BOOST_SECTION_CONTENT = 0.10  # Boost if query term in section content
+
+# Video availability values that restrict transcript access
+RESTRICTED_AVAILABILITY = frozenset(
+    {
+        "private",
+        "premium_only",
+        "subscriber_only",
+        "needs_auth",
+    }
+)
 
 
 def get_proxy_url() -> str | None:
@@ -150,8 +166,6 @@ def get_yt_dlp_delay() -> float:
     Returns a random value between 0.1 and max_delay.
     Override max with YT_DLP_MAX_DELAY in .env file.
     """
-    import random
-
     load_env_file()
     delay_str = os.environ.get("YT_DLP_MAX_DELAY")
     if delay_str:
@@ -163,3 +177,18 @@ def get_yt_dlp_delay() -> float:
         max_delay = DEFAULT_YT_DLP_MAX_DELAY
 
     return random.uniform(0.1, max_delay)
+
+
+def get_yt_dlp_batch_size() -> int:
+    """Get batch size for async yt-dlp metadata fetching.
+
+    Override with YT_DLP_BATCH_SIZE in .env file.
+    """
+    load_env_file()
+    batch_str = os.environ.get("YT_DLP_BATCH_SIZE")
+    if batch_str:
+        try:
+            return int(batch_str)
+        except ValueError:
+            pass
+    return DEFAULT_YT_DLP_BATCH_SIZE

@@ -46,6 +46,7 @@ CREATE TABLE IF NOT EXISTS videos (
     language TEXT,
     host TEXT,
     guests TEXT,
+    availability TEXT,
     transcript_status TEXT DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     metadata_refreshed_at TIMESTAMP,
@@ -190,6 +191,7 @@ class Database:
             ("language", "TEXT"),
             ("host", "TEXT"),
             ("guests", "TEXT"),
+            ("availability", "TEXT"),
             ("metadata_refreshed_at", "TIMESTAMP"),
         ]
 
@@ -303,8 +305,8 @@ class Database:
             INSERT INTO videos (id, channel_id, title, url, published_at,
                                duration_seconds, view_count, like_count, comment_count,
                                description, tags, categories, language, host, guests,
-                               transcript_status, created_at, metadata_refreshed_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                               availability, transcript_status, created_at, metadata_refreshed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
                 duration_seconds = excluded.duration_seconds,
@@ -317,7 +319,10 @@ class Database:
                 language = COALESCE(excluded.language, videos.language),
                 host = COALESCE(excluded.host, videos.host),
                 guests = COALESCE(excluded.guests, videos.guests),
-                metadata_refreshed_at = COALESCE(excluded.metadata_refreshed_at, videos.metadata_refreshed_at)
+                availability = COALESCE(excluded.availability, videos.availability),
+                metadata_refreshed_at = COALESCE(
+                    excluded.metadata_refreshed_at, videos.metadata_refreshed_at
+                )
             """,
             (
                 video.id,
@@ -335,6 +340,7 @@ class Database:
                 video.language,
                 video.host,
                 guests_json,
+                video.availability,
                 video.transcript_status,
                 video.created_at or datetime.now(),
                 metadata_ts,
@@ -856,9 +862,7 @@ class Database:
     def get_chat_session(self, session_id: str) -> ChatSession | None:
         """Get a chat session by ID."""
         conn = self.connect()
-        row = conn.execute(
-            "SELECT * FROM chat_sessions WHERE id = ?", (session_id,)
-        ).fetchone()
+        row = conn.execute("SELECT * FROM chat_sessions WHERE id = ?", (session_id,)).fetchone()
         if row:
             return ChatSession(**dict(row))
         return None
@@ -927,9 +931,7 @@ class Database:
             created_at=now,
         )
 
-    def get_chat_messages(
-        self, session_id: str, limit: int | None = None
-    ) -> list[ChatMessage]:
+    def get_chat_messages(self, session_id: str, limit: int | None = None) -> list[ChatMessage]:
         """Get messages for a session, oldest first."""
         conn = self.connect()
         if limit:

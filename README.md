@@ -33,40 +33,46 @@ yt-rag init
 # Add a YouTube channel
 yt-rag add https://www.youtube.com/@SomeChannel
 
-# Fetch transcripts
-yt-rag fetch
-
-# Process videos (sectionize + summarize with GPT)
-yt-rag process
-
-# Build vector index
-yt-rag embed
+# Run full pipeline (sync, metadata, transcripts, process, embed)
+yt-rag update
 
 # Ask questions!
 yt-rag ask "What is tokenization?"
+
+# Or use interactive chat
+yt-rag chat
 ```
 
 ## Commands
 
-### Data Collection
+### Core Commands
 
 | Command | Description |
 |---------|-------------|
 | `yt-rag init` | Initialize the database |
 | `yt-rag add <url>` | Add a channel or video |
-| `yt-rag sync` | Discover new videos from tracked channels |
-| `yt-rag fetch` | Download transcripts for pending videos |
-| `yt-rag list channels` | List tracked channels |
-| `yt-rag list videos` | List videos |
+| `yt-rag update` | Run full pipeline (sync, metadata, transcripts, process, embed) |
+| `yt-rag ask "<query>"` | Ask a question using RAG |
+| `yt-rag chat` | Interactive chat with persistent sessions |
 | `yt-rag status` | Show database statistics |
 
-### RAG Processing
+### Individual Pipeline Steps
 
 | Command | Description |
 |---------|-------------|
-| `yt-rag process` | Sectionize and summarize videos with GPT |
+| `yt-rag sync-channel` | Discover new videos from tracked channels |
+| `yt-rag refresh-meta` | Refresh video/channel metadata from YouTube |
+| `yt-rag fetch-transcript` | Download transcripts for pending videos |
+| `yt-rag process-transcript` | Sectionize and summarize videos |
 | `yt-rag embed` | Build FAISS vector index from sections |
-| `yt-rag ask "<query>"` | Ask a question using RAG |
+
+### Browsing
+
+| Command | Description |
+|---------|-------------|
+| `yt-rag list channels` | List tracked channels |
+| `yt-rag list videos` | List videos |
+| `yt-rag videos` | Search/filter videos by metadata |
 
 ### Evaluation
 
@@ -85,45 +91,36 @@ yt-rag ask "What is tokenization?"
 | `yt-rag export -o <file>` | Export chunks for RAG |
 | `yt-rag transcript <video_id>` | Export single video transcript |
 
-## RAG Pipeline
+## Update Pipeline
 
-### 1. Process Videos
-
-Process fetched transcripts into semantic sections and summaries:
+The `update` command runs the complete pipeline automatically:
 
 ```bash
-# Process all fetched videos
-yt-rag process
-
-# Process single video
-yt-rag process VIDEO_ID
+# Run full pipeline
+yt-rag update
 
 # Options
-yt-rag process --limit 10           # Limit number of videos
-yt-rag process --sectionize         # Only create sections
-yt-rag process --summarize          # Only create summaries
-yt-rag process --model gpt-4o       # Use different model
-yt-rag process --force              # Re-process existing
+yt-rag update --test               # Test mode: 5 videos per channel
+yt-rag update --skip-sync          # Skip channel sync
+yt-rag update --skip-embed         # Skip embedding step
+yt-rag update --force-transcript   # Re-fetch ALL transcripts
+yt-rag update --force-meta         # Force refresh all metadata
+yt-rag update --force-embed        # Rebuild all embeddings
+yt-rag update --openai             # Use OpenAI for embeddings
 ```
 
-### 2. Build Vector Index
+Pipeline steps:
+1. **Sync channels**: Pull new videos from tracked channels
+2. **Refresh metadata**: Update video info (skips if refreshed within 1 day)
+3. **Fetch transcripts**: Download transcripts for pending videos
+4. **Process transcripts**: Sectionize (using YouTube chapters) and summarize
+5. **Embed**: Build/update FAISS vector index
 
-Embed sections into FAISS for semantic search:
+By default, each step only processes items that need work. Use `--force-*` flags to reprocess everything.
 
-```bash
-# Embed all sections
-yt-rag embed
+## RAG Search
 
-# Embed single video
-yt-rag embed VIDEO_ID
-
-# Options
-yt-rag embed --rebuild              # Rebuild entire index
-yt-rag embed --force                # Re-embed existing
-yt-rag embed -m text-embedding-3-large  # Different model
-```
-
-### 3. Ask Questions
+### Ask Questions
 
 Query your video content with RAG:
 
@@ -157,6 +154,32 @@ Sources (3):
 
 Latency: 1523ms | Tokens: 42 embed + 1205 chat
 ```
+
+### Interactive Chat
+
+For multi-turn conversations with persistent sessions:
+
+```bash
+# Start or resume chat
+yt-rag chat
+
+# Use OpenAI instead of local Ollama
+yt-rag chat --openai
+
+# Filter to specific channel/video
+yt-rag chat -c CHANNEL_ID
+yt-rag chat -v VIDEO_ID
+
+# Session management
+yt-rag chat --new             # Start fresh session
+yt-rag chat --list            # List recent sessions
+yt-rag chat --session ID      # Resume specific session
+```
+
+In-chat commands:
+- `/new` - Start a new session
+- `/sessions` - List sessions
+- `/rename <title>` - Rename current session
 
 ## Evaluation & Logging
 
@@ -229,12 +252,16 @@ Data is stored in `~/.yt-rag/`:
 
 ```
 ~/.yt-rag/
-├── db.sqlite          # Video and transcript database
-├── .env               # API keys
-├── config.toml        # User settings (optional)
-└── faiss/
-    ├── sections.index     # FAISS vector index
-    └── sections_meta.jsonl  # Index metadata
+├── db.sqlite              # Video and transcript database
+├── .env                   # API keys and settings
+├── config.toml            # User settings (optional)
+├── chat_history           # Readline history for chat
+├── faiss/                 # OpenAI embeddings (1536 dims)
+│   ├── sections.index
+│   └── sections_meta.jsonl
+└── faiss_local/           # Ollama embeddings (768 dims)
+    ├── sections.index
+    └── sections_meta.jsonl
 ```
 
 ### Environment Variables
@@ -242,12 +269,39 @@ Data is stored in `~/.yt-rag/`:
 Create `~/.yt-rag/.env`:
 
 ```bash
-# Required for RAG features
+# Required for --openai mode
 OPENAI_API_KEY=sk-...
 
 # Optional: proxy for transcript fetching
 WEB_PROXY_URL=http://user:pass@proxy:port
+
+# Optional: rate limiting for yt-dlp metadata fetching
+YT_DLP_MAX_DELAY=0.5       # Max delay between requests (default: 0.5s)
+YT_DLP_BATCH_SIZE=20       # Concurrent requests per batch (default: 20)
 ```
+
+### Embedding Backends
+
+By default, yt-rag uses local Ollama for embeddings and chat. Use `--openai` to switch to OpenAI.
+
+**Local (default)**: Requires [Ollama](https://ollama.ai/) running locally.
+```bash
+# Start Ollama
+sudo systemctl start ollama
+
+# Pull required model
+ollama pull nomic-embed-text
+ollama pull qwen2.5:7b-instruct
+```
+
+**OpenAI**: Requires `OPENAI_API_KEY` in `.env`.
+```bash
+yt-rag update --openai
+yt-rag ask "question" --openai
+yt-rag chat --openai
+```
+
+Local and OpenAI indexes are stored separately, so you can switch between them.
 
 ## Export Format
 
@@ -285,7 +339,7 @@ Video ID: VIDEO_ID
 ## Requirements
 
 - Python 3.11+
-- OpenAI API key (for RAG features)
+- Ollama (default) or OpenAI API key (with `--openai`)
 
 ## License
 
