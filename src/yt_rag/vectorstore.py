@@ -7,7 +7,13 @@ from pathlib import Path
 import faiss
 import numpy as np
 
-from .config import EMBEDDING_DIMENSION, FAISS_DIR, ensure_data_dir
+from .config import (
+    FAISS_DIR,
+    FAISS_LOCAL_DIR,
+    OLLAMA_EMBEDDING_DIMENSION,
+    OPENAI_EMBEDDING_DIMENSION,
+    ensure_data_dir,
+)
 
 
 @dataclass
@@ -37,19 +43,31 @@ class VectorStore:
     def __init__(
         self,
         name: str = "sections",
-        dimension: int = EMBEDDING_DIMENSION,
+        dimension: int | None = None,
         index_dir: Path | None = None,
+        use_local: bool = True,
     ):
         """Initialize vector store.
 
         Args:
             name: Name of the index (e.g., 'sections', 'summaries')
-            dimension: Vector dimension (must match embedding model)
-            index_dir: Directory to store index files
+            dimension: Vector dimension (auto-detected from use_local if not set)
+            index_dir: Directory to store index files (auto-set from use_local if not set)
+            use_local: If True, use local Ollama embeddings; if False, use OpenAI
         """
         self.name = name
-        self.dimension = dimension
-        self.index_dir = index_dir or FAISS_DIR
+        self.use_local = use_local
+
+        # Set dimension and directory based on backend
+        if dimension is not None:
+            self.dimension = dimension
+        else:
+            self.dimension = OLLAMA_EMBEDDING_DIMENSION if use_local else OPENAI_EMBEDDING_DIMENSION
+
+        if index_dir is not None:
+            self.index_dir = index_dir
+        else:
+            self.index_dir = FAISS_LOCAL_DIR if use_local else FAISS_DIR
 
         self._index: faiss.IndexFlatIP | None = None
         self._metadata: list[VectorMetadata] = []
@@ -248,15 +266,23 @@ class VectorStore:
         return [m.id for m in self._metadata]
 
 
-def get_sections_store() -> VectorStore:
-    """Get the sections vector store, loading from disk if exists."""
-    store = VectorStore(name="sections")
+def get_sections_store(use_local: bool = True) -> VectorStore:
+    """Get the sections vector store, loading from disk if exists.
+
+    Args:
+        use_local: If True, use local Ollama index; if False, use OpenAI index
+    """
+    store = VectorStore(name="sections", use_local=use_local)
     store.load()
     return store
 
 
-def get_summaries_store() -> VectorStore:
-    """Get the summaries vector store, loading from disk if exists."""
-    store = VectorStore(name="summaries")
+def get_summaries_store(use_local: bool = True) -> VectorStore:
+    """Get the summaries vector store, loading from disk if exists.
+
+    Args:
+        use_local: If True, use local Ollama index; if False, use OpenAI index
+    """
+    store = VectorStore(name="summaries", use_local=use_local)
     store.load()
     return store

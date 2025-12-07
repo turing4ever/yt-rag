@@ -5,7 +5,7 @@ from datetime import datetime
 
 import yt_dlp
 
-from .models import Channel, Video
+from .models import Channel, Chapter, Video
 
 
 def _parse_upload_date(upload_date: str | None) -> datetime | None:
@@ -45,8 +45,14 @@ def extract_video_id(url: str) -> str | None:
     return None
 
 
-def get_channel_info(url: str) -> Channel:
-    """Fetch channel metadata from YouTube."""
+def get_channel_info(url: str, fetch_metadata: bool = True) -> Channel:
+    """Fetch channel metadata from YouTube.
+
+    Args:
+        url: Channel URL
+        fetch_metadata: If True, fetches full metadata (description, subs, tags).
+                       If False, only fetches basic info (faster for listing videos).
+    """
     ydl_opts = {
         "quiet": True,
         "no_warnings": True,
@@ -61,10 +67,20 @@ def get_channel_info(url: str) -> Channel:
     channel_name = info.get("channel") or info.get("uploader") or "Unknown"
     channel_url = info.get("channel_url") or url
 
+    # Extract additional metadata
+    description = info.get("description")
+    subscriber_count = info.get("channel_follower_count")
+    tags = info.get("tags") or []
+    handle = info.get("uploader_id")  # @handle
+
     return Channel(
         id=channel_id,
         name=channel_name,
         url=channel_url,
+        description=description,
+        subscriber_count=subscriber_count,
+        tags=tags if tags else None,
+        handle=handle,
     )
 
 
@@ -109,7 +125,7 @@ def list_channel_videos(url: str, channel_id: str | None = None) -> list[Video]:
 
 
 def get_video_info(url: str) -> Video:
-    """Get info for a single video."""
+    """Get info for a single video including description and tags."""
     ydl_opts = {
         "quiet": True,
         "no_warnings": True,
@@ -119,6 +135,14 @@ def get_video_info(url: str) -> Video:
         info = ydl.extract_info(url, download=False)
 
     video_id = info.get("id")
+
+    # Get tags and categories - yt-dlp returns as lists
+    tags = info.get("tags") or []
+    categories = info.get("categories") or []
+
+    # Host defaults to channel/uploader name
+    host = info.get("channel") or info.get("uploader")
+
     return Video(
         id=video_id,
         channel_id=info.get("channel_id"),
@@ -126,5 +150,53 @@ def get_video_info(url: str) -> Video:
         url=f"https://www.youtube.com/watch?v={video_id}",
         published_at=_parse_upload_date(info.get("upload_date")),
         duration_seconds=info.get("duration"),
+        view_count=info.get("view_count"),
+        like_count=info.get("like_count"),
+        comment_count=info.get("comment_count"),
+        description=info.get("description"),
+        tags=tags if tags else None,
+        categories=categories if categories else None,
+        language=info.get("language"),
+        host=host,
         transcript_status="pending",
     )
+
+
+def get_video_chapters(video_id: str) -> list[Chapter]:
+    """Get chapters for a video from YouTube.
+
+    Returns empty list if no chapters available.
+    """
+    url = f"https://www.youtube.com/watch?v={video_id}"
+    ydl_opts = {
+        "quiet": True,
+        "no_warnings": True,
+    }
+
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(url, download=False)
+
+    chapters_data = info.get("chapters") or []
+    if not chapters_data:
+        return []
+
+    duration = info.get("duration") or 0
+
+    chapters = []
+    for i, ch in enumerate(chapters_data):
+        start = ch.get("start_time", 0)
+        # End time is start of next chapter, or video duration for last chapter
+        if i + 1 < len(chapters_data):
+            end = chapters_data[i + 1].get("start_time", start)
+        else:
+            end = duration if duration else None
+
+        chapters.append(
+            Chapter(
+                title=ch.get("title", f"Chapter {i + 1}"),
+                start_time=float(start),
+                end_time=float(end) if end else None,
+            )
+        )
+
+    return chapters

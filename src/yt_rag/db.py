@@ -5,13 +5,28 @@ from datetime import datetime
 from pathlib import Path
 
 from .config import DB_PATH, ensure_data_dir
-from .models import Channel, Feedback, QueryLog, Section, Segment, Summary, TestCase, Video
+from .models import (
+    Channel,
+    ChatMessage,
+    ChatSession,
+    Feedback,
+    QueryLog,
+    Section,
+    Segment,
+    Summary,
+    TestCase,
+    Video,
+)
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS channels (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
+    description TEXT,
+    subscriber_count INTEGER,
+    tags TEXT,
+    handle TEXT,
     last_synced_at TIMESTAMP
 );
 
@@ -22,8 +37,18 @@ CREATE TABLE IF NOT EXISTS videos (
     url TEXT NOT NULL,
     published_at TIMESTAMP,
     duration_seconds INTEGER,
+    view_count INTEGER,
+    like_count INTEGER,
+    comment_count INTEGER,
+    description TEXT,
+    tags TEXT,
+    categories TEXT,
+    language TEXT,
+    host TEXT,
+    guests TEXT,
     transcript_status TEXT DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    metadata_refreshed_at TIMESTAMP,
     FOREIGN KEY (channel_id) REFERENCES channels(id)
 );
 
@@ -98,6 +123,26 @@ CREATE TABLE IF NOT EXISTS test_cases (
     reference_answer TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE IF NOT EXISTS chat_sessions (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    video_id TEXT,
+    channel_id TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (session_id) REFERENCES chat_sessions(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id, created_at);
 """
 
 
@@ -127,36 +172,103 @@ class Database:
         conn = self.connect()
         conn.executescript(SCHEMA)
         conn.commit()
+        self._migrate(conn)
+
+    def _migrate(self, conn: sqlite3.Connection) -> None:
+        """Run database migrations for schema updates."""
+        # Migrate videos table
+        cursor = conn.execute("PRAGMA table_info(videos)")
+        video_cols = {row[1] for row in cursor.fetchall()}
+
+        video_new_columns = [
+            ("view_count", "INTEGER"),
+            ("like_count", "INTEGER"),
+            ("comment_count", "INTEGER"),
+            ("description", "TEXT"),
+            ("tags", "TEXT"),
+            ("categories", "TEXT"),
+            ("language", "TEXT"),
+            ("host", "TEXT"),
+            ("guests", "TEXT"),
+            ("metadata_refreshed_at", "TIMESTAMP"),
+        ]
+
+        for col_name, col_type in video_new_columns:
+            if col_name not in video_cols:
+                conn.execute(f"ALTER TABLE videos ADD COLUMN {col_name} {col_type}")
+
+        # Migrate channels table
+        cursor = conn.execute("PRAGMA table_info(channels)")
+        channel_cols = {row[1] for row in cursor.fetchall()}
+
+        channel_new_columns = [
+            ("description", "TEXT"),
+            ("subscriber_count", "INTEGER"),
+            ("tags", "TEXT"),
+            ("handle", "TEXT"),
+        ]
+
+        for col_name, col_type in channel_new_columns:
+            if col_name not in channel_cols:
+                conn.execute(f"ALTER TABLE channels ADD COLUMN {col_name} {col_type}")
+
+        conn.commit()
 
     def add_channel(self, channel: Channel) -> None:
         """Add or update a channel."""
+        import json
+
         conn = self.connect()
+        tags_json = json.dumps(channel.tags) if channel.tags else None
         conn.execute(
             """
-            INSERT INTO channels (id, name, url, last_synced_at)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO channels
+                (id, name, url, description, subscriber_count, tags, handle, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
                 url = excluded.url,
+                description = COALESCE(excluded.description, channels.description),
+                subscriber_count = COALESCE(excluded.subscriber_count, channels.subscriber_count),
+                tags = COALESCE(excluded.tags, channels.tags),
+                handle = COALESCE(excluded.handle, channels.handle),
                 last_synced_at = excluded.last_synced_at
             """,
-            (channel.id, channel.name, channel.url, channel.last_synced_at),
+            (
+                channel.id,
+                channel.name,
+                channel.url,
+                channel.description,
+                channel.subscriber_count,
+                tags_json,
+                channel.handle,
+                channel.last_synced_at,
+            ),
         )
         conn.commit()
+
+    def _channel_from_row(self, row) -> Channel:
+        """Convert a database row to a Channel, deserializing JSON fields."""
+        import json
+
+        d = dict(row)
+        if d.get("tags"):
+            d["tags"] = json.loads(d["tags"])
+        return Channel(**d)
 
     def get_channel(self, channel_id: str) -> Channel | None:
         """Get a channel by ID."""
         conn = self.connect()
         row = conn.execute("SELECT * FROM channels WHERE id = ?", (channel_id,)).fetchone()
         if row:
-            return Channel(**dict(row))
+            return self._channel_from_row(row)
         return None
 
     def list_channels(self) -> list[Channel]:
         """List all channels."""
         conn = self.connect()
         rows = conn.execute("SELECT * FROM channels").fetchall()
-        return [Channel(**dict(row)) for row in rows]
+        return [self._channel_from_row(row) for row in rows]
 
     def update_channel_sync_time(self, channel_id: str) -> None:
         """Update last_synced_at for a channel."""
@@ -167,17 +279,45 @@ class Database:
         )
         conn.commit()
 
-    def add_video(self, video: Video) -> None:
-        """Add or update a video."""
+    def add_video(self, video: Video, update_metadata_ts: bool = True) -> None:
+        """Add or update a video.
+
+        Args:
+            video: Video to add/update
+            update_metadata_ts: If True, set metadata_refreshed_at to now when metadata is present
+        """
+        import json
+
         conn = self.connect()
+        tags_json = json.dumps(video.tags) if video.tags else None
+        categories_json = json.dumps(video.categories) if video.categories else None
+        guests_json = json.dumps(video.guests) if video.guests else None
+
+        # Set metadata_refreshed_at if we have metadata and flag is set
+        metadata_ts = None
+        if update_metadata_ts and video.description:
+            metadata_ts = datetime.now()
+
         conn.execute(
             """
             INSERT INTO videos (id, channel_id, title, url, published_at,
-                               duration_seconds, transcript_status, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                               duration_seconds, view_count, like_count, comment_count,
+                               description, tags, categories, language, host, guests,
+                               transcript_status, created_at, metadata_refreshed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
-                duration_seconds = excluded.duration_seconds
+                duration_seconds = excluded.duration_seconds,
+                view_count = COALESCE(excluded.view_count, videos.view_count),
+                like_count = COALESCE(excluded.like_count, videos.like_count),
+                comment_count = COALESCE(excluded.comment_count, videos.comment_count),
+                description = COALESCE(excluded.description, videos.description),
+                tags = COALESCE(excluded.tags, videos.tags),
+                categories = COALESCE(excluded.categories, videos.categories),
+                language = COALESCE(excluded.language, videos.language),
+                host = COALESCE(excluded.host, videos.host),
+                guests = COALESCE(excluded.guests, videos.guests),
+                metadata_refreshed_at = COALESCE(excluded.metadata_refreshed_at, videos.metadata_refreshed_at)
             """,
             (
                 video.id,
@@ -186,8 +326,18 @@ class Database:
                 video.url,
                 video.published_at,
                 video.duration_seconds,
+                video.view_count,
+                video.like_count,
+                video.comment_count,
+                video.description,
+                tags_json,
+                categories_json,
+                video.language,
+                video.host,
+                guests_json,
                 video.transcript_status,
                 video.created_at or datetime.now(),
+                metadata_ts,
             ),
         )
         conn.commit()
@@ -232,12 +382,26 @@ class Database:
         conn.commit()
         return added
 
+    def _parse_video_row(self, row: sqlite3.Row) -> Video:
+        """Parse a video row, deserializing JSON fields."""
+        import json
+
+        data = dict(row)
+        # Parse JSON fields
+        for field in ("tags", "categories", "guests"):
+            if data.get(field):
+                try:
+                    data[field] = json.loads(data[field])
+                except (json.JSONDecodeError, TypeError):
+                    data[field] = None
+        return Video(**data)
+
     def get_video(self, video_id: str) -> Video | None:
         """Get a video by ID."""
         conn = self.connect()
         row = conn.execute("SELECT * FROM videos WHERE id = ?", (video_id,)).fetchone()
         if row:
-            return Video(**dict(row))
+            return self._parse_video_row(row)
         return None
 
     def list_videos(self, channel_id: str | None = None, status: str | None = None) -> list[Video]:
@@ -255,7 +419,130 @@ class Database:
 
         query += " ORDER BY published_at DESC"
         rows = conn.execute(query, params).fetchall()
-        return [Video(**dict(row)) for row in rows]
+        return [self._parse_video_row(row) for row in rows]
+
+    def search_videos(
+        self,
+        channel_id: str | None = None,
+        status: str | None = None,
+        after: datetime | None = None,
+        before: datetime | None = None,
+        min_duration: int | None = None,
+        max_duration: int | None = None,
+        host: str | None = None,
+        guest: str | None = None,
+        min_sections: int | None = None,
+        max_sections: int | None = None,
+        title_contains: str | None = None,
+        order_by: str = "published_at",
+        order_desc: bool = True,
+        limit: int | None = None,
+    ) -> list[tuple[Video, int]]:
+        """Search videos with metadata filters.
+
+        Args:
+            channel_id: Filter by channel
+            status: Filter by transcript status
+            after: Published after this date
+            before: Published before this date
+            min_duration: Minimum duration in seconds
+            max_duration: Maximum duration in seconds
+            host: Filter by host (case-insensitive substring)
+            guest: Filter by guest name (case-insensitive substring)
+            min_sections: Minimum number of sections
+            max_sections: Maximum number of sections
+            title_contains: Title contains this string (case-insensitive)
+            order_by: Column to sort by (published_at, duration_seconds, title)
+            order_desc: Sort descending if True
+            limit: Max results to return
+
+        Returns:
+            List of (Video, section_count) tuples
+        """
+        conn = self.connect()
+
+        # Build query with section count
+        query = """
+            SELECT v.*, COALESCE(s.section_count, 0) as section_count
+            FROM videos v
+            LEFT JOIN (
+                SELECT video_id, COUNT(*) as section_count
+                FROM sections
+                GROUP BY video_id
+            ) s ON v.id = s.video_id
+            WHERE 1=1
+        """
+        params: list = []
+
+        if channel_id:
+            query += " AND v.channel_id = ?"
+            params.append(channel_id)
+        if status:
+            query += " AND v.transcript_status = ?"
+            params.append(status)
+        if after:
+            query += " AND v.published_at >= ?"
+            params.append(after)
+        if before:
+            query += " AND v.published_at <= ?"
+            params.append(before)
+        if min_duration is not None:
+            query += " AND v.duration_seconds >= ?"
+            params.append(min_duration)
+        if max_duration is not None:
+            query += " AND v.duration_seconds <= ?"
+            params.append(max_duration)
+        if host:
+            query += " AND LOWER(v.host) LIKE ?"
+            params.append(f"%{host.lower()}%")
+        if guest:
+            query += " AND LOWER(v.guests) LIKE ?"
+            params.append(f"%{guest.lower()}%")
+        if min_sections is not None:
+            query += " AND COALESCE(s.section_count, 0) >= ?"
+            params.append(min_sections)
+        if max_sections is not None:
+            query += " AND COALESCE(s.section_count, 0) <= ?"
+            params.append(max_sections)
+        if title_contains:
+            query += " AND LOWER(v.title) LIKE ?"
+            params.append(f"%{title_contains.lower()}%")
+
+        # Order by
+        valid_order = {"published_at", "duration_seconds", "title", "section_count"}
+        if order_by not in valid_order:
+            order_by = "published_at"
+        direction = "DESC" if order_desc else "ASC"
+
+        if order_by == "section_count":
+            query += f" ORDER BY section_count {direction}"
+        else:
+            query += f" ORDER BY v.{order_by} {direction}"
+
+        if limit:
+            query += " LIMIT ?"
+            params.append(limit)
+
+        rows = conn.execute(query, params).fetchall()
+        results = []
+        for row in rows:
+            d = dict(row)
+            section_count = d.pop("section_count")
+            video = self._parse_video_row_dict(d)
+            results.append((video, section_count))
+        return results
+
+    def _parse_video_row_dict(self, data: dict) -> Video:
+        """Parse a video dict, deserializing JSON fields."""
+        import json
+
+        for field in ("tags", "categories", "guests"):
+            if data.get(field):
+                try:
+                    data[field] = json.loads(data[field])
+                except (json.JSONDecodeError, TypeError):
+                    data[field] = None
+        return Video(**data)
 
     def get_pending_videos(self) -> list[Video]:
         """Get videos that need transcript fetching."""
@@ -536,3 +823,138 @@ class Database:
                 d["expected_keywords"] = json.loads(d["expected_keywords"])
             cases.append(TestCase(**d))
         return cases
+
+    # Chat session methods
+
+    def create_chat_session(
+        self,
+        session_id: str,
+        title: str,
+        video_id: str | None = None,
+        channel_id: str | None = None,
+    ) -> ChatSession:
+        """Create a new chat session."""
+        conn = self.connect()
+        now = datetime.now()
+        conn.execute(
+            """
+            INSERT INTO chat_sessions (id, title, video_id, channel_id, created_at, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (session_id, title, video_id, channel_id, now, now),
+        )
+        conn.commit()
+        return ChatSession(
+            id=session_id,
+            title=title,
+            video_id=video_id,
+            channel_id=channel_id,
+            created_at=now,
+            updated_at=now,
+        )
+
+    def get_chat_session(self, session_id: str) -> ChatSession | None:
+        """Get a chat session by ID."""
+        conn = self.connect()
+        row = conn.execute(
+            "SELECT * FROM chat_sessions WHERE id = ?", (session_id,)
+        ).fetchone()
+        if row:
+            return ChatSession(**dict(row))
+        return None
+
+    def list_chat_sessions(self, limit: int = 20) -> list[ChatSession]:
+        """List recent chat sessions, most recent first."""
+        conn = self.connect()
+        rows = conn.execute(
+            "SELECT * FROM chat_sessions ORDER BY updated_at DESC LIMIT ?", (limit,)
+        ).fetchall()
+        return [ChatSession(**dict(row)) for row in rows]
+
+    def update_chat_session_title(self, session_id: str, title: str) -> None:
+        """Update a session's title."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE chat_sessions SET title = ?, updated_at = ? WHERE id = ?",
+            (title, datetime.now(), session_id),
+        )
+        conn.commit()
+
+    def touch_chat_session(self, session_id: str) -> None:
+        """Update session's updated_at timestamp."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE chat_sessions SET updated_at = ? WHERE id = ?",
+            (datetime.now(), session_id),
+        )
+        conn.commit()
+
+    def delete_chat_session(self, session_id: str) -> None:
+        """Delete a chat session and all its messages."""
+        conn = self.connect()
+        conn.execute("DELETE FROM chat_messages WHERE session_id = ?", (session_id,))
+        conn.execute("DELETE FROM chat_sessions WHERE id = ?", (session_id,))
+        conn.commit()
+
+    def add_chat_message(
+        self,
+        message_id: str,
+        session_id: str,
+        role: str,
+        content: str,
+    ) -> ChatMessage:
+        """Add a message to a chat session."""
+        conn = self.connect()
+        now = datetime.now()
+        conn.execute(
+            """
+            INSERT INTO chat_messages (id, session_id, role, content, created_at)
+            VALUES (?, ?, ?, ?, ?)
+            """,
+            (message_id, session_id, role, content, now),
+        )
+        # Update session's updated_at
+        conn.execute(
+            "UPDATE chat_sessions SET updated_at = ? WHERE id = ?",
+            (now, session_id),
+        )
+        conn.commit()
+        return ChatMessage(
+            id=message_id,
+            session_id=session_id,
+            role=role,
+            content=content,
+            created_at=now,
+        )
+
+    def get_chat_messages(
+        self, session_id: str, limit: int | None = None
+    ) -> list[ChatMessage]:
+        """Get messages for a session, oldest first."""
+        conn = self.connect()
+        if limit:
+            rows = conn.execute(
+                """
+                SELECT * FROM (
+                    SELECT * FROM chat_messages
+                    WHERE session_id = ?
+                    ORDER BY created_at DESC
+                    LIMIT ?
+                ) ORDER BY created_at ASC
+                """,
+                (session_id, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                "SELECT * FROM chat_messages WHERE session_id = ? ORDER BY created_at ASC",
+                (session_id,),
+            ).fetchall()
+        return [ChatMessage(**dict(row)) for row in rows]
+
+    def get_chat_message_count(self, session_id: str) -> int:
+        """Get count of messages in a session."""
+        conn = self.connect()
+        count = conn.execute(
+            "SELECT COUNT(*) FROM chat_messages WHERE session_id = ?", (session_id,)
+        ).fetchone()[0]
+        return count

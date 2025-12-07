@@ -14,6 +14,10 @@ class Channel(BaseModel):
     id: str
     name: str
     url: str
+    description: str | None = None
+    subscriber_count: int | None = None
+    tags: list[str] | None = None
+    handle: str | None = None  # @username
     last_synced_at: datetime | None = None
 
 
@@ -26,8 +30,26 @@ class Video(BaseModel):
     url: str
     published_at: datetime | None = None
     duration_seconds: int | None = None
+    view_count: int | None = None  # Number of views
+    like_count: int | None = None  # Thumbs up count
+    comment_count: int | None = None  # Number of comments
+    description: str | None = None
+    tags: list[str] | None = None
+    categories: list[str] | None = None  # YouTube categories (e.g., Education, Music)
+    language: str | None = None  # Primary language code (e.g., 'en')
+    host: str | None = None  # Primary host/creator
+    guests: list[str] | None = None  # Guest speakers
     transcript_status: TranscriptStatus = "pending"
     created_at: datetime | None = None
+    metadata_refreshed_at: datetime | None = None  # Last time metadata was fetched from YouTube
+
+
+class Chapter(BaseModel):
+    """YouTube video chapter (from video description)."""
+
+    title: str
+    start_time: float  # seconds
+    end_time: float | None = None  # seconds, None if last chapter
 
 
 class Segment(BaseModel):
@@ -133,4 +155,25 @@ class TestCase(BaseModel):
     expected_video_ids: list[str] | None = None
     expected_keywords: list[str] | None = None
     reference_answer: str | None = None
+    created_at: datetime | None = None
+
+
+class ChatSession(BaseModel):
+    """Persistent chat session."""
+
+    id: str  # UUID
+    title: str  # Auto-generated from first query or user-set
+    video_id: str | None = None  # Optional filter
+    channel_id: str | None = None  # Optional filter
+    created_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class ChatMessage(BaseModel):
+    """A message in a chat session."""
+
+    id: str  # UUID
+    session_id: str
+    role: str  # 'user' or 'assistant'
+    content: str
     created_at: datetime | None = None
