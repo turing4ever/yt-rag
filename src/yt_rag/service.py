@@ -32,8 +32,6 @@ from .search import (
     analyze_query_with_llm,
     classify_query,
     compute_relevance_metrics,
-    expand_terms_with_synonyms,
-    extract_entity_terms,
     filter_with_llm_analysis,
     find_precise_timestamp,
 )
@@ -505,7 +503,7 @@ class RAGService:
 
         # Check for META queries (library stats) - LLM classification only
         if llm_analysis and llm_analysis.query_type == QueryType.META:
-            logger.info(f"Meta query detected, returning stats without search")
+            logger.info("Meta query detected, returning stats without search")
 
             # Get comprehensive library stats
             stats = self.db.get_stats()

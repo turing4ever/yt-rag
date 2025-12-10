@@ -3,8 +3,8 @@
 import re
 import time
 import uuid
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import Enum
 
@@ -201,7 +201,7 @@ def analyze_query_with_llm(
             # If no video term, it's probably a topic query about a popular subject
             if not has_video_term:
                 logger.debug(
-                    f"Reclassifying popularity -> topic: no video terms in query"
+                    "Reclassifying popularity -> topic: no video terms in query"
                 )
                 query_type = QueryType.TOPIC
                 # Extract keywords from query if LLM didn't provide them

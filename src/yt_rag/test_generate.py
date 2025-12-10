@@ -15,12 +15,11 @@ import json
 import logging
 import random
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
-from .config import DEFAULT_CHAT_MODEL, DEFAULT_OLLAMA_MODEL
+from .config import DEFAULT_OLLAMA_MODEL
 from .db import Database
-from .models import Section, Video
 from .openai_client import chat_completion, ollama_chat_completion
 
 logger = logging.getLogger(__name__)
