@@ -10,17 +10,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import typer
-
-# Configure logging based on LOG_LEVEL environment variable
-_log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
-logging.basicConfig(
-    level=getattr(logging, _log_level, logging.WARNING),
-    format="%(levelname)s %(name)s: %(message)s",
-)
-# Suppress noisy FAISS loader debug messages
-logging.getLogger("faiss").setLevel(logging.WARNING)
-logging.getLogger("faiss.loader").setLevel(logging.WARNING)
-logging.getLogger("faiss._loader").setLevel(logging.WARNING)
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -48,7 +37,12 @@ from .config import (
     get_yt_dlp_delay,
 )
 from .db import Database
-from .discovery import extract_video_id, get_channel_info, get_video_info, list_channel_videos
+from .discovery import (
+    extract_video_id,
+    get_channel_info,
+    get_video_info,
+    list_channel_videos,
+)
 from .embed import embed_all_sections, embed_all_summaries, embed_video, get_index_stats
 from .eval import add_feedback, add_test_case, run_benchmark
 from .export import export_all_chunks, export_to_json, export_to_jsonl
@@ -56,6 +50,17 @@ from .models import Channel, Video
 from .search import search as rag_search
 from .summarize import summarize_video
 from .transcript import TranscriptUnavailable, fetch_transcript
+
+# Configure logging based on LOG_LEVEL environment variable
+_log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+logging.basicConfig(
+    level=getattr(logging, _log_level, logging.WARNING),
+    format="%(levelname)s %(name)s: %(message)s",
+)
+# Suppress noisy FAISS loader debug messages
+logging.getLogger("faiss").setLevel(logging.WARNING)
+logging.getLogger("faiss.loader").setLevel(logging.WARNING)
+logging.getLogger("faiss._loader").setLevel(logging.WARNING)
 
 app = typer.Typer(
     name="yt-rag",
@@ -583,7 +588,8 @@ def update(
                     synonyms = suggest_synonyms_for_keyword(kw.keyword)
                     for syn in synonyms:
                         db.add_synonym(kw.keyword, syn, source="heuristic", approved=False)
-                console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords from test videos")
+                msg = f"[green]✓[/green] Extracted {len(keywords)} keywords from test videos"
+                console.print(msg)
             else:
                 console.print("[green]✓[/green] No keywords extracted")
         else:
@@ -605,7 +611,8 @@ def update(
                     f"added {syn_result.synonyms_added} synonyms"
                 )
                 if syn_result.channels_processed:
-                    console.print(f"[dim]Channels: {', '.join(syn_result.channels_processed)}[/dim]")
+                    channels = ', '.join(syn_result.channels_processed)
+                    console.print(f"[dim]Channels: {channels}[/dim]")
             else:
                 console.print("[green]✓[/green] No new videos to analyze")
     else:
@@ -863,7 +870,7 @@ def list_items(
 def status():
     """Show database statistics."""
     from .config import DEFAULT_OLLAMA_EMBED_MODEL
-    from .vectorstore import VectorStore, FAISS_GPU_AVAILABLE
+    from .vectorstore import FAISS_GPU_AVAILABLE, VectorStore
 
     db = get_db()
     stats = db.get_stats()
@@ -894,9 +901,11 @@ def status():
     if local_sections_loaded or local_summaries_loaded:
         table.add_row("  Model", f"[cyan]{DEFAULT_OLLAMA_EMBED_MODEL}[/cyan]")
         if local_sections_loaded:
-            table.add_row("  Sections", f"[cyan]{local_sections.size:,}[/cyan] ({local_sections.dimension}d)")
+            sec_val = f"[cyan]{local_sections.size:,}[/cyan] ({local_sections.dimension}d)"
+            table.add_row("  Sections", sec_val)
         if local_summaries_loaded:
-            table.add_row("  Summaries", f"[cyan]{local_summaries.size:,}[/cyan] ({local_summaries.dimension}d)")
+            sum_val = f"[cyan]{local_summaries.size:,}[/cyan] ({local_summaries.dimension}d)"
+            table.add_row("  Summaries", sum_val)
     else:
         table.add_row("  [dim]No index[/dim]", "[yellow]Run 'yt-rag embed'[/yellow]")
 
@@ -1263,7 +1272,10 @@ def ask(
     console.print()
     for i, hit in enumerate(result.hits, 1):
         channel_str = f"[magenta]{hit.channel_name}[/magenta] | " if hit.channel_name else ""
-        date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]" if hit.published_at else ""
+        if hit.published_at:
+            date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]"
+        else:
+            date_str = ""
         # Truncate section content for preview (first 150 chars)
         content_preview = hit.section.content[:150].replace("\n", " ").strip()
         if len(hit.section.content) > 150:
@@ -1283,7 +1295,8 @@ def ask(
             f"Tokens: {result.tokens_embedding} embed + {result.tokens_chat} chat{model_info}[/dim]"
         )
     else:
-        console.print(f"\n[dim]Latency: {result.latency_ms}ms | Tokens: {result.tokens_embedding} embed[/dim]")
+        stats = f"Latency: {result.latency_ms}ms | Tokens: {result.tokens_embedding} embed"
+        console.print(f"\n[dim]{stats}[/dim]")
 
     db.close()
 
@@ -1502,12 +1515,18 @@ def test_benchmark(
         "-o",
         help="Save results to JSON file (auto-named if not specified)",
     ),
-    model: str = typer.Option(None, "-m", "--model", help="Override default LLM model for RAG pipeline"),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
+    model: str = typer.Option(
+        None, "-m", "--model", help="Override default LLM model for RAG pipeline"
+    ),
+    openai: bool = typer.Option(
+        False, "--openai", help="Use OpenAI API instead of local Ollama"
+    ),
     validate_openai: bool = typer.Option(
         False, "--validate-openai", help="Also validate with OpenAI (compares validators)"
     ),
-    verbose: bool = typer.Option(False, "-v", "--verbose", help="Show all results, not just failures"),
+    verbose: bool = typer.Option(
+        False, "-v", "--verbose", help="Show all results, not just failures"
+    ),
 ):
     """Benchmark full RAG pipeline: classification, retrieval, and answer quality.
 
@@ -1533,7 +1552,10 @@ def test_benchmark(
 
     if not data_path.exists():
         console.print(f"[red]Error: Test data file not found: {data_path}[/red]")
-        console.print("Create a JSON file with test_cases array containing query/expected_type/expected_keywords")
+        console.print(
+            "Create a JSON file with test_cases array containing "
+            "query/expected_type/expected_keywords"
+        )
         raise typer.Exit(1)
 
     # Load test data
@@ -1778,7 +1800,9 @@ def _run_full_pipeline_test(
                     "validation_model": chat_model,
                 }
                 if validate_openai:
-                    result_entry["validation_gpt4o"] = {"pass": True, "reason": "Meta query - stats returned"}
+                    result_entry["validation_gpt4o"] = {
+                        "pass": True, "reason": "Meta query - stats returned"
+                    }
                     gpt_validation_pass += 1
                 main_validation_pass += 1
                 results.append(result_entry)
@@ -1875,14 +1899,19 @@ def _run_full_pipeline_test(
             answer = ""
             if hits:
                 context = format_context(hits, db=db)
+                user_content = RAG_USER_PROMPT.format(context=context, question=query)
                 messages = [
                     {"role": "system", "content": RAG_SYSTEM_PROMPT},
-                    {"role": "user", "content": RAG_USER_PROMPT.format(context=context, question=query)},
+                    {"role": "user", "content": user_content},
                 ]
                 if use_local:
-                    response = ollama_chat_completion(messages=messages, model=chat_model, temperature=0.1)
+                    response = ollama_chat_completion(
+                        messages=messages, model=chat_model, temperature=0.1
+                    )
                 else:
-                    response = chat_completion(messages=messages, model=chat_model, temperature=0.1)
+                    response = chat_completion(
+                        messages=messages, model=chat_model, temperature=0.1
+                    )
                 answer = response.content
 
             t_answer_end = time.time()
@@ -1966,10 +1995,12 @@ def _run_full_pipeline_test(
 
     type_cases = [r for r in results if r["expected_type"]]
     if type_cases:
-        console.print(f"  Classification: {classification_correct}/{len(type_cases)} ({classification_correct / len(type_cases) * 100:.1f}%)")
+        pct = classification_correct / len(type_cases) * 100
+        console.print(f"  Classification: {classification_correct}/{len(type_cases)} ({pct:.1f}%)")
 
     if keyword_total > 0:
-        console.print(f"  Keyword Match: {keyword_hits}/{keyword_total} ({keyword_hits / keyword_total * 100:.1f}%)")
+        pct = keyword_hits / keyword_total * 100
+        console.print(f"  Keyword Match: {keyword_hits}/{keyword_total} ({pct:.1f}%)")
 
     # LLM Validation comparison
     console.print()
@@ -1999,13 +2030,22 @@ def _run_full_pipeline_test(
         )
 
         # Agreement analysis
-        agree = sum(1 for r in results if r["validation_main"]["pass"] == r.get("validation_gpt4o", {}).get("pass"))
+        agree = sum(
+            1 for r in results
+            if r["validation_main"]["pass"] == r.get("validation_gpt4o", {}).get("pass")
+        )
         console.print(val_table)
         console.print(f"\n  Agreement: {agree}/{total} ({agree / total * 100:.1f}%)")
 
         # Disagreements
-        main_only = [r for r in results if r["validation_main"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")]
-        gpt_only = [r for r in results if not r["validation_main"]["pass"] and r.get("validation_gpt4o", {}).get("pass")]
+        main_only = [
+            r for r in results
+            if r["validation_main"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")
+        ]
+        gpt_only = [
+            r for r in results
+            if not r["validation_main"]["pass"] and r.get("validation_gpt4o", {}).get("pass")
+        ]
         console.print(f"  Main pass, GPT fail: {len(main_only)}")
         console.print(f"  GPT pass, Main fail: {len(gpt_only)}")
     else:
@@ -2039,7 +2079,11 @@ def _run_full_pipeline_test(
                 "accuracy": keyword_hits / keyword_total * 100 if keyword_total else 0,
             },
             "llm_validation": {
-                "main": {"model": chat_model, "pass": main_validation_pass, "rate": main_validation_pass / total * 100},
+                "main": {
+                    "model": chat_model,
+                    "pass": main_validation_pass,
+                    "rate": main_validation_pass / total * 100,
+                },
             },
             "timing_avg_ms": {k: sum(v) / len(v) if v else 0 for k, v in timings.items()},
         },
@@ -2368,11 +2412,17 @@ def synonyms(
     action: str = typer.Argument("list", help="Action: list, generate, approve, reject, remove"),
     keywords: list[str] = typer.Argument(None, help="Keywords to remove (for 'remove' action)"),
     keyword: str = typer.Option(None, "-k", "--keyword", help="Keyword to work with"),
-    synonym: str = typer.Option(None, "-s", "--synonym", help="Synonym to add/approve/reject"),
+    synonym: str = typer.Option(
+        None, "-s", "--synonym", help="Synonym to add/approve/reject"
+    ),
     pending: bool = typer.Option(False, "--pending", help="Show pending synonyms only"),
     limit: int = typer.Option(10, "-n", "--limit", help="Number of keywords to process"),
-    model: str = typer.Option(None, "-m", "--model", help="Override default LLM model (for generate)"),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama (for generate)"),
+    model: str = typer.Option(
+        None, "-m", "--model", help="Override default LLM model (for generate)"
+    ),
+    openai: bool = typer.Option(
+        False, "--openai", help="Use OpenAI API instead of local Ollama (for generate)"
+    ),
 ):
     """Manage synonym mappings for search boosting.
 
@@ -2422,13 +2472,15 @@ def synonyms(
         # Get top keywords from database or generate fresh
         top_keywords = db.get_keywords(limit=limit)
         if not top_keywords:
-            console.print("[yellow]No keywords in database. Run 'yt-rag keywords --save' first.[/yellow]")
+            msg = "No keywords in database. Run 'yt-rag keywords --save' first."
+            console.print(f"[yellow]{msg}[/yellow]")
             db.close()
             return
 
         use_local = not openai
         backend_name = "local Ollama" if use_local else "OpenAI"
-        console.print(f"[bold]Generating synonyms for top {len(top_keywords)} keywords using {backend_name}:[/bold]\n")
+        msg = f"Generating synonyms for top {len(top_keywords)} keywords using {backend_name}:"
+        console.print(f"[bold]{msg}[/bold]\n")
 
         # Get keywords as list of strings
         keyword_strings = [kw.keyword for kw in top_keywords]
@@ -2756,16 +2808,29 @@ def chat(
             if section_hits:
                 # Count unique videos in results
                 unique_videos = len({hit.video_id for hit in section_hits})
-                console.print(f"\n[dim]Found {unique_videos} relevant video{'s' if unique_videos != 1 else ''} ({len(section_hits)} sections)[/dim]")
+                s_suffix = 's' if unique_videos != 1 else ''
+                sec_count = len(section_hits)
+                found_msg = f"Found {unique_videos} relevant video{s_suffix} ({sec_count} sections)"
+                console.print(f"\n[dim]{found_msg}[/dim]")
                 console.print()
                 for i, hit in enumerate(section_hits, 1):
-                    channel_str = f"[magenta]{hit.channel_name}[/magenta] | " if hit.channel_name else ""
-                    date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]" if hit.published_at else ""
+                    if hit.channel_name:
+                        channel_str = f"[magenta]{hit.channel_name}[/magenta] | "
+                    else:
+                        channel_str = ""
+                    if hit.published_at:
+                        date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]"
+                    else:
+                        date_str = ""
                     content_preview = hit.section.content[:150].replace("\n", " ").strip()
                     if len(hit.section.content) > 150:
                         content_preview += "..."
 
-                    console.print(f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]{date_str}")
+                    title_line = (
+                        f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]"
+                        f"{date_str}"
+                    )
+                    console.print(title_line)
                     console.print(f"   Section: {hit.section.title}")
                     console.print(f"   [dim]{content_preview}[/dim]")
                     console.print(f"   [link={hit.timestamp_url}]{hit.timestamp_url}[/link]")
@@ -2805,7 +2870,7 @@ def test_generate(
         None,
         "--model",
         "-m",
-        help="LLM model for analysis (default: qwen2.5:7b-instruct for local, gpt-4o-mini for OpenAI)",
+        help="LLM model for analysis (default: qwen2.5:7b-instruct/gpt-4o-mini)",
     ),
     openai: bool = typer.Option(
         False,
@@ -2843,7 +2908,9 @@ def test_generate(
     if step in ("all", "prepare"):
         console.print("[bold]Step 1: Preparing raw data...[/bold]")
         result = prepare_raw_data(db, videos_per_channel=videos_per_channel)
-        console.print(f"  Sampled {result.videos_sampled} videos from {result.channels_sampled} channels")
+        console.print(
+            f"  Sampled {result.videos_sampled} videos from {result.channels_sampled} channels"
+        )
         console.print(f"  Output: {result.output_file}")
 
     if step in ("all", "analyze"):
@@ -2857,7 +2924,12 @@ def test_generate(
             progress.add_task("Analyzing...", total=None)
             result = analyze_videos(limit=limit, model=model, use_openai=openai)
         console.print(f"  Analyzed {result.videos_analyzed} videos")
-        console.print(f"  Extracted: {result.total_entities} entities, {result.total_topics} topics, {result.total_facts} facts")
+        extracted = (
+            f"{result.total_entities} entities, "
+            f"{result.total_topics} topics, "
+            f"{result.total_facts} facts"
+        )
+        console.print(f"  Extracted: {extracted}")
         console.print(f"  Output: {result.output_file}")
 
     if step in ("all", "build"):
@@ -2959,14 +3031,23 @@ def test_report(
     # Apply filter
     if filter_status:
         if filter_status == "disagree":
-            merged = [m for m in merged if
-                      m.get("validation_qwen", {}).get("pass") != m.get("validation_gpt4o", {}).get("pass")]
+            merged = [
+                m for m in merged
+                if m.get("validation_qwen", {}).get("pass")
+                != m.get("validation_gpt4o", {}).get("pass")
+            ]
         elif filter_status == "pass":
-            merged = [m for m in merged if
-                      m.get("validation_gpt4o", {}).get("pass") and m.get("validation_qwen", {}).get("pass")]
+            merged = [
+                m for m in merged
+                if m.get("validation_gpt4o", {}).get("pass")
+                and m.get("validation_qwen", {}).get("pass")
+            ]
         elif filter_status == "fail":
-            merged = [m for m in merged if
-                      not m.get("validation_gpt4o", {}).get("pass") or not m.get("validation_qwen", {}).get("pass")]
+            merged = [
+                m for m in merged
+                if not m.get("validation_gpt4o", {}).get("pass")
+                or not m.get("validation_qwen", {}).get("pass")
+            ]
         elif filter_status == "empty":
             merged = [m for m in merged if not m.get("answer")]
         elif filter_status == "meta":
@@ -2986,7 +3067,9 @@ def test_report(
         console.print(f"  Filter: {filter_status}")
 
 
-def _generate_html_report(results: list, summary: dict, meta: dict, filter_status: str | None) -> str:
+def _generate_html_report(
+    results: list, summary: dict, meta: dict, filter_status: str | None
+) -> str:
     """Generate HTML report content."""
     import html
 
@@ -3018,6 +3101,16 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
 
     filter_desc = f" (filtered: {filter_status})" if filter_status else ""
 
+    # Pre-compute filter info HTML (avoid backslash in f-string for Python 3.11)
+    if filter_status:
+        filter_info_html = (
+            "<div class='filter-info'>Filtered: "
+            + esc(filter_status)
+            + f" ({len(results)} results)</div>"
+        )
+    else:
+        filter_info_html = ""
+
     rows_html = []
     for i, r in enumerate(results, 1):
         qwen_val = r.get("validation_qwen", {})
@@ -3033,9 +3126,13 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
         keywords_missing = r.get("keywords_missing", [])
         kw_html = ""
         if keywords_found:
-            kw_html += " ".join(f'<span class="kw-found">{esc(k)}</span>' for k in keywords_found)
+            kw_html += " ".join(
+                f'<span class="kw-found">{esc(k)}</span>' for k in keywords_found
+            )
         if keywords_missing:
-            kw_html += " ".join(f'<span class="kw-missing">{esc(k)}</span>' for k in keywords_missing)
+            kw_html += " ".join(
+                f'<span class="kw-missing">{esc(k)}</span>' for k in keywords_missing
+            )
 
         # Handle None values for META queries
         channel_str = r.get("channel") or "(global)"
@@ -3054,11 +3151,13 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
             <td class="answer-cell">{answer_html}</td>
             <td class="validation">
                 <div class="val-qwen">
-                    <strong>Qwen:</strong> {status_badge(qwen_val.get("pass"), qwen_val.get("reason", ""))}
+                    <strong>Qwen:</strong> \
+{status_badge(qwen_val.get("pass"), qwen_val.get("reason", ""))}
                     <div class="reason">{esc(qwen_val.get("reason", ""))}</div>
                 </div>
                 <div class="val-gpt">
-                    <strong>GPT-4o:</strong> {status_badge(gpt_val.get("pass"), gpt_val.get("reason", ""))}
+                    <strong>GPT-4o:</strong> \
+{status_badge(gpt_val.get("pass"), gpt_val.get("reason", ""))}
                     <div class="reason">{esc(gpt_val.get("reason", ""))}</div>
                 </div>
                 <div class="agreement">
@@ -3198,7 +3297,8 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
 <body>
     <div class="container">
         <h1>🔬 RAG Benchmark Report</h1>
-        <p>Pipeline: {esc(meta.get("pipeline", ""))} | Validators: {", ".join(meta.get("validators", []))}</p>
+        <p>Pipeline: {esc(meta.get("pipeline", ""))} | \
+Validators: {", ".join(meta.get("validators", []))}</p>
 
         <div class="summary">
             <div class="summary-grid">
@@ -3208,11 +3308,13 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
                 </div>
                 <div class="stat-box">
                     <div class="value">{class_stats.get("accuracy", 0):.1f}%</div>
-                    <div class="label">Classification ({class_stats.get("correct", 0)}/{class_stats.get("total", 0)})</div>
+                    <div class="label">Classification \
+({class_stats.get("correct", 0)}/{class_stats.get("total", 0)})</div>
                 </div>
                 <div class="stat-box">
                     <div class="value">{kw_stats.get("accuracy", 0):.1f}%</div>
-                    <div class="label">Keyword Match ({kw_stats.get("hits", 0)}/{kw_stats.get("total", 0)})</div>
+                    <div class="label">Keyword Match \
+({kw_stats.get("hits", 0)}/{kw_stats.get("total", 0)})</div>
                 </div>
                 <div class="stat-box">
                     <div class="value">{qwen_stats.get("rate", 0):.1f}%</div>
@@ -3225,7 +3327,7 @@ def _generate_html_report(results: list, summary: dict, meta: dict, filter_statu
             </div>
         </div>
 
-        {"<div class='filter-info'>Filtered: " + esc(filter_status) + f" ({len(results)} results)</div>" if filter_status else ""}
+        {filter_info_html}
 
         <table>
             <thead>

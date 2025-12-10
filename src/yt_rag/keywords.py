@@ -394,7 +394,10 @@ Return ONLY valid JSON, no explanation:"""
         for kw, syns in synonyms.items():
             if isinstance(syns, list) and all(isinstance(s, str) for s in syns):
                 # Filter out empty strings and the keyword itself
-                cleaned_syns = [s.lower().strip() for s in syns if s.strip() and s.lower() != kw.lower()]
+                cleaned_syns = [
+                    s.lower().strip() for s in syns
+                    if s.strip() and s.lower() != kw.lower()
+                ]
                 if cleaned_syns:
                     cleaned[kw.lower()] = cleaned_syns
 

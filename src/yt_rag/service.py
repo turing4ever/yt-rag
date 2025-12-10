@@ -27,8 +27,8 @@ from .openai_client import (
     aollama_embed_text,
 )
 from .search import (
-    SearchHit,
     QueryType,
+    SearchHit,
     analyze_query_with_llm,
     classify_query,
     compute_relevance_metrics,
@@ -63,9 +63,12 @@ class AskResult:
     latency_ms: int
 
 
-RAG_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on YouTube video transcripts.
+RAG_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on \
+YouTube video transcripts.
 
-CRITICAL: You must ONLY answer based on the provided context. NEVER mention videos, channels, or content that is not explicitly in the context. If the context doesn't contain relevant information, say so - do not guess or make up answers.
+CRITICAL: You must ONLY answer based on the provided context. NEVER mention videos, \
+channels, or content that is not explicitly in the context. If the context doesn't \
+contain relevant information, say so - do not guess or make up answers.
 
 IMPORTANT: Write a short paragraph answer only. Do NOT:
 - List numbered items
@@ -74,11 +77,14 @@ IMPORTANT: Write a short paragraph answer only. Do NOT:
 - Repeat the source entries
 - Mention any videos not in the provided context
 
-Only discuss topics explicitly mentioned in the user's query. If the user searches a single keyword (like a car model), just say what videos are available - do not describe the video content or add any details.
+Only discuss topics explicitly mentioned in the user's query. If the user searches \
+a single keyword (like a car model), just say what videos are available - do not \
+describe the video content or add any details.
 
 The system displays sources separately. Keep answers to 1-2 sentences."""
 
-RAG_USER_PROMPT = """Context from video transcripts (found via semantic search and synonym matching):
+RAG_USER_PROMPT = """Context from video transcripts (found via semantic search \
+and synonym matching):
 
 {context}
 
@@ -434,7 +440,10 @@ class RAGService:
         # Log query
         if log_query:
             actual_model = ollama_model if use_ollama else chat_model
-            embedding_model = DEFAULT_OLLAMA_EMBED_MODEL if self.use_local else DEFAULT_EMBEDDING_MODEL
+            if self.use_local:
+                embedding_model = DEFAULT_OLLAMA_EMBED_MODEL
+            else:
+                embedding_model = DEFAULT_EMBEDDING_MODEL
             log = QueryLog(
                 id=str(uuid.uuid4()),
                 query=query,
@@ -516,23 +525,30 @@ class RAGService:
             index_type = "GPU" if sections_store.use_gpu else "CPU"
 
             # Build comprehensive stats text
+            vid_fetched = stats.get('videos_fetched', 0)
+            vid_total = stats.get('videos_total', 0)
+            emb_backend = system_info.get('embedding_backend', 'ollama')
+            emb_model = system_info.get('embedding_model', 'unknown')
             stats_lines = [
                 "**Library Statistics**",
-                f"- Videos: {stats.get('videos_fetched', 0):,} (fetched) / {stats.get('videos_total', 0):,} (total)",
+                f"- Videos: {vid_fetched:,} (fetched) / {vid_total:,} (total)",
                 f"- Channels: {len(channels)}",
                 f"- Sections: {stats.get('sections', 0):,}",
                 f"- Summaries: {stats.get('summaries', 0):,}",
                 f"- Segments: {stats.get('segments', 0):,}",
                 "",
                 "**Index Info**",
-                f"- Sections index: {sections_store.size:,} vectors ({sections_store.dimension}d, {index_type})",
-                f"- Summaries index: {summaries_store.size:,} vectors ({summaries_store.dimension}d, {index_type})",
-                f"- Embedding: {system_info.get('embedding_backend', 'ollama')} ({system_info.get('embedding_model', 'unknown')})",
+                f"- Sections index: {sections_store.size:,} vectors "
+                f"({sections_store.dimension}d, {index_type})",
+                f"- Summaries index: {summaries_store.size:,} vectors "
+                f"({summaries_store.dimension}d, {index_type})",
+                f"- Embedding: {emb_backend} ({emb_model})",
             ]
 
             # Add last embed timestamp if available
             if system_info.get("last_embed_at"):
-                stats_lines.append(f"- Last indexed: {system_info.get('last_embed_at', 'unknown')[:19]}")
+                last_indexed = system_info.get('last_embed_at', 'unknown')[:19]
+                stats_lines.append(f"- Last indexed: {last_indexed}")
 
             stats_lines.extend([
                 "",
@@ -587,7 +603,8 @@ class RAGService:
             if conversation_history:
                 messages.extend(conversation_history[-10:])  # Last 10 messages for context
 
-            messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"})
+            user_content = f"Context:\n{context}\n\nQuestion: {query}"
+            messages.append({"role": "user", "content": user_content})
 
             # Stream answer
             if use_ollama:
@@ -641,7 +658,8 @@ class RAGService:
             if llm_analysis.time_filter_days:
                 from datetime import datetime, timedelta
                 published_after = datetime.now() - timedelta(days=llm_analysis.time_filter_days)
-                logger.info(f"Time filter: last {llm_analysis.time_filter_days} days (after {published_after.date()})")
+                days = llm_analysis.time_filter_days
+                logger.info(f"Time filter: last {days} days (after {published_after.date()})")
 
             # Get top videos by view count
             top_videos = self.db.get_top_videos_by_views(
@@ -652,7 +670,11 @@ class RAGService:
             )
 
             if not top_videos:
-                yield {"type": "error", "message": "No videos with view count data. Run 'yt-rag refresh-meta --video --force' first."}
+                err_msg = (
+                    "No videos with view count data. "
+                    "Run 'yt-rag refresh-meta --video --force' first."
+                )
+                yield {"type": "error", "message": err_msg}
                 return
 
             # Build SearchHits from top videos (use first section of each)
@@ -701,7 +723,8 @@ class RAGService:
                 ]
                 if conversation_history:
                     messages.extend(conversation_history[-10:])
-                messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"})
+                user_content = f"Context:\n{context}\n\nQuestion: {query}"
+                messages.append({"role": "user", "content": user_content})
 
                 if use_ollama:
                     async for chunk in aollama_chat_stream(
@@ -855,7 +878,12 @@ class RAGService:
 
             # Find precise timestamp within section where query terms appear
             precise_ts = find_precise_timestamp(query, section, self.db)
-            timestamp = round(precise_ts) if precise_ts else (round(section.start_time) if section.start_time else 0)
+            if precise_ts:
+                timestamp = round(precise_ts)
+            elif section.start_time:
+                timestamp = round(section.start_time)
+            else:
+                timestamp = 0
             timestamp_url = f"https://youtube.com/watch?v={video.id}&t={timestamp}s"
 
             hit = SearchHit(

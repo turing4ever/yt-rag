@@ -268,8 +268,10 @@ class Database:
         tags_json = json.dumps(channel.tags) if channel.tags else None
         conn.execute(
             """
-            INSERT INTO channels
-                (id, name, url, description, subscriber_count, tags, handle, category, last_synced_at)
+            INSERT INTO channels (
+                id, name, url, description, subscriber_count,
+                tags, handle, category, last_synced_at
+            )
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,

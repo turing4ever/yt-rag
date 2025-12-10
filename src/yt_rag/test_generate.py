@@ -260,10 +260,14 @@ Video: {title} | Channel: {channel_name}
 
 Return JSON:
 {{"sections": [
-  {{"id": "section_id", "entities": ["specific names only"], "topics": ["1-2 themes"], "facts": [{{"fact": "claim", "keywords": ["terms"]}}], "comparisons": [{{"items": ["a","b"], "aspect": "what"}}], "howtos": [{{"action": "verb", "subject": "what"}}]}}
+  {{"id": "section_id", "entities": ["specific names only"], "topics": ["1-2 themes"], \
+"facts": [{{"fact": "claim", "keywords": ["terms"]}}], \
+"comparisons": [{{"items": ["a","b"], "aspect": "what"}}], \
+"howtos": [{{"action": "verb", "subject": "what"}}]}}
 ]}}
 
-Rules: entities=specific names (Model 3, F-150), not generic. facts=claims with numbers. Empty arrays if none found."""
+Rules: entities=specific names (Model 3, F-150), not generic. facts=claims with numbers. \
+Empty arrays if none found."""
 
 
 def _parse_llm_json(content: str) -> dict:

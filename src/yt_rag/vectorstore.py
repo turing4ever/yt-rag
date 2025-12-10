@@ -7,6 +7,18 @@ from pathlib import Path
 
 import numpy as np
 
+from .config import (
+    FAISS_DIR,
+    FAISS_LOCAL_DIR,
+    OLLAMA_EMBEDDING_DIMENSION,
+    OPENAI_EMBEDDING_DIMENSION,
+    ensure_data_dir,
+    get_gpu_free_memory_mb,
+    gpu_check_done,
+    has_nvidia_gpu,
+    mark_gpu_check_done,
+)
+
 # Conditional FAISS import - prefer GPU if available
 try:
     import faiss
@@ -20,6 +32,8 @@ except ImportError:
         "FAISS is not installed. Install with: pip install faiss-cpu "
         "or pip install faiss-gpu (requires CUDA)"
     )
+
+logger = logging.getLogger(__name__)
 
 
 def _check_gpu_memory_available(min_free_mb: int = 512) -> bool:
@@ -38,8 +52,6 @@ def _check_gpu_memory_available(min_free_mb: int = 512) -> bool:
         return free_mb >= min_free_mb
     return True  # Assume available if we can't check
 
-logger = logging.getLogger(__name__)
-
 
 def check_gpu_upgrade_prompt() -> None:
     """Check if GPU is available but faiss-gpu is not installed.
@@ -48,8 +60,6 @@ def check_gpu_upgrade_prompt() -> None:
     suggest upgrading to faiss-gpu for better performance.
     Only prompts once (stores flag to avoid repeated prompts).
     """
-    from .config import gpu_check_done, has_nvidia_gpu, mark_gpu_check_done
-
     if gpu_check_done():
         return
 
@@ -62,16 +72,6 @@ def check_gpu_upgrade_prompt() -> None:
             "For faster vector search, consider upgrading:\n"
             "  pip uninstall faiss-cpu && pip install faiss-gpu"
         )
-
-
-from .config import (
-    FAISS_DIR,
-    FAISS_LOCAL_DIR,
-    OLLAMA_EMBEDDING_DIMENSION,
-    OPENAI_EMBEDDING_DIMENSION,
-    ensure_data_dir,
-    get_gpu_free_memory_mb,
-)
 
 
 @dataclass
@@ -153,7 +153,7 @@ class VectorStore:
             self.index_dir = FAISS_LOCAL_DIR if use_local else FAISS_DIR
 
         self._index: faiss.IndexFlatIP | None = None
-        self._gpu_index: "faiss.GpuIndexFlatIP | None" = None
+        self._gpu_index: faiss.GpuIndexFlatIP | None = None
         self._metadata: list[VectorMetadata] = []
 
     @property
@@ -218,7 +218,8 @@ class VectorStore:
             # Estimate memory needed: ~4 bytes per float32 * dimension * num_vectors + overhead
             estimated_mb = (self._index.ntotal * self.dimension * 4) / (1024 * 1024) + 256
             if not _check_gpu_memory_available(min_free_mb=int(estimated_mb)):
-                logger.info(f"Insufficient GPU memory for index ({estimated_mb:.0f}MB needed), using CPU")
+                msg = f"Insufficient GPU memory for index ({estimated_mb:.0f}MB needed), using CPU"
+                logger.info(msg)
                 self.use_gpu = False
                 return self._index
 

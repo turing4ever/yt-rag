@@ -105,7 +105,8 @@ class QueryAnalysis:
     keywords: list[str]  # Normalized search keywords
     original_query: str
     reasoning: str | None = None  # LLM's reasoning (for debugging)
-    time_filter_days: int | None = None  # For popularity queries: filter to videos published in last N days
+    # For popularity queries: filter to videos published in last N days
+    time_filter_days: int | None = None
 
 
 # Prompt for LLM query analysis - optimized for speed (~150 tokens vs ~600)
@@ -115,8 +116,8 @@ Classify this video search query. Return JSON only.
 Query: {query}
 
 Types (check in this order):
-1. meta: asks about library/system stats (how many videos/sections/channels, index info, GPU/CPU, embedding model)
-2. followup: uses pronouns/ordinals referring to UNSPECIFIED items: "those", "them", "they", "it", "the first", "which one", "among"
+1. meta: asks about library/system stats (how many videos/sections/channels, index info)
+2. followup: uses pronouns/ordinals referring to UNSPECIFIED items: "those", "it"
 3. comparison: EXPLICIT "X vs Y" or "X compared to Y" with two named items
 4. popularity: asks about most viewed/liked VIDEOS (must mention video/views)
 5. entity: ONLY a product/model name with no other words ("G550", "iPhone 15")
@@ -207,7 +208,10 @@ def analyze_query_with_llm(
                 # Extract keywords from query if LLM didn't provide them
                 if not keywords:
                     # Simple extraction: remove common words and use remaining terms
-                    stopwords = {"what", "what's", "whats", "is", "the", "most", "in", "a", "an", "are", "how", "many", "which"}
+                    stopwords = {
+                        "what", "what's", "whats", "is", "the", "most", "in",
+                        "a", "an", "are", "how", "many", "which"
+                    }
                     words = re.findall(r'\b\w+\b', query_lower)
                     keywords = [w for w in words if w not in stopwords and len(w) > 2]
 
@@ -247,7 +251,9 @@ def analyze_query_with_llm(
 RAG_SYSTEM_PROMPT = """\
 You are a helpful assistant that answers questions based on YouTube video transcripts.
 
-CRITICAL: You must ONLY answer based on the provided context. NEVER mention videos, channels, or content that is not explicitly in the context. If the context doesn't contain relevant information, say so - do not guess or make up answers.
+CRITICAL: You must ONLY answer based on the provided context. NEVER mention videos, \
+channels, or content that is not explicitly in the context. If the context doesn't \
+contain relevant information, say so - do not guess or make up answers.
 
 IMPORTANT: Write a short paragraph answer only. Do NOT:
 - List numbered items
@@ -256,7 +262,9 @@ IMPORTANT: Write a short paragraph answer only. Do NOT:
 - Repeat the source entries
 - Mention any videos not in the provided context
 
-Only discuss topics explicitly mentioned in the user's query. If the user searches a single keyword (like a car model), just say what videos are available - do not describe the video content or add any details.
+Only discuss topics explicitly mentioned in the user's query. If the user searches a \
+single keyword (like a car model), just say what videos are available - do not describe \
+the video content or add any details.
 
 The system displays sources separately. Keep answers to 1-2 sentences."""
 
@@ -381,7 +389,8 @@ def classify_query(query: str) -> QueryType:
     if META_PATTERN.search(query):
         query_lower = query.lower()
         # Check for library/system stats keywords
-        if any(kw in query_lower for kw in ["channel", "video", "stats", "info", "library", "index", "gpu", "cpu"]):
+        meta_kws = ["channel", "video", "stats", "info", "library", "index", "gpu", "cpu"]
+        if any(kw in query_lower for kw in meta_kws):
             return QueryType.META
 
     # Default to FACTUAL for everything else - LLM should handle classification
@@ -841,7 +850,8 @@ def search(
         published_after = None
         if llm_analysis.time_filter_days:
             published_after = datetime.now() - timedelta(days=llm_analysis.time_filter_days)
-            logger.info(f"Time filter: last {llm_analysis.time_filter_days} days (after {published_after.date()})")
+            days = llm_analysis.time_filter_days
+            logger.info(f"Time filter: last {days} days (after {published_after.date()})")
 
         # Get top videos by view count
         top_videos = db.get_top_videos_by_views(
@@ -884,19 +894,31 @@ def search(
         tokens_chat = 0
         if generate_answer and hits:
             context = format_context(hits, db=db)
+            user_content = RAG_USER_PROMPT.format(context=context, question=query)
             messages = [
                 {"role": "system", "content": RAG_SYSTEM_PROMPT},
-                {"role": "user", "content": RAG_USER_PROMPT.format(context=context, question=query)},
+                {"role": "user", "content": user_content},
             ]
             if use_local:
-                local_model = chat_model if not chat_model.startswith("gpt") else DEFAULT_OLLAMA_MODEL
-                chat_result = ollama_chat_completion(messages=messages, model=local_model, temperature=temperature)
+                if chat_model.startswith("gpt"):
+                    local_model = DEFAULT_OLLAMA_MODEL
+                else:
+                    local_model = chat_model
+                chat_result = ollama_chat_completion(
+                    messages=messages, model=local_model, temperature=temperature
+                )
             else:
-                chat_result = chat_completion(messages=messages, model=chat_model, temperature=temperature, max_tokens=max_tokens)
+                chat_result = chat_completion(
+                    messages=messages, model=chat_model,
+                    temperature=temperature, max_tokens=max_tokens
+                )
             answer = chat_result.content
             tokens_chat = chat_result.tokens_input + chat_result.tokens_output
         elif generate_answer and not hits:
-            answer = "No videos with view count data found. Run 'yt-rag refresh-meta --video --force' to populate view counts."
+            answer = (
+                "No videos with view count data found. "
+                "Run 'yt-rag refresh-meta --video --force' to populate view counts."
+            )
 
         latency_ms = int((time.time() - start_time) * 1000)
         return SearchResponse(
@@ -933,7 +955,12 @@ def search(
 
         # Find precise timestamp within section where query terms appear
         precise_ts = find_precise_timestamp(query, section, db)
-        timestamp = round(precise_ts) if precise_ts else (round(section.start_time) if section.start_time else 0)
+        if precise_ts:
+            timestamp = round(precise_ts)
+        elif section.start_time:
+            timestamp = round(section.start_time)
+        else:
+            timestamp = 0
         timestamp_url = f"https://youtube.com/watch?v={video.id}&t={timestamp}s"
 
         hit = SearchHit(
