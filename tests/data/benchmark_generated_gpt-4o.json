@@ -1,0 +1,2210 @@
+{
+  "description": "Structured benchmark with balanced coverage per channel",
+  "version": "3.0",
+  "analysis_model": "gpt-4o",
+  "generated_from": "/home/yi/Documents/src/yt-rag/tests/data/video_analysis_gpt-4o.json",
+  "tests_per_type_per_channel": 5,
+  "channels": [
+    "savagegeese",
+    "Sarah -n- Tuned",
+    "Crossroads",
+    "hickok45",
+    "PowerfulJRE",
+    "Cantonese Cat - TA on Stocks & Crypto",
+    "David Lin ",
+    "Max Amini"
+  ],
+  "test_cases": [
+    {
+      "query": "Chevy",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "chevy"
+      ],
+      "expected_video_ids": [
+        "raaM2zcpAoM"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Cars, Trucks, and Debt | Why it Never Ends",
+      "note": "Entity from savagegeese: Cars, Trucks, and Debt | Why i"
+    },
+    {
+      "query": "Mazda",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "mazda"
+      ],
+      "expected_video_ids": [
+        "anc5uHpYuD8"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Review | 2017 Fiat 124 Spider | When Basic is Better",
+      "note": "Entity from savagegeese: Review | 2017 Fiat 124 Spider "
+    },
+    {
+      "query": "Cody",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "cody"
+      ],
+      "expected_video_ids": [
+        "Rw2EZHv6ONQ"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Review | i-PlungeSG | Motorsports Inspired Design",
+      "note": "Entity from savagegeese: Review | i-PlungeSG | Motorspo"
+    },
+    {
+      "query": "Sebring Convertible",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "sebring convertible"
+      ],
+      "expected_video_ids": [
+        "anc5uHpYuD8"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Review | 2017 Fiat 124 Spider | When Basic is Better",
+      "note": "Entity from savagegeese: Review | 2017 Fiat 124 Spider "
+    },
+    {
+      "query": "Camry",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "camry"
+      ],
+      "expected_video_ids": [
+        "9te5ZeGLzVk"
+      ],
+      "channel": "savagegeese",
+      "source_video": "2024 Toyota Crown | The Future of Sedans?",
+      "note": "Entity from savagegeese: 2024 Toyota Crown | The Future"
+    },
+    {
+      "query": "Suspension",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "suspension"
+      ],
+      "expected_video_ids": [
+        "Op8LEDchcKY"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Corvette C6 Z06 | Best of a Generation",
+      "note": "Topic from savagegeese: Corvette C6 Z06 | Best of a Ge"
+    },
+    {
+      "query": "Car Ownership Concerns",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "car",
+        "ownership",
+        "concerns"
+      ],
+      "expected_video_ids": [
+        "raaM2zcpAoM"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Cars, Trucks, and Debt | Why it Never Ends",
+      "note": "Topic from savagegeese: Cars, Trucks, and Debt | Why i"
+    },
+    {
+      "query": "V8 preference",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "v8",
+        "preference"
+      ],
+      "expected_video_ids": [
+        "lhofYreDu-E"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Quick Review | 2018 Ford F-150 | V8 or Nothing",
+      "note": "Topic from savagegeese: Quick Review | 2018 Ford F-150"
+    },
+    {
+      "query": "Final Thoughts",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "final",
+        "thoughts"
+      ],
+      "expected_video_ids": [
+        "nFaACm1aoJc"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Maserati Grecale Trofeo | On a Better Path",
+      "note": "Topic from savagegeese: Maserati Grecale Trofeo | On a"
+    },
+    {
+      "query": "Grip Comparison",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "grip",
+        "comparison"
+      ],
+      "expected_video_ids": [
+        "oLs72VIo-JA"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Mustang GT vs E92 BMW M3 | Weighing Cost and Performance",
+      "note": "Topic from savagegeese: Mustang GT vs E92 BMW M3 | Wei"
+    },
+    {
+      "query": "Toyota Crown vs old Avalon",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "toyota crown",
+        "old avalon"
+      ],
+      "expected_video_ids": [
+        "9te5ZeGLzVk"
+      ],
+      "channel": "savagegeese",
+      "source_video": "2024 Toyota Crown | The Future of Sedans?",
+      "note": "Comparison from savagegeese: design and cargo capacity"
+    },
+    {
+      "query": "Maserati Grecale Trofeo vs Porsche Macan",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "maserati grecale trofeo",
+        "porsche macan"
+      ],
+      "expected_video_ids": [
+        "nFaACm1aoJc"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Maserati Grecale Trofeo | On a Better Path",
+      "note": "Comparison from savagegeese: cargo capacity"
+    },
+    {
+      "query": "LFA vs RC",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "lfa",
+        "rc"
+      ],
+      "expected_video_ids": [
+        "9z1R0G_RCFw"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Lexus LFA | A Proper Goodbye",
+      "note": "Comparison from savagegeese: design elements"
+    },
+    {
+      "query": "Kia Soul vs Honda Fit",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "kia soul",
+        "honda fit"
+      ],
+      "expected_video_ids": [
+        "qpe29lUsb7k"
+      ],
+      "channel": "savagegeese",
+      "source_video": "2020 Kia Soul Review X-Line | A Loving Sequel",
+      "note": "Comparison from savagegeese: interior configurability"
+    },
+    {
+      "query": "Fiat 124 Spider vs Mazda Miata",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "fiat 124 spider",
+        "mazda miata"
+      ],
+      "expected_video_ids": [
+        "anc5uHpYuD8"
+      ],
+      "channel": "savagegeese",
+      "source_video": "Review | 2017 Fiat 124 Spider | When Basic is Better",
+      "note": "Comparison from savagegeese: styling"
+    },
+    {
+      "query": "how many videos about chevy?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "chevy"
+      ],
+      "expected_video_ids": [
+        "OcszMakTHCw",
+        "raaM2zcpAoM"
+      ],
+      "expected_count": 2,
+      "channel": "savagegeese",
+      "note": "Count query for savagegeese"
+    },
+    {
+      "query": "how many videos about cody?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "cody"
+      ],
+      "expected_video_ids": [
+        "Rw2EZHv6ONQ"
+      ],
+      "expected_count": 1,
+      "channel": "savagegeese",
+      "note": "Count query for savagegeese"
+    },
+    {
+      "query": "how many videos about mazda?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "mazda"
+      ],
+      "expected_video_ids": [
+        "9z1R0G_RCFw",
+        "anc5uHpYuD8"
+      ],
+      "expected_count": 2,
+      "channel": "savagegeese",
+      "note": "Count query for savagegeese"
+    },
+    {
+      "query": "how many videos about sebring convertible?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "sebring convertible"
+      ],
+      "expected_video_ids": [
+        "anc5uHpYuD8"
+      ],
+      "expected_count": 1,
+      "channel": "savagegeese",
+      "note": "Count query for savagegeese"
+    },
+    {
+      "query": "how many videos about camry?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "camry"
+      ],
+      "expected_video_ids": [
+        "9te5ZeGLzVk"
+      ],
+      "expected_count": 1,
+      "channel": "savagegeese",
+      "note": "Count query for savagegeese"
+    },
+    {
+      "query": "Pentastar 3.6 liter",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "pentastar 3.6 liter"
+      ],
+      "expected_video_ids": [
+        "hxVXr_1ffQg"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Is The 2022 Grand Cherokee Still A REAL Jeep Though?",
+      "note": "Entity from Sarah -n- Tuned: Is The 2022 Grand Cherokee Sti"
+    },
+    {
+      "query": "Grand Cherokee",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "grand cherokee"
+      ],
+      "expected_video_ids": [
+        "hxVXr_1ffQg"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Is The 2022 Grand Cherokee Still A REAL Jeep Though?",
+      "note": "Entity from Sarah -n- Tuned: Is The 2022 Grand Cherokee Sti"
+    },
+    {
+      "query": "Lake Winnipesaukee",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "lake winnipesaukee"
+      ],
+      "expected_video_ids": [
+        "nCvH8C-yR80"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Finally! The First Start // '94 Ranger Frame-Off Restoration",
+      "note": "Entity from Sarah -n- Tuned: Finally! The First Start // '9"
+    },
+    {
+      "query": "Volkswagen ID.4",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "volkswagen id.4"
+      ],
+      "expected_video_ids": [
+        "YMX4ksg6doM"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "THIS FULL ELECTRIC CAR Blew My Mind! // 2021 Volkswagen ID.4 Review",
+      "note": "Entity from Sarah -n- Tuned: THIS FULL ELECTRIC CAR Blew My"
+    },
+    {
+      "query": "AFM",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "afm"
+      ],
+      "expected_video_ids": [
+        "ybvQugcaqak"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "How Did Someone Screw This Up So Bad? // 280ZX",
+      "note": "Entity from Sarah -n- Tuned: How Did Someone Screw This Up "
+    },
+    {
+      "query": "cooling system upgrade",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "cooling",
+        "system",
+        "upgrade"
+      ],
+      "expected_video_ids": [
+        "_GmfSv8dAu8"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Installing Track-Ready Cooling Upgrades // Project TT Quattro",
+      "note": "Topic from Sarah -n- Tuned: Installing Track-Ready Cooling"
+    },
+    {
+      "query": "ASMR",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "asmr"
+      ],
+      "expected_video_ids": [
+        "1_r3PbPbTUk"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Drop Dead Gorgeous, but is it Fast? // 2022 Genesis G70 3.3T Review",
+      "note": "Topic from Sarah -n- Tuned: Drop Dead Gorgeous, but is it "
+    },
+    {
+      "query": "traction control",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "traction",
+        "control"
+      ],
+      "expected_video_ids": [
+        "QqdZPROcW-g"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review",
+      "note": "Topic from Sarah -n- Tuned: The Harsh Truth.. // 2025 Toyo"
+    },
+    {
+      "query": "braking system",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "braking",
+        "system"
+      ],
+      "expected_video_ids": [
+        "hxVXr_1ffQg"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Is The 2022 Grand Cherokee Still A REAL Jeep Though?",
+      "note": "Topic from Sarah -n- Tuned: Is The 2022 Grand Cherokee Sti"
+    },
+    {
+      "query": "First Start",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "first",
+        "start"
+      ],
+      "expected_video_ids": [
+        "nCvH8C-yR80"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Finally! The First Start // '94 Ranger Frame-Off Restoration",
+      "note": "Topic from Sarah -n- Tuned: Finally! The First Start // '9"
+    },
+    {
+      "query": "Toyota Tacoma vs Bronco",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "toyota tacoma",
+        "bronco"
+      ],
+      "expected_video_ids": [
+        "QqdZPROcW-g"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review",
+      "note": "Comparison from Sarah -n- Tuned: transmission"
+    },
+    {
+      "query": "EV vs traditional manual transmission",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "ev",
+        "traditional manual transmission"
+      ],
+      "expected_video_ids": [
+        "zK0lBibh69M"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "Resisting Change Paid Off // 2024 MX-5 Miata ND3 Review",
+      "note": "Comparison from Sarah -n- Tuned: impact on car's essence"
+    },
+    {
+      "query": "Toyota Tacoma vs Nissan Frontier",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "toyota tacoma",
+        "nissan frontier"
+      ],
+      "expected_video_ids": [
+        "QqdZPROcW-g"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review",
+      "note": "Comparison from Sarah -n- Tuned: tow capacity"
+    },
+    {
+      "query": "modified SS vs stock SS",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "modified ss",
+        "stock ss"
+      ],
+      "expected_video_ids": [
+        "-XGB1H_L19E"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "600WHP LSA Supercharged Holden Commodore // Chevy SS Review",
+      "note": "Comparison from Sarah -n- Tuned: driving experience"
+    },
+    {
+      "query": "Miata vs Hellcat",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "miata",
+        "hellcat"
+      ],
+      "expected_video_ids": [
+        "ES2f2e4wVa0"
+      ],
+      "channel": "Sarah -n- Tuned",
+      "source_video": "This Was More Fun Than The Hellcat? // 2021 Miata Manual Review",
+      "note": "Comparison from Sarah -n- Tuned: fun when launching"
+    },
+    {
+      "query": "how many videos about pentastar 3.6 liter?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "pentastar 3.6 liter"
+      ],
+      "expected_video_ids": [
+        "hxVXr_1ffQg"
+      ],
+      "expected_count": 1,
+      "channel": "Sarah -n- Tuned",
+      "note": "Count query for Sarah -n- Tuned"
+    },
+    {
+      "query": "how many videos about volkswagen id.4?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "volkswagen id.4"
+      ],
+      "expected_video_ids": [
+        "YMX4ksg6doM"
+      ],
+      "expected_count": 1,
+      "channel": "Sarah -n- Tuned",
+      "note": "Count query for Sarah -n- Tuned"
+    },
+    {
+      "query": "how many videos about lake winnipesaukee?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "lake winnipesaukee"
+      ],
+      "expected_video_ids": [
+        "nCvH8C-yR80"
+      ],
+      "expected_count": 1,
+      "channel": "Sarah -n- Tuned",
+      "note": "Count query for Sarah -n- Tuned"
+    },
+    {
+      "query": "how many videos about afm?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "afm"
+      ],
+      "expected_video_ids": [
+        "ybvQugcaqak"
+      ],
+      "expected_count": 1,
+      "channel": "Sarah -n- Tuned",
+      "note": "Count query for Sarah -n- Tuned"
+    },
+    {
+      "query": "how many videos about grand cherokee?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "grand cherokee"
+      ],
+      "expected_video_ids": [
+        "hxVXr_1ffQg"
+      ],
+      "expected_count": 1,
+      "channel": "Sarah -n- Tuned",
+      "note": "Count query for Sarah -n- Tuned"
+    },
+    {
+      "query": "Microsoft",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "microsoft"
+      ],
+      "expected_video_ids": [
+        "zxQOXncDfL0"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Palantir declares WAR on NY Times! What it means for the stock.",
+      "note": "Entity from Crossroads: Palantir declares WAR on NY Ti"
+    },
+    {
+      "query": "SPY",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "spy"
+      ],
+      "expected_video_ids": [
+        "vQuGXo-g30s"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Stock Portfolio Update: I've been buying THESE stocks (2 new positions!)",
+      "note": "Entity from Crossroads: Stock Portfolio Update: I've b"
+    },
+    {
+      "query": "Nor Vodorisk",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "nor vodorisk"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Could these be GAME CHANGERS for HIMS Stock?",
+      "note": "Entity from Crossroads: Could these be GAME CHANGERS f"
+    },
+    {
+      "query": "Washington Post",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "washington post"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Could these be GAME CHANGERS for HIMS Stock?",
+      "note": "Entity from Crossroads: Could these be GAME CHANGERS f"
+    },
+    {
+      "query": "Yorkville",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "yorkville"
+      ],
+      "expected_video_ids": [
+        "0xCcv9KJl4w"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Webull just did something weird. I'm Concerned.",
+      "note": "Entity from Crossroads: Webull just did something weir"
+    },
+    {
+      "query": "stock ownership",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "stock",
+        "ownership"
+      ],
+      "expected_video_ids": [
+        "B1qqHhFbzJM"
+      ],
+      "channel": "Crossroads",
+      "source_video": "From Degen to Nerd: Brad Freeman's Stock Market Journey",
+      "note": "Topic from Crossroads: From Degen to Nerd: Brad Freem"
+    },
+    {
+      "query": "business strategy",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "business",
+        "strategy"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Could these be GAME CHANGERS for HIMS Stock?",
+      "note": "Topic from Crossroads: Could these be GAME CHANGERS f"
+    },
+    {
+      "query": "Hostile Takeover",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "hostile",
+        "takeover"
+      ],
+      "expected_video_ids": [
+        "0xCcv9KJl4w"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Webull just did something weird. I'm Concerned.",
+      "note": "Topic from Crossroads: Webull just did something weir"
+    },
+    {
+      "query": "Ethereum utilization",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "ethereum",
+        "utilization"
+      ],
+      "expected_video_ids": [
+        "bmCKE97UnEk"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Bitmine Stock Update! How is BMNR a Different Strategy than MSTR?",
+      "note": "Topic from Crossroads: Bitmine Stock Update! How is B"
+    },
+    {
+      "query": "data utilization",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "data",
+        "utilization"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Could these be GAME CHANGERS for HIMS Stock?",
+      "note": "Topic from Crossroads: Could these be GAME CHANGERS f"
+    },
+    {
+      "query": "Microsoft vs Google",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "microsoft",
+        "google"
+      ],
+      "expected_video_ids": [
+        "6UA5DsbKYnA"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Will Tariffs Kill PayPal and Google Stocks?",
+      "note": "Comparison from Crossroads: stock performance"
+    },
+    {
+      "query": "BitMine vs Micro Strategy",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "bitmine",
+        "micro strategy"
+      ],
+      "expected_video_ids": [
+        "bmCKE97UnEk"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Bitmine Stock Update! How is BMNR a Different Strategy than MSTR?",
+      "note": "Comparison from Crossroads: different strategies"
+    },
+    {
+      "query": "Joby vs Archer",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "joby",
+        "archer"
+      ],
+      "expected_video_ids": [
+        "xcsiQ1sgVUk"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Archer vs Joby: Which is the better eVTOL stock to invest in?",
+      "note": "Comparison from Crossroads: manufacturing strategy"
+    },
+    {
+      "query": "ebike vs EV vehicle",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "ebike",
+        "ev vehicle"
+      ],
+      "expected_video_ids": [
+        "xcsiQ1sgVUk"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Archer vs Joby: Which is the better eVTOL stock to invest in?",
+      "note": "Comparison from Crossroads: product positioning"
+    },
+    {
+      "query": "Weeble vs Lululemon",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "weeble",
+        "lululemon"
+      ],
+      "expected_video_ids": [
+        "0xCcv9KJl4w"
+      ],
+      "channel": "Crossroads",
+      "source_video": "Webull just did something weird. I'm Concerned.",
+      "note": "Comparison from Crossroads: approach to equity offerings"
+    },
+    {
+      "query": "how many videos about yorkville?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "yorkville"
+      ],
+      "expected_video_ids": [
+        "0xCcv9KJl4w"
+      ],
+      "expected_count": 1,
+      "channel": "Crossroads",
+      "note": "Count query for Crossroads"
+    },
+    {
+      "query": "how many videos about spy?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "spy"
+      ],
+      "expected_video_ids": [
+        "vQuGXo-g30s"
+      ],
+      "expected_count": 1,
+      "channel": "Crossroads",
+      "note": "Count query for Crossroads"
+    },
+    {
+      "query": "how many videos about microsoft?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "microsoft"
+      ],
+      "expected_video_ids": [
+        "6UA5DsbKYnA",
+        "zxQOXncDfL0"
+      ],
+      "expected_count": 2,
+      "channel": "Crossroads",
+      "note": "Count query for Crossroads"
+    },
+    {
+      "query": "how many videos about washington post?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "washington post"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "expected_count": 1,
+      "channel": "Crossroads",
+      "note": "Count query for Crossroads"
+    },
+    {
+      "query": "how many videos about nor vodorisk?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "nor vodorisk"
+      ],
+      "expected_video_ids": [
+        "6jmPUAaZv2I"
+      ],
+      "expected_count": 1,
+      "channel": "Crossroads",
+      "note": "Count query for Crossroads"
+    },
+    {
+      "query": "Hickok45",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "expected_video_ids": [
+        "EGnm4DBpXag"
+      ],
+      "channel": "hickok45",
+      "source_video": "The Hickok45 Radio Show Episode 51",
+      "note": "Entity from hickok45: The Hickok45 Radio Show Episod"
+    },
+    {
+      "query": "SDI",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "sdi"
+      ],
+      "expected_video_ids": [
+        "t6oW7W7-KIs"
+      ],
+      "channel": "hickok45",
+      "source_video": "Ruger LCR 22  Chapter 2",
+      "note": "Entity from hickok45: Ruger LCR 22  Chapter 2"
+    },
+    {
+      "query": "Buds website",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "buds website"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "channel": "hickok45",
+      "source_video": "Hatsan Escort Slugger shotgun",
+      "note": "Entity from hickok45: Hatsan Escort Slugger shotgun"
+    },
+    {
+      "query": "590",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "590"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "channel": "hickok45",
+      "source_video": "Hatsan Escort Slugger shotgun",
+      "note": "Entity from hickok45: Hatsan Escort Slugger shotgun"
+    },
+    {
+      "query": "Mossberg 500",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "mossberg 500"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "channel": "hickok45",
+      "source_video": "Hatsan Escort Slugger shotgun",
+      "note": "Entity from hickok45: Hatsan Escort Slugger shotgun"
+    },
+    {
+      "query": "firearm aesthetics",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "firearm",
+        "aesthetics"
+      ],
+      "expected_video_ids": [
+        "dL5y5O3oSCU"
+      ],
+      "channel": "hickok45",
+      "source_video": "200 Dollar Revolver VS 800 Dollar Revolver",
+      "note": "Topic from hickok45: 200 Dollar Revolver VS 800 Dol"
+    },
+    {
+      "query": "shooting performance",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "shooting",
+        "performance"
+      ],
+      "expected_video_ids": [
+        "HojGshjOMBM"
+      ],
+      "channel": "hickok45",
+      "source_video": "Original Henry Rifle Big Game Hunt",
+      "note": "Topic from hickok45: Original Henry Rifle Big Game "
+    },
+    {
+      "query": "competitive pricing",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "competitive",
+        "pricing"
+      ],
+      "expected_video_ids": [
+        "2iysG3iMdlQ"
+      ],
+      "channel": "hickok45",
+      "source_video": "Why Does Las Vegas Have the Best Guns!",
+      "note": "Topic from hickok45: Why Does Las Vegas Have the Be"
+    },
+    {
+      "query": "Pricing",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "pricing"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "channel": "hickok45",
+      "source_video": "Hatsan Escort Slugger shotgun",
+      "note": "Topic from hickok45: Hatsan Escort Slugger shotgun"
+    },
+    {
+      "query": "Gun Features",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "gun",
+        "features"
+      ],
+      "expected_video_ids": [
+        "UAMiqJm6li0"
+      ],
+      "channel": "hickok45",
+      "source_video": "Century Arms  C39 V2    AK",
+      "note": "Topic from hickok45: Century Arms  C39 V2    AK"
+    },
+    {
+      "query": "performance model vs standard model",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "performance model",
+        "standard model"
+      ],
+      "expected_video_ids": [
+        "Sv2oFvGwC0k"
+      ],
+      "channel": "hickok45",
+      "source_video": "M&P Shield Plus Performance Center",
+      "note": "Comparison from hickok45: price"
+    },
+    {
+      "query": "stainless finish vs brush finish",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "stainless finish",
+        "brush finish"
+      ],
+      "expected_video_ids": [
+        "dL5y5O3oSCU"
+      ],
+      "channel": "hickok45",
+      "source_video": "200 Dollar Revolver VS 800 Dollar Revolver",
+      "note": "Comparison from hickok45: fit and finish"
+    },
+    {
+      "query": "40 caliber vs 10 mm",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "40 caliber",
+        "10 mm"
+      ],
+      "expected_video_ids": [
+        "EGnm4DBpXag"
+      ],
+      "channel": "hickok45",
+      "source_video": "The Hickok45 Radio Show Episode 51",
+      "note": "Comparison from hickok45: power"
+    },
+    {
+      "query": "Jay Leno's cars vs firearms",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "jay leno's cars",
+        "firearms"
+      ],
+      "expected_video_ids": [
+        "28GHi1hS1Xw"
+      ],
+      "channel": "hickok45",
+      "source_video": "Sunday Shoot-a-Round # 74",
+      "note": "Comparison from hickok45: collection purpose"
+    },
+    {
+      "query": "full auto firearm vs Smith and Wesson double action revolver",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "full auto firearm",
+        "smith and wesson double action revolver"
+      ],
+      "expected_video_ids": [
+        "EGnm4DBpXag"
+      ],
+      "channel": "hickok45",
+      "source_video": "The Hickok45 Radio Show Episode 51",
+      "note": "Comparison from hickok45: enjoyment"
+    },
+    {
+      "query": "how many videos about hickok45?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "expected_video_ids": [
+        "dL5y5O3oSCU",
+        "EGnm4DBpXag",
+        "HojGshjOMBM",
+        "lyeKLHZhG84",
+        "2iysG3iMdlQ",
+        "Sv2oFvGwC0k",
+        "nWAI57VAR9M",
+        "oNEeGyY6hTw"
+      ],
+      "expected_count": 8,
+      "channel": "hickok45",
+      "note": "Count query for hickok45"
+    },
+    {
+      "query": "how many videos about 590?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "590"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "expected_count": 1,
+      "channel": "hickok45",
+      "note": "Count query for hickok45"
+    },
+    {
+      "query": "how many videos about buds website?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "buds website"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "expected_count": 1,
+      "channel": "hickok45",
+      "note": "Count query for hickok45"
+    },
+    {
+      "query": "how many videos about sdi?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "sdi"
+      ],
+      "expected_video_ids": [
+        "t6oW7W7-KIs",
+        "UAMiqJm6li0",
+        "2iysG3iMdlQ"
+      ],
+      "expected_count": 3,
+      "channel": "hickok45",
+      "note": "Count query for hickok45"
+    },
+    {
+      "query": "how many videos about mossberg 500?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "mossberg 500"
+      ],
+      "expected_video_ids": [
+        "nWAI57VAR9M"
+      ],
+      "expected_count": 1,
+      "channel": "hickok45",
+      "note": "Count query for hickok45"
+    },
+    {
+      "query": "David Letterman",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "david letterman"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #706 - Brendan Schaub & Fight Companion ? (Part 1)",
+      "note": "Entity from PowerfulJRE: Joe Rogan Experience #706 - Br"
+    },
+    {
+      "query": "Jay Leno",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "jay leno"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #706 - Brendan Schaub & Fight Companion ? (Part 1)",
+      "note": "Entity from PowerfulJRE: Joe Rogan Experience #706 - Br"
+    },
+    {
+      "query": "Kalin",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "kalin"
+      ],
+      "expected_video_ids": [
+        "Frw-IBgu-Qw"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "JRE MMA Show #84 with Brendan Schaub",
+      "note": "Entity from PowerfulJRE: JRE MMA Show #84 with Brendan "
+    },
+    {
+      "query": "Francis Collins",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "francis collins"
+      ],
+      "expected_video_ids": [
+        "iPmxrKKu67k"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Cosmologist Brian Keating on The Fascinating Life and Discoveries of Galileo",
+      "note": "Entity from PowerfulJRE: Cosmologist Brian Keating on T"
+    },
+    {
+      "query": "Elon",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "elon"
+      ],
+      "expected_video_ids": [
+        "dzdblMCp5a4"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #2417 - Ben van Kerkwyk",
+      "note": "Entity from PowerfulJRE: Joe Rogan Experience #2417 - B"
+    },
+    {
+      "query": "humility",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "humility"
+      ],
+      "expected_video_ids": [
+        "J4gQ7k6meHs"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #2389 - Sal Vulcano",
+      "note": "Topic from PowerfulJRE: Joe Rogan Experience #2389 - S"
+    },
+    {
+      "query": "Kettlebell Design",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "kettlebell",
+        "design"
+      ],
+      "expected_video_ids": [
+        "2TPyx-H1MVc"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #517 - Crash, from Float Lab",
+      "note": "Topic from PowerfulJRE: Joe Rogan Experience #517 - Cr"
+    },
+    {
+      "query": "Kundalini Yoga",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "kundalini",
+        "yoga"
+      ],
+      "expected_video_ids": [
+        "2TPyx-H1MVc"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #517 - Crash, from Float Lab",
+      "note": "Topic from PowerfulJRE: Joe Rogan Experience #517 - Cr"
+    },
+    {
+      "query": "other dimensions",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "other",
+        "dimensions"
+      ],
+      "expected_video_ids": [
+        "EqCpT3bLgBM"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #2174 - Annie Jacobsen",
+      "note": "Topic from PowerfulJRE: Joe Rogan Experience #2174 - A"
+    },
+    {
+      "query": "distraction",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "distraction"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #706 - Brendan Schaub & Fight Companion ? (Part 1)",
+      "note": "Topic from PowerfulJRE: Joe Rogan Experience #706 - Br"
+    },
+    {
+      "query": "people who freeze at snakes vs people who stay away from snakes",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "people who freeze at snakes",
+        "people who stay away from snakes"
+      ],
+      "expected_video_ids": [
+        "9jDb81-S2RQ"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #1950 - Derek Wolfe",
+      "note": "Comparison from PowerfulJRE: reaction to snakes"
+    },
+    {
+      "query": "David Tail vs Morgan Freeman",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "david tail",
+        "morgan freeman"
+      ],
+      "expected_video_ids": [
+        "mWO40xAksOg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #2126 - Donnell Rawlings",
+      "note": "Comparison from PowerfulJRE: appearance consistency"
+    },
+    {
+      "query": "actors vs standup comedians",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "actors",
+        "standup comedians"
+      ],
+      "expected_video_ids": [
+        "mWO40xAksOg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #2126 - Donnell Rawlings",
+      "note": "Comparison from PowerfulJRE: ease of transition to acting"
+    },
+    {
+      "query": "Jay Leno vs David Letterman",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "jay leno",
+        "david letterman"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "Joe Rogan Experience #706 - Brendan Schaub & Fight Companion ? (Part 1)",
+      "note": "Comparison from PowerfulJRE: public perception"
+    },
+    {
+      "query": "UFC glove vs pride gloves",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "ufc glove",
+        "pride gloves"
+      ],
+      "expected_video_ids": [
+        "ICrqTmO3Eo4"
+      ],
+      "channel": "PowerfulJRE",
+      "source_video": "JRE MMA Show #96 with Justin Gaethje & Trevor Wittman",
+      "note": "Comparison from PowerfulJRE: quality"
+    },
+    {
+      "query": "how many videos about jay leno?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "jay leno"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "expected_count": 1,
+      "channel": "PowerfulJRE",
+      "note": "Count query for PowerfulJRE"
+    },
+    {
+      "query": "how many videos about francis collins?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "francis collins"
+      ],
+      "expected_video_ids": [
+        "iPmxrKKu67k"
+      ],
+      "expected_count": 1,
+      "channel": "PowerfulJRE",
+      "note": "Count query for PowerfulJRE"
+    },
+    {
+      "query": "how many videos about kalin?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "kalin"
+      ],
+      "expected_video_ids": [
+        "Frw-IBgu-Qw"
+      ],
+      "expected_count": 1,
+      "channel": "PowerfulJRE",
+      "note": "Count query for PowerfulJRE"
+    },
+    {
+      "query": "how many videos about elon?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "elon"
+      ],
+      "expected_video_ids": [
+        "dzdblMCp5a4"
+      ],
+      "expected_count": 1,
+      "channel": "PowerfulJRE",
+      "note": "Count query for PowerfulJRE"
+    },
+    {
+      "query": "how many videos about david letterman?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "david letterman"
+      ],
+      "expected_video_ids": [
+        "YfnQWBExTYg"
+      ],
+      "expected_count": 1,
+      "channel": "PowerfulJRE",
+      "note": "Count query for PowerfulJRE"
+    },
+    {
+      "query": "FET",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "fet"
+      ],
+      "expected_video_ids": [
+        "DPZSqj5G0U0"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "The Cat & the Matt Show Ep.3 - Altcoins blowing up soon?#Ethereum $XRP $SOL $DOGE $JASMY $FET $RNDR",
+      "note": "Entity from Cantonese Cat - TA on Stocks & Crypto: The Cat & the Matt Show Ep.3 -"
+    },
+    {
+      "query": "Hut",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "hut"
+      ],
+      "expected_video_ids": [
+        "kzR3eidL7uc"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "$CIFR #Cipher, $HUT $IREN $WULF #TeraWulf Update - #Bitcoin miners",
+      "note": "Entity from Cantonese Cat - TA on Stocks & Crypto: $CIFR #Cipher, $HUT $IREN $WUL"
+    },
+    {
+      "query": "Irish Energy",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "irish energy"
+      ],
+      "expected_video_ids": [
+        "kzR3eidL7uc"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "$CIFR #Cipher, $HUT $IREN $WULF #TeraWulf Update - #Bitcoin miners",
+      "note": "Entity from Cantonese Cat - TA on Stocks & Crypto: $CIFR #Cipher, $HUT $IREN $WUL"
+    },
+    {
+      "query": "QQQ",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "qqq"
+      ],
+      "expected_video_ids": [
+        "R-yiAuMOOrY"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "MEOW!!! Market thoughts and meow-ore!!!! Rates, gold, rotation into small caps, fintech vs miners",
+      "note": "Entity from Cantonese Cat - TA on Stocks & Crypto: MEOW!!! Market thoughts and me"
+    },
+    {
+      "query": "QBTS",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "qbts"
+      ],
+      "expected_video_ids": [
+        "4Upuo5iKnR4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "5 Stocks I'm buying, 5 Stocks I stopped buying, and 2 Stocks I sold",
+      "note": "Entity from Cantonese Cat - TA on Stocks & Crypto: 5 Stocks I'm buying, 5 Stocks "
+    },
+    {
+      "query": "Market Sentiment",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "market",
+        "sentiment"
+      ],
+      "expected_video_ids": [
+        "JgmqH5OKsl4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA",
+      "note": "Topic from Cantonese Cat - TA on Stocks & Crypto: Metaverse Plays: $MTTR $U $AAP"
+    },
+    {
+      "query": "price action",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "price",
+        "action"
+      ],
+      "expected_video_ids": [
+        "M580wqXrHms"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "Cat's fintech stock updates $SQ $HOOD $SOFI $AFRM $UPST",
+      "note": "Topic from Cantonese Cat - TA on Stocks & Crypto: Cat's fintech stock updates $S"
+    },
+    {
+      "query": "Price Movement",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "price",
+        "movement"
+      ],
+      "expected_video_ids": [
+        "0gvnYd6SuOM"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "Cat's $BITF #Bitfarms Update",
+      "note": "Topic from Cantonese Cat - TA on Stocks & Crypto: Cat's $BITF #Bitfarms Update"
+    },
+    {
+      "query": "whale accumulation",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "whale",
+        "accumulation"
+      ],
+      "expected_video_ids": [
+        "kzR3eidL7uc"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "$CIFR #Cipher, $HUT $IREN $WULF #TeraWulf Update - #Bitcoin miners",
+      "note": "Topic from Cantonese Cat - TA on Stocks & Crypto: $CIFR #Cipher, $HUT $IREN $WUL"
+    },
+    {
+      "query": "Market Structure",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "market",
+        "structure"
+      ],
+      "expected_video_ids": [
+        "DPZSqj5G0U0"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "The Cat & the Matt Show Ep.3 - Altcoins blowing up soon?#Ethereum $XRP $SOL $DOGE $JASMY $FET $RNDR",
+      "note": "Topic from Cantonese Cat - TA on Stocks & Crypto: The Cat & the Matt Show Ep.3 -"
+    },
+    {
+      "query": "Unity Software vs Metaport",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "unity software",
+        "metaport"
+      ],
+      "expected_video_ids": [
+        "JgmqH5OKsl4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA",
+      "note": "Comparison from Cantonese Cat - TA on Stocks & Crypto: market capitalization"
+    },
+    {
+      "query": "S&P 500 vs Bitcoin",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "s&p 500",
+        "bitcoin"
+      ],
+      "expected_video_ids": [
+        "R-yiAuMOOrY"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "MEOW!!! Market thoughts and meow-ore!!!! Rates, gold, rotation into small caps, fintech vs miners",
+      "note": "Comparison from Cantonese Cat - TA on Stocks & Crypto: price movement"
+    },
+    {
+      "query": "Bitfarm vs Cipher",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "bitfarm",
+        "cipher"
+      ],
+      "expected_video_ids": [
+        "ykgRoksd2Y4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "$CLSK $MARA $BITF $CIFR $WULF $IREN - Coiling up for a big move with these #Bitcoin miners?",
+      "note": "Comparison from Cantonese Cat - TA on Stocks & Crypto: Bollinger Band expansion"
+    },
+    {
+      "query": "Metaport vs Tesla",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "metaport",
+        "tesla"
+      ],
+      "expected_video_ids": [
+        "JgmqH5OKsl4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA",
+      "note": "Comparison from Cantonese Cat - TA on Stocks & Crypto: institutional ownership during hype cycles"
+    },
+    {
+      "query": "Irene vs WULF",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "irene",
+        "wulf"
+      ],
+      "expected_video_ids": [
+        "ykgRoksd2Y4"
+      ],
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "source_video": "$CLSK $MARA $BITF $CIFR $WULF $IREN - Coiling up for a big move with these #Bitcoin miners?",
+      "note": "Comparison from Cantonese Cat - TA on Stocks & Crypto: Bollinger Band expansion"
+    },
+    {
+      "query": "how many videos about fet?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "fet"
+      ],
+      "expected_video_ids": [
+        "DPZSqj5G0U0"
+      ],
+      "expected_count": 1,
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "note": "Count query for Cantonese Cat - TA on Stocks & Crypto"
+    },
+    {
+      "query": "how many videos about qqq?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "qqq"
+      ],
+      "expected_video_ids": [
+        "R-yiAuMOOrY"
+      ],
+      "expected_count": 1,
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "note": "Count query for Cantonese Cat - TA on Stocks & Crypto"
+    },
+    {
+      "query": "how many videos about hut?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "hut"
+      ],
+      "expected_video_ids": [
+        "kzR3eidL7uc"
+      ],
+      "expected_count": 1,
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "note": "Count query for Cantonese Cat - TA on Stocks & Crypto"
+    },
+    {
+      "query": "how many videos about irish energy?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "irish energy"
+      ],
+      "expected_video_ids": [
+        "kzR3eidL7uc"
+      ],
+      "expected_count": 1,
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "note": "Count query for Cantonese Cat - TA on Stocks & Crypto"
+    },
+    {
+      "query": "how many videos about qbts?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "qbts"
+      ],
+      "expected_video_ids": [
+        "4Upuo5iKnR4"
+      ],
+      "expected_count": 1,
+      "channel": "Cantonese Cat - TA on Stocks & Crypto",
+      "note": "Count query for Cantonese Cat - TA on Stocks & Crypto"
+    },
+    {
+      "query": "Amazon",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "amazon"
+      ],
+      "expected_video_ids": [
+        "TN6TzMPYqXk"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Signs Of 2001 Bubble Crash Repeat Warns Economist | Peter Berezin",
+      "note": "Entity from David Lin : Signs Of 2001 Bubble Crash Rep"
+    },
+    {
+      "query": "MIT",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "mit"
+      ],
+      "expected_video_ids": [
+        "TN6TzMPYqXk"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Signs Of 2001 Bubble Crash Repeat Warns Economist | Peter Berezin",
+      "note": "Entity from David Lin : Signs Of 2001 Bubble Crash Rep"
+    },
+    {
+      "query": "Tony Blair",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "expected_video_ids": [
+        "cl567V2V_Ms"
+      ],
+      "channel": "David Lin ",
+      "source_video": "World In 'Threatening State' Warns Former Bank Of England Economist | Charles Goodhart",
+      "note": "Entity from David Lin : World In 'Threatening State' W"
+    },
+    {
+      "query": "OPEC Plus",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "opec plus"
+      ],
+      "expected_video_ids": [
+        "Px5UJjd4O1E"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Fed\u2019s Bombshell Announcement That Shocked Markets: \u2018Buckle Up\u2019 For 2025 Says DiMartino Booth",
+      "note": "Entity from David Lin : Fed\u2019s Bombshell Announcement T"
+    },
+    {
+      "query": "Lawrence Lepard",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "lawrence lepard"
+      ],
+      "expected_video_ids": [
+        "PoGFblhm7o8"
+      ],
+      "channel": "David Lin ",
+      "source_video": "$200k Bitcoin, $4k Gold In 2025 As \u2018Day Of Reckoning\u2019 Comes For Stocks | Lawrence Lepard",
+      "note": "Entity from David Lin : $200k Bitcoin, $4k Gold In 202"
+    },
+    {
+      "query": "economic reckoning",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "economic",
+        "reckoning"
+      ],
+      "expected_video_ids": [
+        "SG1ntL_6JVQ"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Why Warren Buffett Is Raising Cash: Market 'Euphoria' In Final Stage | Bill Smead",
+      "note": "Topic from David Lin : Why Warren Buffett Is Raising "
+    },
+    {
+      "query": "treasury companies",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "treasury",
+        "companies"
+      ],
+      "expected_video_ids": [
+        "MAWg2LvhRpE"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Humanity\u2019s \u2018Most Powerful Tool\u2019 To Fuel Crypto\u2019s Next Rally | Karia Samaroo",
+      "note": "Topic from David Lin : Humanity\u2019s \u2018Most Powerful Tool"
+    },
+    {
+      "query": "equity markets",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "equity",
+        "markets"
+      ],
+      "expected_video_ids": [
+        "cp6TvqIyqdY"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Market About To 'Come Back To Reality\u2019: These Are Warning Signs | Ian Harris",
+      "note": "Topic from David Lin : Market About To 'Come Back To "
+    },
+    {
+      "query": "Revenue Projections and Expiring Tax Cuts",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "revenue",
+        "projections",
+        "and"
+      ],
+      "expected_video_ids": [
+        "4E56IQpiAIs"
+      ],
+      "channel": "David Lin ",
+      "source_video": "CBO Director: What Happens When Debt Hits 122% Of GDP | Phillip Swagel",
+      "note": "Topic from David Lin : CBO Director: What Happens Whe"
+    },
+    {
+      "query": "Capitalism",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "capitalism"
+      ],
+      "expected_video_ids": [
+        "F49v8SGOGDw"
+      ],
+      "channel": "David Lin ",
+      "source_video": "\u2018Fed Disaster Plan\u2019: Market Correction Will Be \u2018Significant\u2019 Says Economist Who Called 1987 Crash",
+      "note": "Topic from David Lin : \u2018Fed Disaster Plan\u2019: Market Co"
+    },
+    {
+      "query": "Bitcoin vs dollar",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "bitcoin",
+        "dollar"
+      ],
+      "expected_video_ids": [
+        "MAWg2LvhRpE"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Humanity\u2019s \u2018Most Powerful Tool\u2019 To Fuel Crypto\u2019s Next Rally | Karia Samaroo",
+      "note": "Comparison from David Lin : demand"
+    },
+    {
+      "query": "2023 vs 2034",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "2023",
+        "2034"
+      ],
+      "expected_video_ids": [
+        "4E56IQpiAIs"
+      ],
+      "channel": "David Lin ",
+      "source_video": "CBO Director: What Happens When Debt Hits 122% Of GDP | Phillip Swagel",
+      "note": "Comparison from David Lin : percentage point increase in debt"
+    },
+    {
+      "query": "cyclical sectors vs defensive sectors",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "cyclical sectors",
+        "defensive sectors"
+      ],
+      "expected_video_ids": [
+        "UBV4xC_ZeDk"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Silicon Valley Bank collapse: Start of global banking crisis? Economist reveals even bigger risk",
+      "note": "Comparison from David Lin : investment potential"
+    },
+    {
+      "query": "gold vs Bitcoin",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "gold",
+        "bitcoin"
+      ],
+      "expected_video_ids": [
+        "PoGFblhm7o8"
+      ],
+      "channel": "David Lin ",
+      "source_video": "$200k Bitcoin, $4k Gold In 2025 As \u2018Day Of Reckoning\u2019 Comes For Stocks | Lawrence Lepard",
+      "note": "Comparison from David Lin : forms of sound money"
+    },
+    {
+      "query": "Canadian equities vs Australian equities",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "canadian equities",
+        "australian equities"
+      ],
+      "expected_video_ids": [
+        "cp6TvqIyqdY"
+      ],
+      "channel": "David Lin ",
+      "source_video": "Market About To 'Come Back To Reality\u2019: These Are Warning Signs | Ian Harris",
+      "note": "Comparison from David Lin : performance"
+    },
+    {
+      "query": "how many videos about tony blair?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "expected_video_ids": [
+        "cl567V2V_Ms"
+      ],
+      "expected_count": 1,
+      "channel": "David Lin ",
+      "note": "Count query for David Lin "
+    },
+    {
+      "query": "how many videos about lawrence lepard?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "lawrence lepard"
+      ],
+      "expected_video_ids": [
+        "PoGFblhm7o8"
+      ],
+      "expected_count": 1,
+      "channel": "David Lin ",
+      "note": "Count query for David Lin "
+    },
+    {
+      "query": "how many videos about mit?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "mit"
+      ],
+      "expected_video_ids": [
+        "TN6TzMPYqXk"
+      ],
+      "expected_count": 1,
+      "channel": "David Lin ",
+      "note": "Count query for David Lin "
+    },
+    {
+      "query": "how many videos about amazon?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "amazon"
+      ],
+      "expected_video_ids": [
+        "TN6TzMPYqXk"
+      ],
+      "expected_count": 1,
+      "channel": "David Lin ",
+      "note": "Count query for David Lin "
+    },
+    {
+      "query": "how many videos about opec plus?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "opec plus"
+      ],
+      "expected_video_ids": [
+        "Px5UJjd4O1E"
+      ],
+      "expected_count": 1,
+      "channel": "David Lin ",
+      "note": "Count query for David Lin "
+    },
+    {
+      "query": "Zakir Khan",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "zakir khan"
+      ],
+      "expected_video_ids": [
+        "BG8sTA90nPw"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Comedy Embracing Diversity w/ Zakir Khan | Wild Truth Ep. 012",
+      "note": "Entity from Max Amini: Comedy Embracing Diversity w/ "
+    },
+    {
+      "query": "Cadillac",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "cadillac"
+      ],
+      "expected_video_ids": [
+        "Q9hXoXfUW7c"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Top 10 Hilarious Moments in Texas | Max Amini | Standup Comedy",
+      "note": "Entity from Max Amini: Top 10 Hilarious Moments in Te"
+    },
+    {
+      "query": "Toronto",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "toronto"
+      ],
+      "expected_video_ids": [
+        "BG8sTA90nPw"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Comedy Embracing Diversity w/ Zakir Khan | Wild Truth Ep. 012",
+      "note": "Entity from Max Amini: Comedy Embracing Diversity w/ "
+    },
+    {
+      "query": "Mosen",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "mosen"
+      ],
+      "expected_video_ids": [
+        "p4QFei01wTU"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Best Canadian Moments | Max Amini | Stand Up Comedy",
+      "note": "Entity from Max Amini: Best Canadian Moments | Max Am"
+    },
+    {
+      "query": "Game of Thrones",
+      "expected_type": "entity",
+      "expected_keywords": [
+        "game of thrones"
+      ],
+      "expected_video_ids": [
+        "J73kvTdqyuY"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Max Amini Picks on Game of Thrones Filmmaker Mohsen Mousavi",
+      "note": "Entity from Max Amini: Max Amini Picks on Game of Thr"
+    },
+    {
+      "query": "IRS audits",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "irs",
+        "audits"
+      ],
+      "expected_video_ids": [
+        "Onx_chHj_kE"
+      ],
+      "channel": "Max Amini",
+      "source_video": "IRS Audits Set",
+      "note": "Topic from Max Amini: IRS Audits Set"
+    },
+    {
+      "query": "Cultural Differences",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "cultural",
+        "differences"
+      ],
+      "expected_video_ids": [
+        "k6NFp5VNGAA"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Happily Single | Max Amini | Stand Up Comedy",
+      "note": "Topic from Max Amini: Happily Single | Max Amini | S"
+    },
+    {
+      "query": "race",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "race"
+      ],
+      "expected_video_ids": [
+        "p4QFei01wTU"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Best Canadian Moments | Max Amini | Stand Up Comedy",
+      "note": "Topic from Max Amini: Best Canadian Moments | Max Am"
+    },
+    {
+      "query": "Childhood Experiences",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "childhood",
+        "experiences"
+      ],
+      "expected_video_ids": [
+        "XMs4Bg6kJAU"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Matchmaking and Dealbreakers w/ Alessandra Conti | Wild Truth Ep. 007",
+      "note": "Topic from Max Amini: Matchmaking and Dealbreakers w"
+    },
+    {
+      "query": "immigration",
+      "expected_type": "topic",
+      "expected_keywords": [
+        "immigration"
+      ],
+      "expected_video_ids": [
+        "0kNrlJTNDA0"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Hilariously Gay Prince | Max Amini | Stand Up Comedy",
+      "note": "Topic from Max Amini: Hilariously Gay Prince | Max A"
+    },
+    {
+      "query": "white people vs other ethnic groups",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "white people",
+        "other ethnic groups"
+      ],
+      "expected_video_ids": [
+        "DOuoUslEVWE"
+      ],
+      "channel": "Max Amini",
+      "source_video": "WE NEED ACTION! - Max Amini",
+      "note": "Comparison from Max Amini: motivation for attending protests"
+    },
+    {
+      "query": "British buildings vs Jesus",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "british buildings",
+        "jesus"
+      ],
+      "expected_video_ids": [
+        "51_tPq1cHkY"
+      ],
+      "channel": "Max Amini",
+      "source_video": "British Attitudes vs. Persian Attitudes - Max Amini",
+      "note": "Comparison from Max Amini: age"
+    },
+    {
+      "query": "British faces vs Persian faces",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "british faces",
+        "persian faces"
+      ],
+      "expected_video_ids": [
+        "51_tPq1cHkY"
+      ],
+      "channel": "Max Amini",
+      "source_video": "British Attitudes vs. Persian Attitudes - Max Amini",
+      "note": "Comparison from Max Amini: expression"
+    },
+    {
+      "query": "Indians vs Western cultures",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "indians",
+        "western cultures"
+      ],
+      "expected_video_ids": [
+        "BG8sTA90nPw"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Comedy Embracing Diversity w/ Zakir Khan | Wild Truth Ep. 012",
+      "note": "Comparison from Max Amini: humility and self-promotion"
+    },
+    {
+      "query": "cops in LA vs cops in Texas",
+      "expected_type": "comparison",
+      "expected_keywords": [
+        "cops in la",
+        "cops in texas"
+      ],
+      "expected_video_ids": [
+        "Q9hXoXfUW7c"
+      ],
+      "channel": "Max Amini",
+      "source_video": "Top 10 Hilarious Moments in Texas | Max Amini | Standup Comedy",
+      "note": "Comparison from Max Amini: physical fitness"
+    },
+    {
+      "query": "how many videos about game of thrones?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "game of thrones"
+      ],
+      "expected_video_ids": [
+        "J73kvTdqyuY"
+      ],
+      "expected_count": 1,
+      "channel": "Max Amini",
+      "note": "Count query for Max Amini"
+    },
+    {
+      "query": "how many videos about cadillac?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "cadillac"
+      ],
+      "expected_video_ids": [
+        "Q9hXoXfUW7c"
+      ],
+      "expected_count": 1,
+      "channel": "Max Amini",
+      "note": "Count query for Max Amini"
+    },
+    {
+      "query": "how many videos about zakir khan?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "zakir khan"
+      ],
+      "expected_video_ids": [
+        "BG8sTA90nPw"
+      ],
+      "expected_count": 1,
+      "channel": "Max Amini",
+      "note": "Count query for Max Amini"
+    },
+    {
+      "query": "how many videos about toronto?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "toronto"
+      ],
+      "expected_video_ids": [
+        "BG8sTA90nPw"
+      ],
+      "expected_count": 1,
+      "channel": "Max Amini",
+      "note": "Count query for Max Amini"
+    },
+    {
+      "query": "how many videos about mosen?",
+      "expected_type": "list",
+      "expected_keywords": [
+        "mosen"
+      ],
+      "expected_video_ids": [
+        "p4QFei01wTU"
+      ],
+      "expected_count": 1,
+      "channel": "Max Amini",
+      "note": "Count query for Max Amini"
+    },
+    {
+      "query": "how many videos are there?",
+      "expected_type": "meta",
+      "expected_keywords": [],
+      "expected_video_ids": [],
+      "channel": null,
+      "note": "Library video count"
+    },
+    {
+      "query": "what channels?",
+      "expected_type": "meta",
+      "expected_keywords": [],
+      "expected_video_ids": [],
+      "channel": null,
+      "note": "List channels"
+    },
+    {
+      "query": "how many channels?",
+      "expected_type": "meta",
+      "expected_keywords": [],
+      "expected_video_ids": [],
+      "channel": null,
+      "note": "Channel count"
+    }
+  ]
+}

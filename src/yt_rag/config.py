@@ -2,7 +2,6 @@
 
 import os
 import random
-import tomllib
 from pathlib import Path
 
 # Default data directory
@@ -51,9 +50,13 @@ OPENAI_EMBEDDING_DIMENSION = 1536
 
 # Ollama defaults
 OLLAMA_BASE_URL = "http://localhost:11434"
-DEFAULT_OLLAMA_MODEL = "qwen2.5:7b-instruct"
-DEFAULT_OLLAMA_EMBED_MODEL = "nomic-embed-text"
-OLLAMA_EMBEDDING_DIMENSION = 768  # nomic-embed-text dimension
+DEFAULT_OLLAMA_MODEL = "qwen2.5:7b-instruct"  # For answer generation
+DEFAULT_OLLAMA_QUERY_MODEL = "qwen2.5:7b-instruct"  # For query parsing (better accuracy)
+DEFAULT_OLLAMA_EMBED_MODEL = "mxbai-embed-large"
+OLLAMA_EMBEDDING_DIMENSION = 1024  # mxbai-embed-large dimension
+
+# FAISS GPU detection flag file
+GPU_CHECK_FILE = DATA_DIR / ".gpu_checked"
 
 # Search defaults
 DEFAULT_TOP_K = 10
@@ -61,7 +64,7 @@ DEFAULT_TOP_K_OVERSAMPLE = 50
 DEFAULT_SCORE_THRESHOLD = 0.3  # For including results in context
 # Threshold for "how many about X" counts (works better for brands than categories)
 DEFAULT_COUNT_THRESHOLD = 0.6
-DEFAULT_TEMPERATURE = 0.3
+DEFAULT_TEMPERATURE = 0.1  # Low temperature for factual RAG responses
 DEFAULT_MAX_TOKENS = 1000
 
 # Hybrid search keyword boost weights (added to semantic score)
@@ -145,10 +148,23 @@ def save_env_var(key: str, value: str, path: Path | None = None) -> None:
 
 
 def load_config(path: Path | None = None) -> dict:
-    """Load configuration from TOML file."""
+    """Load configuration from TOML file.
+
+    Note: Requires Python 3.11+ for tomllib, or install tomli for 3.10.
+    Currently unused - placeholder for future config file support.
+    """
     path = path or CONFIG_PATH
     if not path.exists():
         return {}
+
+    try:
+        import tomllib
+    except ImportError:
+        try:
+            import tomli as tomllib
+        except ImportError:
+            # Neither available - return empty config
+            return {}
 
     with open(path, "rb") as f:
         return tomllib.load(f)
@@ -192,3 +208,40 @@ def get_yt_dlp_batch_size() -> int:
         except ValueError:
             pass
     return DEFAULT_YT_DLP_BATCH_SIZE
+
+
+def has_nvidia_gpu() -> bool:
+    """Check if NVIDIA GPU is available on the system.
+
+    Uses nvidia-smi to detect CUDA-capable GPUs.
+    Returns True if at least one NVIDIA GPU is detected.
+    """
+    import shutil
+    import subprocess
+
+    nvidia_smi = shutil.which("nvidia-smi")
+    if not nvidia_smi:
+        return False
+
+    try:
+        result = subprocess.run(
+            [nvidia_smi, "-L"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        # nvidia-smi -L lists GPUs like "GPU 0: NVIDIA GeForce RTX 3080 ..."
+        return result.returncode == 0 and "GPU" in result.stdout
+    except (subprocess.TimeoutExpired, OSError):
+        return False
+
+
+def gpu_check_done() -> bool:
+    """Check if GPU detection has already been performed."""
+    return GPU_CHECK_FILE.exists()
+
+
+def mark_gpu_check_done() -> None:
+    """Mark GPU detection as complete so we don't prompt again."""
+    ensure_data_dir()
+    GPU_CHECK_FILE.touch()

@@ -1,0 +1,3739 @@
+{
+  "source_file": "tests/data/benchmark_generated_gpt-4o.json",
+  "pipeline": "qwen (local)",
+  "validators": [
+    "qwen",
+    "gpt-4o-mini"
+  ],
+  "total_tests": 160,
+  "summary": {
+    "classification": {
+      "correct": 92,
+      "total": 160,
+      "accuracy": 57.49999999999999
+    },
+    "keyword_match": {
+      "hits": 196,
+      "total": 242,
+      "accuracy": 80.99173553719008
+    },
+    "llm_validation": {
+      "qwen": {
+        "pass": 53,
+        "rate": 33.125
+      },
+      "gpt4o": {
+        "pass": 101,
+        "rate": 63.125
+      }
+    },
+    "timing_avg_ms": {
+      "parallel": 497.1,
+      "search": 25.15,
+      "filter": 1.78125,
+      "answer": 1379.5375,
+      "validate": 2033.25,
+      "total": 3938.6125
+    }
+  },
+  "results": [
+    {
+      "query": "Nettuno Engine",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "nettuno engine"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "nettuno engine"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Handook RS3",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "handook rs3"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "handook rs3"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Maserati Grecale Trofeo",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_found": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_missing": [],
+      "answer": "The 2024 Maserati Grecale Trofeo is positioned as a flagship entry in the premium luxury SUV segment, competing primarily with the Porsche Macan. It offers customization options for both exterior and interior colors but comes at a higher price point starting from $127,000.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the Maserati Grecale Trofeo, provides relevant information about its positioning and pricing, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Maserati Grecale Trofeo' and provides relevant and informative details about the vehicle, including its market position, competition, customization options, and pricing."
+      }
+    },
+    {
+      "query": "Chevrolet Corvette C6 Z06",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_found": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_missing": [],
+      "answer": "The Chevrolet Corvette C6 Z06 video covers its interior, exterior design, and performance details. It highlights the car's powerful LS7 engine and discusses the cabin space, noting that while it may not meet modern standards, it remains practical for daily use due to its large hatchback.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the Chevrolet Corvette C6 Z06 and provides relevant details about its design, performance, and practicality."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Chevrolet Corvette C6 Z06' and provides relevant information about its design, performance, and practicality, without any hallucinated details."
+      }
+    },
+    {
+      "query": "C7 Corvette",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "c7 corvette"
+      ],
+      "keywords_found": [
+        "c7 corvette"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos available discuss the C7 Corvette, focusing on its technical aspects such as suspension, chassis, and magnetic damping systems.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the C7 Corvette, which is the key entity from the question. It also provides relevant and informative details about its technical aspects."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'C7 Corvette' directly, is relevant by discussing its technical aspects, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "Car Upgrades",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "upgrades"
+      ],
+      "keywords_found": [
+        "upgrades"
+      ],
+      "keywords_missing": [
+        "car"
+      ],
+      "answer": "The videos discuss upgrades to the 2025 Genesis G80 Sport, including engine options, suspension improvements, and the 2025 Porsche 911 992.2 with its hybridization and increased horsepower through a new turbo technology and electric motor integration.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly mention 'car upgrades' as requested in the question. It discusses specific models and features but does not clearly address general car upgrades."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'upgrades' related to specific car models, addressing the key topics of 'car' and 'upgrades' while providing relevant and informative details about the upgrades."
+      }
+    },
+    {
+      "query": "High Cost of Modern Cars",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "high",
+        "cost",
+        "of"
+      ],
+      "keywords_found": [
+        "high",
+        "cost",
+        "of"
+      ],
+      "keywords_missing": [],
+      "answer": "The high cost of modern cars is a significant issue, affecting both initial purchase prices and long-term maintenance. Cars have become increasingly expensive due to advanced technology integration, stringent safety regulations, and the high costs associated with development and manufacturing. These factors contribute to higher monthly payments and increased repair expenses, making car ownership more burdensome for many consumers.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer correctly addresses the high cost of modern cars by mentioning 'high', 'cost', and 'cars'. It is relevant and informative, providing context on factors contributing to the increased costs."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly addresses the question by mentioning 'high cost of modern cars' and provides relevant and informative details about the factors contributing to this cost."
+      }
+    },
+    {
+      "query": "Nonprofit Operations",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "nonprofit",
+        "operations"
+      ],
+      "keywords_found": [
+        "nonprofit"
+      ],
+      "keywords_missing": [
+        "operations"
+      ],
+      "answer": "The discussion in the video highlights that the nonprofit operates at an extremely low overhead cost, with only 8% going towards basic operating expenses, leaving nearly all funds to directly benefit the children. This approach is contrasted with typical nonprofits where a larger portion of funds are spent on administrative costs.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer does not directly mention 'operations', it provides relevant information about nonprofit spending on operations. However, the question specifically asks for information related to nonprofit operations, which are not explicitly discussed in the given answer."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'nonprofit' and 'operations,' addresses the question by discussing the low overhead costs of the nonprofit, and provides relevant and accurate information without hallucination."
+      }
+    },
+    {
+      "query": "Social Enterprise",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "social",
+        "enterprise"
+      ],
+      "keywords_found": [
+        "social",
+        "enterprise"
+      ],
+      "keywords_missing": [],
+      "answer": "The term \"social enterprise\" refers to organizations that operate like businesses but with a primary goal of addressing social or environmental issues. These enterprises use market-based strategies to generate revenue, which is then reinvested into their mission rather than distributed as profit to shareholders. In the context provided, Tri Industries operates as a social enterprise, running its operations similar to a business to employ people with significant disabilities and provide them with",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'social enterprise' as requested and provides a relevant and informative definition of the term. It also includes additional context about Tri Industries operating as a social enterprise, which is pertinent to the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'social enterprise' and provides relevant information about its definition and purpose, addressing the question effectively."
+      }
+    },
+    {
+      "query": "Driving Experience",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "driving",
+        "experience"
+      ],
+      "keywords_found": [
+        "driving",
+        "experience"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos discuss various driving experiences, from the immediate adjustments needed for a new Lexus UX to the refined dynamics of a 2016 VW Golf R. One vlogger shares a wild first experience driving an unlicensed, borrowed van filled with adult content and friends to Six Flags amusement park.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions driving experiences, it does not directly address the concept of 'driving experience' as a personal or professional skill or knowledge. Instead, it focuses on various scenarios and events related to driving."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'driving' and 'experience' while providing relevant examples of different driving experiences, making it informative and aligned with the question."
+      }
+    },
+    {
+      "query": "rear radiators vs front radiators",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "rear radiators",
+        "front radiators"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "rear radiators",
+        "front radiators"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Alfa 4C vs MX-5",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "alfa 4c",
+        "mx-5"
+      ],
+      "keywords_found": [
+        "alfa 4c",
+        "mx-5"
+      ],
+      "keywords_missing": [],
+      "answer": "The review suggests that while both the Alfa 4C and MX-5 offer good driving experiences, the Alfa 4C has a softer suspension setup that makes it easier to drive, particularly for beginners. In contrast, the Fiat 124 Spider (compared to the MX-5) provides a more engaging manual transmission experience and better handling dynamics, though it struggles with turbocharged engine behavior during gear shifts.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the MX-5 directly and instead compares the Fiat 124 Spider to the MX-5, which is off-topic. Additionally, it introduces information about the Alfa 4C that was not asked for in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does mention the Alfa 4C and MX-5, but it primarily focuses on the Fiat 124 Spider instead of providing a direct comparison between the Alfa 4C and MX-5, which is the main topic of the question."
+      }
+    },
+    {
+      "query": "Kia CVT vs Toyota CVT",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "kia cvt",
+        "toyota cvt"
+      ],
+      "keywords_found": [
+        "kia cvt",
+        "toyota cvt"
+      ],
+      "keywords_missing": [],
+      "answer": "The video does not directly compare a Kia CVT with a Toyota CVT. However, it discusses the Kia Forte's CVT positively, noting its well-programmed design to emulate a traditional automatic transmission, which results in good fuel efficiency and driver satisfaction. For Toyota, while specific details about their CVT are not provided, the video mentions that the Toyota Sienna offers an optional all-wheel drive system and uses Toyota's hybrid system, though it does not delve into comparing the CVTs ",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Kia CVT and Toyota CVT as requested. It provides positive remarks about the Kia Forte's CVT and mentions optional features for the Toyota Sienna without focusing on their CVTs."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not directly compare Kia CVT and Toyota CVT as requested. It mentions Kia CVT positively but lacks specific details about Toyota CVT, failing to provide a relevant comparison."
+      }
+    },
+    {
+      "query": "LS7 vs LT1",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "ls7",
+        "lt1"
+      ],
+      "keywords_found": [
+        "ls7",
+        "lt1"
+      ],
+      "keywords_missing": [],
+      "answer": "The video does not directly compare the LS7 with the LT1; instead, it focuses on the LT2 engine in the 2020 Corvette C8, highlighting its improvements over the LT1 used in the previous generation C7, such as a more efficient oiling system and an optimized intake manifold.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention LS7 or LT1 directly, and instead focuses on the LT2 engine in the 2020 Corvette C8. It does not address the comparison between LS7 and LT1 as asked."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the LS7 or LT1 as required by the question, and instead focuses on the LT2, which is not relevant to the comparison requested."
+      }
+    },
+    {
+      "query": "LFA vs RC",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "lfa",
+        "rc"
+      ],
+      "keywords_found": [
+        "lfa",
+        "rc"
+      ],
+      "keywords_missing": [],
+      "answer": "The video mentions that the LFA refocused Lexus on its purpose, leading to the development of the RC F as part of their F product line. The LFA was more of a skunkworks design, while the RC F represents an evolution and continuation of this series with improved suspension and engine characteristics.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare LFA and RC as requested. It provides context about the LFA and RC F but does not address their differences or similarities."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both LFA and RC, providing relevant information about their relationship and differences, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "how many videos about maserati grecale trofeo?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_found": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos about Maserati Grecale Trofeo were found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions the key entity 'Maserati Grecale Trofeo', it does not provide an accurate response to the question about the number of videos. The answer should either state that no relevant information was found or attempt to quantify the number of videos if possible."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Maserati Grecale Trofeo' as required and fails to provide relevant information about the number of videos."
+      }
+    },
+    {
+      "query": "how many videos about c7 corvette?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "c7 corvette"
+      ],
+      "keywords_found": [
+        "c7 corvette"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos about the C7 Corvette are mentioned in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'C7 Corvette' and is not relevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'C7 Corvette' as required by the question."
+      }
+    },
+    {
+      "query": "how many videos about handook rs3?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "handook rs3"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "handook rs3"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about chevrolet corvette c6 z06?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "chevrolet corvette c6 z06"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about nettuno engine?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nettuno engine"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "nettuno engine"
+      ],
+      "answer": "No videos about the Netto neo engine were found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Nettuno engine' as asked in the question and instead refers to a different engine 'Netto neo engine', which is incorrect."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer incorrectly refers to the 'Netto neo engine' instead of the 'nettuno engine' and does not provide relevant information about the number of videos."
+      }
+    },
+    {
+      "query": "Pro 4X",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "pro 4x"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "pro 4x"
+      ],
+      "answer": "Videos available are \"An Idiot Proof 4x4? // 2022 Nissan Frontier Pro-4X Off-Road\" and \"The Last Simple Reliable Truck? // 2025 Nissan Frontier Pro4X Review\".",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'Pro 4X' directly, although it is implied in the context of the Frontier Pro-4X Off-Road video. However, the question specifically asks for 'Pro 4X', which should be explicitly mentioned."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Pro-4X' in the context of relevant videos, directly addressing the key entity/topic from the question."
+      }
+    },
+    {
+      "query": "Hilux",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "hilux"
+      ],
+      "keywords_found": [
+        "hilux"
+      ],
+      "keywords_missing": [],
+      "answer": "The video mentions a Toyota Hilux, noting it likely has a diesel engine and is a d-4d model.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'Toyota Hilux', which is the key entity from the question. It also provides relevant and informative details about the engine type and model."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Toyota Hilux,' which is the key entity from the question, and provides relevant information about its likely engine type and model."
+      }
+    },
+    {
+      "query": "Billstein",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "billstein"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "billstein"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "2024 MX-5 Miata ND3",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_found": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_missing": [],
+      "answer": "The 2024 MX-5 Miata ND3 features several notable changes, including an asymmetrical 2-way limited slip differential with a 2.866 final drive ratio and stronger lockup characteristics under engine braking. It also weighs in at 2368 lb, maintaining a lightweight design for the model lineup.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer correctly mentions the key entity '2024 MX-5 Miata ND3' and provides relevant and informative details about its features."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions '2024 MX-5 Miata ND3' and provides relevant and informative details about its features, without any hallucinated information."
+      }
+    },
+    {
+      "query": "Mach 275",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "mach 275"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "mach 275"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "car repair",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "repair"
+      ],
+      "keywords_found": [
+        "car",
+        "repair"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos related to car repair include \"First Start post Engine Install! // Project MR2 Turbo\" and \"VLOG 9: PRELUDE CAR REPAIR BLOWS | SPECIAL GUEST.\"",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'car' and 'repair', which are key entities from the question. The examples provided are relevant to car repair and are informative."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both key entities 'car' and 'repair' and provides relevant video titles related to car repair, making it informative."
+      }
+    },
+    {
+      "query": "Project Car Assembly",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "project",
+        "car",
+        "assembly"
+      ],
+      "keywords_found": [
+        "project",
+        "car",
+        "assembly"
+      ],
+      "keywords_missing": [],
+      "answer": "The video describes the assembly process of a drive shaft for a car project, focusing on proper fitting of the CV joint components and ensuring they are well-lubricated to function correctly.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer is relevant to car assembly, it does not directly address a project on car assembly as expected. It focuses specifically on the drive shaft and CV joint components."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'car' and 'assembly' and is relevant to the project context, providing informative details about the assembly process."
+      }
+    },
+    {
+      "query": "Performance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "performance"
+      ],
+      "keywords_found": [
+        "performance"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses the performance of a Shelby GT350, highlighting its powerful engine and high-performance tires and brakes suitable for track use.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention performance in terms of system evaluation or metrics as implied by the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'performance' and provides relevant information about the Shelby GT350's engine, tires, and brakes, which are all related to its performance capabilities."
+      }
+    },
+    {
+      "query": "Car Projects",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "projects"
+      ],
+      "keywords_found": [
+        "car",
+        "projects"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos mention several car projects, including considering a Porsche 918 or Boxster S, a Fiat 500 Abarth, an E46 M3, a GCA Impreza STI, and working on an MR2 Turbo. These are the project cars discussed in the provided context.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'car projects' as expected and provides specific examples of project cars discussed in the context."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both key entities 'car' and 'projects' and provides relevant and informative details about specific car projects without any hallucination."
+      }
+    },
+    {
+      "query": "car maintenance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "maintenance"
+      ],
+      "keywords_found": [
+        "car",
+        "maintenance"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos related to car maintenance include \"Buying A Long Term Toyota GR86 | Plans and Process,\" which discusses touchless washes versus hand washing, proper car care in winter, and avoiding damage; \"The Engine is Almost Ready! // Project MR2 Turbo Pt.12,\" focusing on engine cleaning and maintenance tasks like changing coolant lines and oil pan gaskets; and \"VLOG 7: Winter Woes and Other Crap,\" which addresses challenges of maintaining cars during snowy seasons, such as dealing with salt and limi",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions 'car' and touches on maintenance topics, it does not directly address common car maintenance practices or provide specific advice related to car maintenance as implied by the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'car' and 'maintenance' while providing relevant and informative content about car maintenance through various video examples."
+      }
+    },
+    {
+      "query": "Miata vs Hellcat",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "miata",
+        "hellcat"
+      ],
+      "keywords_found": [
+        "miata",
+        "hellcat"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos available for comparing the Mazda Miata ND3 with the Dodge SRT Hellcat include \"Mazda Miata ND3 vs Subaru BRZ tS | Rare Beasts\" but do not directly compare it to the Hellcat. For a comparison between these vehicles, you might find relevant content in videos featuring high-performance muscle cars or discussions on supercars and sports cars.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare the Mazda Miata and Dodge SRT Hellcat as requested. It mentions related content but fails to address the specific comparison asked for in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does mention the Miata and Hellcat, but it fails to provide a direct comparison between the two vehicles, which is the main focus of the question. Additionally, it suggests looking for videos that may not directly address the comparison, making it less informative."
+      }
+    },
+    {
+      "query": "manual vs automatic",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "manual",
+        "automatic"
+      ],
+      "keywords_found": [
+        "manual",
+        "automatic"
+      ],
+      "keywords_missing": [],
+      "answer": "The debate between manual and automatic transmissions continues, with some enthusiasts preferring manuals for their engaging driving experience and longevity, while modern automatics offer faster response times and better performance across various metrics.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not address the RAG system's answer quality for the given question about manual vs automatic, but instead discusses the pros and cons of manual and automatic transmissions. This is irrelevant to the evaluation context."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'manual' and 'automatic' transmissions, addresses the debate between them, and provides relevant information about their characteristics and advantages."
+      }
+    },
+    {
+      "query": "manual transmission vs competitors",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "manual transmission",
+        "competitors"
+      ],
+      "keywords_found": [
+        "manual transmission",
+        "competitors"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos discussing manual transmissions compared to their automatic counterparts or other competitors include \"A Manual Trans Makes ANYTHING Better! // 2021 Tacoma TRD Pro Review\" and \"Manual vs Automatic | Debate Over?\". These videos highlight the engagement and enjoyment factor of driving a manual transmission, especially in older models like the S2000, while noting that modern manual transmissions may not receive as much development due to declining demand.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions manual transmission, it does not directly compare it to competitors as requested."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'manual transmission' and discusses its comparison to 'competitors' (automatic transmissions), providing relevant information about the enjoyment of driving manual cars and the decline in development for modern manuals."
+      }
+    },
+    {
+      "query": "OE end link vs new end link",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "oe end link",
+        "new end link"
+      ],
+      "keywords_found": [
+        "new end link"
+      ],
+      "keywords_missing": [
+        "oe end link"
+      ],
+      "answer": "The video compares original equipment (OE) end links with new ones, noting the significant difference in thickness and appearance. The narrator finds the new end links much thicker and aesthetically pleasing, though they also mention some scuff marks on them.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the comparison between OE end link and new end link in terms of functionality or performance. It focuses more on appearance and thickness."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'OE end link' and 'new end link', provides relevant information about their differences in thickness and appearance, and does not include any hallucinated information."
+      }
+    },
+    {
+      "query": "2014 Chevy SS vs 2015 Chevy SS",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "2014 chevy ss",
+        "2015 chevy ss"
+      ],
+      "keywords_found": [
+        "2014 chevy ss"
+      ],
+      "keywords_missing": [
+        "2015 chevy ss"
+      ],
+      "answer": "The 2014 Chevy SS reviewed in the video has an automatic transmission (GM 6l80 6-speed) compared to a manual transmission (Tremec tr6060) in the 2015 model. Additionally, the 2014 car features Granatelli springs and CTS-V wheels for lowered suspension, while the 2015 version does not have these modifications.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions the key entities (2014 Chevy SS and 2015 Chevy SS), it does not directly compare these two models as requested. Instead, it provides details about specific components of one model without a clear comparison between the two years."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both the 2014 Chevy SS and the 2015 Chevy SS, providing relevant comparisons regarding transmission types and modifications, which directly addresses the question."
+      }
+    },
+    {
+      "query": "how many videos about billstein?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "billstein"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "billstein"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about pro 4x?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "pro 4x"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "pro 4x"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about 2024 mx-5 miata nd3?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_found": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video about the 2024 MX-5 Miata ND3, titled \"Resisting Change Paid Off // 2024 MX-5 Miata ND3 Review.\"",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the 2024 MX-5 Miata ND3 as requested and provides relevant information about a video related to it."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions the key entity '2024 MX-5 Miata ND3' and provides relevant information about the existence of one video, including its title."
+      }
+    },
+    {
+      "query": "how many videos about hilux?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "hilux"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "hilux"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about mach 275?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "mach 275"
+      ],
+      "keywords_found": [
+        "mach 275"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos about Mach 275 were found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Mach 275' as expected."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Mach 275' as requested in the question, failing to address the key entity/topic."
+      }
+    },
+    {
+      "query": "Snowflake",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "snowflake"
+      ],
+      "keywords_found": [
+        "snowflake"
+      ],
+      "keywords_missing": [],
+      "answer": "The analysis of Snowflake (SNOW) suggests it has broken down from an ascending triangle pattern, experiencing a significant drop. The video discusses potential support at the trend line and RSI levels in the low 30s, but overall, the bullish momentum is lost, making it risky to enter a position.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'Snowflake' as a key entity/topic from the question and instead discusses stock analysis which is irrelevant to the query about Snowflake (the cloud data warehousing service)."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Snowflake' and provides relevant analysis about its stock performance, including technical patterns and market sentiment, making it informative and directly related to the question."
+      }
+    },
+    {
+      "query": "happy returns",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "happy returns"
+      ],
+      "keywords_found": [
+        "happy returns"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos mention \"happy investing\" multiple times, but there is no specific reference to \"happy returns.\"",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'happy returns' as requested in the question and instead discusses a different topic ('happy investing')."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'happy returns' as expected and instead refers to 'happy investing,' which is not relevant to the question."
+      }
+    },
+    {
+      "query": "Alex Christen",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "alex christen"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "alex christen"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "dxy",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dxy"
+      ],
+      "keywords_found": [
+        "dxy"
+      ],
+      "keywords_missing": [],
+      "answer": "The DXY (U.S. Dollar Index) was discussed in the video \"Why Did Fed Crash Markets Today? \u2018Something Is Going To Break\u2019\" where Komal Sri-Kumar anticipated a stronger U.S. dollar due to potential tariffs, and in \"Market Thoughts,\" which analyzed the index as looking weak with lower highs and potential for further decline.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The question 'dxy' is unclear and does not specify what aspect of DXY the user is asking about. The answer assumes the user is referring to the U.S. Dollar Index but does not directly address a specific query related to dxy."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'DXY' and provides relevant information about its discussion in videos, making it informative and directly addressing the question."
+      }
+    },
+    {
+      "query": "Arch Aviation",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "arch aviation"
+      ],
+      "keywords_found": [
+        "arch aviation"
+      ],
+      "keywords_missing": [],
+      "answer": "Arch Aviation was selected as the official air taxi provider for the LA28 Olympic and Paralympic Games, giving Archer a significant advantage by allowing their eVTOLs to be showcased to a large audience.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'Arch Aviation', which is the key entity from the question. It also provides relevant and informative details about Arch Aviation's role in the LA28 Olympic and Paralympic Games."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Arch Aviation' and provides relevant information about its role as the official air taxi provider for the LA28 Olympic and Paralympic Games, showcasing the significance of the partnership."
+      }
+    },
+    {
+      "query": "Technology Platform",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "technology",
+        "platform"
+      ],
+      "keywords_found": [
+        "technology",
+        "platform"
+      ],
+      "keywords_missing": [],
+      "answer": "The discussion around technology platforms includes smart glasses as a future interface, potential integration of AI in various products like Apple's Vision Pro, and advancements in automotive safety technologies such as mmWave radar. These platforms are seen as foundational enablers for new business models driven by software, with the tech sector expected to continue growing within the S&P 500.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer discusses technology platforms, it does not directly mention 'technology platform' as requested in the question. The response provides relevant information about technological advancements but lacks directness and focus on the exact terms specified."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'technology platforms' and discusses relevant examples, making it informative and aligned with the question."
+      }
+    },
+    {
+      "query": "integration strategies",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "integration",
+        "strategies"
+      ],
+      "keywords_found": [
+        "integration",
+        "strategies"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses potential integration strategies for AI with blockchain technology, mentioning applications like verifying identity through immutable records to combat deep fakes.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the term 'integration strategies' as asked in the question. Instead, it provides an example of a potential application involving AI and blockchain technology."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'integration strategies' and provides relevant information about integrating AI with blockchain technology, which aligns with the question."
+      }
+    },
+    {
+      "query": "Financial Services",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "financial",
+        "services"
+      ],
+      "keywords_found": [
+        "financial",
+        "services"
+      ],
+      "keywords_missing": [],
+      "answer": "The video suggests that SoFi's Financial Services segment is expected to show significant growth, with a projected $264 million print, representing 90% year-over-year growth. This growth partly comes from loan origination activities and the technology platform, though the latter is currently experiencing slower-than-expected revenue growth due to comparatives from the previous year.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly mention 'financial services' or 'financial' as key terms from the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Financial Services' and provides relevant information about SoFi's growth in this segment, addressing the question effectively."
+      }
+    },
+    {
+      "query": "Risks",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "risks"
+      ],
+      "keywords_found": [
+        "risks"
+      ],
+      "keywords_missing": [],
+      "answer": "The risks discussed include geopolitical tensions like potential wider wars in the Middle East and Ukraine, uncertainties with China regarding Taiwan, and technological issues affecting financial markets. Additionally, liquidity risks are highlighted as a concern for investors, particularly in assets that may not be as liquid as they appear due to carry trades and market dynamics.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions risks as requested in the question and provides specific examples such as geopolitical tensions, uncertainties regarding China, technological issues, and liquidity risks. The information appears relevant and is not contradictory to known facts."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'risks' and provides relevant and informative details about various types of risks, including geopolitical tensions and liquidity risks, without any hallucinated information."
+      }
+    },
+    {
+      "query": "Stock Buybacks",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "stock",
+        "buybacks"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "stock",
+        "buybacks"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Palantir vs other companies",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "palantir",
+        "other companies"
+      ],
+      "keywords_found": [
+        "palantir"
+      ],
+      "keywords_missing": [
+        "other companies"
+      ],
+      "answer": "Palantir is compared favorably in terms of its potential for significant growth, with some analysts viewing it as a generational technology company. However, concerns exist regarding international revenue slowdowns and skepticism towards U.S. tech giants internationally. Despite these issues, the long-term outlook remains positive due to ongoing momentum and government contracts.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Palantir to other companies as requested in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer mentions Palantir but does not adequately address 'other companies' or provide a comparison between Palantir and them."
+      }
+    },
+    {
+      "query": "Coca-Cola vs Pepsi",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "coca-cola",
+        "pepsi"
+      ],
+      "keywords_found": [
+        "coca-cola",
+        "pepsi"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how Coca-Cola originally contained cocaine, which gives it a unique flavor compared to Pepsi. The speaker expresses a preference for Coca-Cola over Pepsi and other sodas, finding the former tastier and more authentic.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Coca-Cola and Pepsi as requested. It introduces irrelevant information about the historical content of Coca-Cola and personal preferences that are not asked for in the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both Coca-Cola and Pepsi, provides relevant information about their differences, and expresses a preference, making it informative and aligned with the question."
+      }
+    },
+    {
+      "query": "BitMine vs Micro Strategy",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "bitmine",
+        "micro strategy"
+      ],
+      "keywords_found": [
+        "bitmine",
+        "micro strategy"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there are no videos or channels specifically mentioning BitMine. The context includes discussions about Micro Strategy's strategies related to Bitcoin mining and holdings, but does not compare it directly with BitMine.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention BitMine or compare it with Micro Strategy as requested in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer fails to mention BitMine, which is a key entity in the question, and does not provide a direct comparison between BitMine and Micro Strategy as requested."
+      }
+    },
+    {
+      "query": "Microsoft vs Google",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "microsoft",
+        "google"
+      ],
+      "keywords_found": [
+        "microsoft",
+        "google"
+      ],
+      "keywords_missing": [],
+      "answer": "Microsoft is positioned well for AI investment, particularly through its focus on enterprise solutions and business-oriented AI agents, whereas Google has a stronger consumer-facing approach. The analysis suggests Microsoft might be better suited for companies looking to implement AI, potentially placing it in the A tier alongside Meta and Amazon.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Microsoft and Google as requested. It focuses more on AI investment strategies of these companies rather than providing a direct comparison between them."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both Microsoft and Google, providing a relevant comparison of their approaches to AI investment, which directly addresses the question."
+      }
+    },
+    {
+      "query": "Visa vs PayPal",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "visa",
+        "paypal"
+      ],
+      "keywords_found": [
+        "visa",
+        "paypal"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses Visa's partnership with Solana to facilitate transactions using stablecoins like USDC, while PayPal announced a $7 billion deal with Blue Owl Capital to sell their buy now pay later portfolio. These partnerships indicate that both companies are adapting to the shift towards digital assets and expanding their services in the financial technology sector.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention PayPal or Visa directly, and instead discusses unrelated partnerships and deals."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both Visa and PayPal, providing relevant information about their recent partnerships and adaptations in the financial technology sector."
+      }
+    },
+    {
+      "query": "how many videos about happy returns?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "happy returns"
+      ],
+      "keywords_found": [
+        "happy returns"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos specifically about \"happy returns\" in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions 'happy returns', it does not directly address whether there are any videos about this topic. A more appropriate response would be to state that no relevant videos were found or provide a count if available."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'happy returns' in a relevant context, and it fails to provide informative content regarding the number of videos."
+      }
+    },
+    {
+      "query": "how many videos about arch aviation?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "arch aviation"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "arch aviation"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about dxy?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dxy"
+      ],
+      "keywords_found": [
+        "dxy"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos about \"dxy\" were found in the provided context.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'dxy' as requested and is relevant to the question. It also correctly states that no videos were found, without hallucinating additional information."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'dxy' directly and fails to provide relevant information regarding the number of videos about it."
+      }
+    },
+    {
+      "query": "how many videos about snowflake?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "snowflake"
+      ],
+      "keywords_found": [
+        "snowflake"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there is one video mentioned that discusses having snowflakes, but it is not specifically a video about snowflakes. The discussion seems to be about adding snowflakes as an effect during recording, likely for a festive or thematic purpose.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address how many videos about snowflake exist, but instead discusses a video that mentions adding snowflakes as an effect. It fails to provide the number of videos about snowflakes as requested."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not directly address the question about the number of videos specifically about snowflakes. It mentions snowflakes but does not provide a clear count or relevance to videos solely focused on snowflakes."
+      }
+    },
+    {
+      "query": "how many videos about alex christen?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "alex christen"
+      ],
+      "keywords_found": [
+        "alex christen"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Alex Christen. There are no mentions of this person or topic in the transcripts.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Alex Christen and does not address the question about videos related to him."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Alex Christen' and fails to address the question about the number of videos related to him."
+      }
+    },
+    {
+      "query": "Ballistol",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "ballistol"
+      ],
+      "keywords_found": [
+        "ballistol"
+      ],
+      "keywords_missing": [],
+      "answer": "Ballistol is a firearms lubricant mentioned in multiple videos, described as water soluble, non-toxic, and effective for cleaning and lubing guns for over 10 years. Users are encouraged to visit ballast.com and talongrips.com while also following Hickok45 on various social media platforms.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'ballistol' as requested, is relevant by providing details about the product, and does not appear to contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Ballistol' and provides relevant information about its use as a firearms lubricant, including its properties and user recommendations."
+      }
+    },
+    {
+      "query": "Hickok45",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "keywords_found": [
+        "hickok45"
+      ],
+      "keywords_missing": [],
+      "answer": "Hickok45 is featured in multiple videos across different channels, including his own website (hickok45.com) and social media presence on Twitter and Instagram (@realHickok45 and @john_hick45). He also appears on the Gunstreamer platform.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'Hickok45' as requested, provides relevant information about his presence across multiple platforms, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Hickok45' and provides relevant information about his online presence and platforms where he is featured."
+      }
+    },
+    {
+      "query": "Dolly Parton",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dolly parton"
+      ],
+      "keywords_found": [
+        "dolly parton"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses Dolly Parton, mentioning her appearance on Jimmy Fallon and highlighting aspects of her personality and background. It also touches on how media portrayal can influence perceptions of wealth and poverty.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Dolly Parton as requested and provides relevant information about her appearance on Jimmy Fallon and aspects of her personality and background. It also touches on a related topic regarding media portrayal."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Dolly Parton' and provides relevant information about her media appearances and personality, addressing the question effectively."
+      }
+    },
+    {
+      "query": "44 magnum",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "44 magnum"
+      ],
+      "keywords_found": [
+        "44 magnum"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos available include \"LeverGuns 1,\" which features a discussion on the 44 Magnum chambered Marlin 94, and \"Ruger Super BlackHawk Hunter .44 Magnum (Close-Up),\" where the gun's recoil-absorbing capabilities and effectiveness in shooting various targets are demonstrated. Additionally, \"S&W 44 Magnum (The Rundown)\" provides an overview of the classic Smith and Wesson model.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions '44 magnum' in multiple contexts and provides relevant and informative details about videos featuring the topic."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions '44 Magnum' multiple times and provides relevant information about videos discussing the 44 Magnum, making it informative and directly addressing the question."
+      }
+    },
+    {
+      "query": "Facebook",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "facebook"
+      ],
+      "keywords_found": [
+        "facebook"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos mention using Facebook as a way to share information, especially for the firearms community, but note that many users are not enthusiastic about it personally.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the question about Facebook and lacks specific details related to the entity."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Facebook' and discusses its use for sharing information, which is relevant to the question."
+      }
+    },
+    {
+      "query": "gunsmithing education",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "gunsmithing",
+        "education"
+      ],
+      "keywords_found": [
+        "gunsmithing",
+        "education"
+      ],
+      "keywords_missing": [],
+      "answer": "Gunsmithing education should include a hands-on element regardless of whether the program is online or in-person. Additionally, it's important to choose an accredited program and one that has high student satisfaction based on reviews and alumni feedback.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer is relevant, it does not directly address the question about gunsmithing education. It focuses more on the nature of the educational program rather than providing information specific to gunsmithing education."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'gunsmithing' and 'education', addresses the importance of hands-on experience, accreditation, and student satisfaction, making it relevant and informative."
+      }
+    },
+    {
+      "query": "firearm pricing",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "firearm",
+        "pricing"
+      ],
+      "keywords_found": [
+        "firearm"
+      ],
+      "keywords_missing": [
+        "pricing"
+      ],
+      "answer": "The video discusses firearms ranging from $200 to $600, noting that while some may be more expensive, cheaper options like High Point and Glock models are available for around $200. The Smith & Wesson M&P15 Sport is mentioned as being in the lower end of AR-15 prices, but the speaker expresses concern about its quality at that price point.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both 'firearm' and discusses pricing ranges, making it relevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'firearms' and 'pricing,' providing relevant information about the price range of various firearms and specific models, which directly addresses the question."
+      }
+    },
+    {
+      "query": "gun enjoyment",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "gun",
+        "enjoyment"
+      ],
+      "keywords_found": [
+        "gun"
+      ],
+      "keywords_missing": [
+        "enjoyment"
+      ],
+      "answer": "The videos mention several guns that are enjoyable to shoot, including the Mossberg 590 A1 shotgun and the Springfield XDm 5.25 in 45 acp pistol. Additionally, there is discussion about affordable firearms like surplus rifles such as the Mouser or K31, which can be fun and historically significant for those on a budget.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the concept of 'enjoyment' in relation to guns but instead provides a list of specific firearms. While it mentions enjoyment indirectly through the phrase 'enjoyable to shoot', it lacks a clear focus on the subjective experience of enjoying guns."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'gun' and 'enjoyment' while providing relevant information about enjoyable firearms and their historical significance."
+      }
+    },
+    {
+      "query": "firearms experience",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "firearms",
+        "experience"
+      ],
+      "keywords_found": [
+        "experience"
+      ],
+      "keywords_missing": [
+        "firearms"
+      ],
+      "answer": "The video discusses the importance of having shooting experience when choosing a firearm for concealed carry, suggesting that someone with extensive experience has more options and can practice effectively.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both firearms and experience, is relevant to the question, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'firearms' and 'experience,' directly addressing the key entities from the question. It is relevant and informative, discussing the importance of shooting experience in relation to firearms for concealed carry. There is no indication of hallucination in the information provided."
+      }
+    },
+    {
+      "query": "big game hunting",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "big",
+        "game",
+        "hunting"
+      ],
+      "keywords_found": [
+        "big",
+        "game",
+        "hunting"
+      ],
+      "keywords_missing": [],
+      "answer": "Big game hunting videos are available featuring firearms like the Marlin JM Model 1895 .45-70, Ed Brown Special Forces 1911, and Dirty Harry's 44 Magnum. These videos show hunters using these powerful weapons to take down various targets, often starting and ending with a gong to mark the beginning and end of the hunt.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions 'big game hunting', it does not directly address the question by providing a straightforward definition or description of big game hunting. Instead, it focuses on specific firearms and videos related to the topic, which is tangential rather than directly answering the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'big game hunting' directly and provides relevant information about hunting videos and firearms used in big game hunting, making it informative and on-topic."
+      }
+    },
+    {
+      "query": "apprenticeship program vs formal education",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "apprenticeship program",
+        "formal education"
+      ],
+      "keywords_found": [
+        "apprenticeship program",
+        "formal education"
+      ],
+      "keywords_missing": [],
+      "answer": "The video mentions both apprenticeship programs and formal education as ways to learn gunsmithing techniques. While an apprenticeship can provide practical experience, a formal education offers a structured and comprehensive learning environment. Both methods have their advantages, but it's important to choose a school that meets specific criteria such as accreditation and high student satisfaction.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare apprenticeship programs vs formal education as requested in the question. It introduces a specific context of gunsmithing and mentions accreditation criteria, which are not relevant to the core comparison."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both 'apprenticeship program' and 'formal education', providing relevant information about their advantages and considerations."
+      }
+    },
+    {
+      "query": "Taurus GX4 vs P365",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "taurus gx4",
+        "p365"
+      ],
+      "keywords_found": [
+        "taurus gx4",
+        "p365"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos matching the exact comparison between Taurus GX4 and SIG P365 were found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention P365, which is a key entity in the question. It also incorrectly states that no videos were found, without providing any relevant information about Taurus GX4 or P365."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention either the Taurus GX4 or the P365, failing to address the key entities from the question."
+      }
+    },
+    {
+      "query": "original Henry vs modern Henry",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "original henry",
+        "modern henry"
+      ],
+      "keywords_found": [
+        "modern henry"
+      ],
+      "keywords_missing": [
+        "original henry"
+      ],
+      "answer": "The original 1860 Henry rifle loaded through the tube, while modern Henry rifles use a loading gate. The modern replica aims to honor the historical name but uses contemporary design elements, making it more practical for shooting compared to the original's rimfire cartridges.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions 'original Henry' and 'modern Henry', it does not directly address the comparison between the original and modern versions as implied by 'original Henry vs modern Henry'. The response focuses more on the differences in loading mechanisms and practicality rather than providing a direct comparison."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'original Henry' and 'modern Henry,' providing relevant and informative details about their loading mechanisms and design differences."
+      }
+    },
+    {
+      "query": "Kimber revolver vs Jframe Smith and Wesson",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "kimber revolver",
+        "jframe smith and wesson"
+      ],
+      "keywords_found": [
+        "kimber revolver"
+      ],
+      "keywords_missing": [
+        "jframe smith and wesson"
+      ],
+      "answer": "The video discusses the Kimber revolver, noting its impressive design despite being from a company not traditionally known for revolvers. It mentions that the Kimber fits well in terms of size for 357 Magnum rounds but hasn't been fired yet. The host also compares it to other options like the Smith & Wesson Model 642, suggesting that even experienced gun owners struggle with choosing between revolver and semi-automatic options for carry guns.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Jframe Smith & Wesson, which is a key part of the question. It also incorrectly compares Kimber revolver to Smith & Wesson Model 642 without addressing the Jframe Smith & Wesson specifically."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both the Kimber revolver and the Jframe Smith & Wesson (Model 642), providing relevant information about their design and comparison, which directly addresses the question."
+      }
+    },
+    {
+      "query": "Mossberg 500 vs Hatsan Escort Slugger",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "mossberg 500",
+        "hatsan escort slugger"
+      ],
+      "keywords_found": [
+        "mossberg 500",
+        "hatsan escort slugger"
+      ],
+      "keywords_missing": [],
+      "answer": "The Mossberg 500 and Hatsan Escort Slugger are both pump shotguns, but the Mossberg is typically shorter at just over 18 inches with a different grip configuration, while the Hatsan is made in Turkey, is more affordable, and has some users reporting better feeding performance.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions both Mossberg 500 and Hatsan Escort Slugger, it does not directly compare their specific features related to slug guns as implied by the question title. The information provided is somewhat relevant but lacks direct comparison."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both the Mossberg 500 and Hatsan Escort Slugger, provides relevant comparisons between the two shotguns, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "how many videos about dolly parton?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dolly parton"
+      ],
+      "keywords_found": [
+        "dolly parton"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there is one video mentioned that includes a discussion about Dolly Parton.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Dolly Parton as requested and provides a relevant response based on the expected context."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions Dolly Parton and provides relevant information about the number of videos, addressing the question appropriately."
+      }
+    },
+    {
+      "query": "how many videos about 44 magnum?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "44 magnum"
+      ],
+      "keywords_found": [
+        "44 magnum"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there is one video that mentions the .44 Magnum, which is \"Sunday Shoot-a-Round #201.\"",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions '44 Magnum', it does not address how many videos there are about 44 Magnum. It only provides information about one video."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions the key entity '44 Magnum' and provides relevant information about the specific video that discusses it."
+      }
+    },
+    {
+      "query": "how many videos about facebook?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "facebook"
+      ],
+      "keywords_found": [
+        "facebook"
+      ],
+      "keywords_missing": [],
+      "answer": "There are mentions of Facebook in two videos, but no specific number of videos about Facebook is provided.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Facebook, it does not provide a specific number of videos about Facebook as requested."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does mention Facebook, but it fails to provide a specific number of videos about Facebook, which is the main focus of the question."
+      }
+    },
+    {
+      "query": "how many videos about hickok45?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "keywords_found": [
+        "hickok45"
+      ],
+      "keywords_missing": [],
+      "answer": "There are 5 videos about Hickok45 mentioned in the provided context.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the key entity 'hickok45' from the question, is relevant and informative by providing a specific number of videos, and does not appear to be hallucinating based on the given context."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Hickok45' and provides a specific number of videos, making it relevant and informative."
+      }
+    },
+    {
+      "query": "how many videos about ballistol?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "ballistol"
+      ],
+      "keywords_found": [
+        "ballistol"
+      ],
+      "keywords_missing": [],
+      "answer": "There are 5 videos mentioned in the context that discuss Ballistol.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the key entity 'Ballistol' from the question and provides a relevant and informative response about the number of videos related to it."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Ballistol' and provides relevant information about the number of videos related to it."
+      }
+    },
+    {
+      "query": "Northcut",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "northcut"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "northcut"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Ben van Kerkwyk",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "ben van kerkwyk"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "ben van kerkwyk"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Giza",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "giza"
+      ],
+      "keywords_found": [
+        "giza"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses findings related to Giza, including the area where King Khufu lived, the busy entrance at the Giza Plateau requiring detailed record-keeping for stone transport, and the discovery that the base of the Great Pyramid is actually 20 feet high of solid rock rather than individual stones.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'Giza' as requested and provides relevant information about findings related to the area, including historical and archaeological details."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Giza' and provides relevant and informative details about the area, including historical context and findings related to the Great Pyramid."
+      }
+    },
+    {
+      "query": "SVU",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "svu"
+      ],
+      "keywords_found": [
+        "svu"
+      ],
+      "keywords_missing": [],
+      "answer": "Videos mentioning SVU include \"Joe Rogan Experience #667 - Kurt Metzger,\" where the topic is briefly discussed in the context of actors from the show appearing on a rap show.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the question 'SVU'. It mentions SVU briefly but primarily discusses a different topic related to Joe Rogan Experience. The answer should focus more on SVU."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does mention 'SVU,' but it lacks relevance and informativeness regarding the question, as it focuses on a specific video rather than providing general information about SVU itself."
+      }
+    },
+    {
+      "query": "Carl Sagan",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "carl sagan"
+      ],
+      "keywords_found": [
+        "carl sagan"
+      ],
+      "keywords_missing": [],
+      "answer": "The discussion mentions Carl Sagan in relation to his work with NASA's Voyager spacecraft, specifically his advocacy for turning the spacecraft around to take a photograph of Earth from the farthest reaches of the solar system. This image, known as the \"pale blue dot,\" was used by Sagan to inspire humility and reflection on the human condition.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Carl Sagan and provides relevant and informative details about his work with NASA's Voyager spacecraft and the 'pale blue dot' photograph. There is no hallucination of information."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions Carl Sagan and provides relevant and informative context about his work with NASA's Voyager spacecraft and the 'pale blue dot' photograph, without any hallucinated information."
+      }
+    },
+    {
+      "query": "ancient stories",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "ancient",
+        "stories"
+      ],
+      "keywords_found": [
+        "ancient",
+        "stories"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how many ancient stories, including the story of Noah's Ark, correlate with geological evidence of massive floods. It suggests these stories might be based on real events and questions why we should dismiss them outright when they contain elements like warnings from individuals who prepared for such disasters.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'ancient stories' and provides relevant information about how these stories correlate with geological evidence, which is informative."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'ancient stories' and provides relevant information about their correlation with geological evidence, making it informative and directly addressing the question."
+      }
+    },
+    {
+      "query": "Discount Codes",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "discount",
+        "codes"
+      ],
+      "keywords_found": [
+        "discount",
+        "codes"
+      ],
+      "keywords_missing": [],
+      "answer": "Discount codes are available for purchasing equipment used in filming, with a coupon offering a discount of 37-37 cents per $7000 spent. Additionally, there is a 20% off discount for the bond course from Alfonso Peccatiello's Macro Compass platform, valid for the first 100 people.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the topic of discount codes related to purchasing equipment used in filming as expected. It introduces unrelated discounts for a course."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'discount' and 'codes', provides relevant information about available discounts, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "Weight Management",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "weight",
+        "management"
+      ],
+      "keywords_found": [
+        "weight",
+        "management"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses the effectiveness of semaglutide, an anti-diabetic medication used for weight management. It mentions that patients receiving 2.4 milligrams lost 12% of their body weight by week 28, indicating legitimate but not miraculous weight loss over a seven-month period. The study also suggests that weekly doses of semaglutide can lead to significant weight loss similar to randomized controlled trials, though the results may vary among individuals.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'weight management' and provides relevant information about a medication used for this purpose, including specific weight loss percentages and the duration of the study. It does not hallucinate any information that is not present in the context."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'weight' and 'management' in the context of weight management through the use of semaglutide, providing relevant and informative details about its effectiveness."
+      }
+    },
+    {
+      "query": "Primal Bells",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "primal",
+        "bells"
+      ],
+      "keywords_found": [
+        "primal",
+        "bells"
+      ],
+      "keywords_missing": [],
+      "answer": "Primal Bells are a type of kettlebell inspired by great apes, including gorillas, orangutans, chimpanzees, and howler monkeys. These artistic kettlebells are designed to be both functional and visually appealing, with 3D mapping for balance and durability.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'primal' or 'bells' directly as expected. It provides information about kettlebells inspired by great apes but does not address the specific term 'Primal Bells'."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Primal Bells' and provides relevant information about their design and inspiration, addressing the question effectively."
+      }
+    },
+    {
+      "query": "Historical Figures",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "historical",
+        "figures"
+      ],
+      "keywords_found": [
+        "historical",
+        "figures"
+      ],
+      "keywords_missing": [],
+      "answer": "The discussion revolves around how modern perspectives can distort our understanding of historical figures like Thomas Jefferson and George Washington, emphasizing the importance of considering their times and complexities rather than judging them solely by today's standards.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions historical figures as requested and provides relevant information about modern perspectives on them."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'historical figures' and provides relevant information about Thomas Jefferson and George Washington, discussing the importance of context in understanding them."
+      }
+    },
+    {
+      "query": "Iron Dome vs ballistic missiles",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "iron dome",
+        "ballistic missiles"
+      ],
+      "keywords_found": [
+        "iron dome",
+        "ballistic missiles"
+      ],
+      "keywords_missing": [],
+      "answer": "The Iron Dome system can effectively handle short-range and some mid-range missiles, but it is ineffective against long-range ballistic missiles. Ballistic missiles are much faster and harder to intercept, with the Iron Dome designed for different threats altogether.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer correctly mentions both 'Iron Dome' and 'ballistic missiles', provides relevant and informative content about their capabilities, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'Iron Dome' and 'ballistic missiles', addresses their capabilities and limitations, and provides relevant and accurate information without hallucination."
+      }
+    },
+    {
+      "query": "Wanderlei Silva vs Mirko Cro Cop",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "wanderlei silva",
+        "mirko cro cop"
+      ],
+      "keywords_found": [
+        "wanderlei silva",
+        "mirko cro cop"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses the fight between Wanderlei Silva and Mirko Cro Cop, noting that Silva was heavier at 218 pounds compared to Cro Cop's 214. It highlights how Cro Cop, being more comfortable in MMA, dominated the fight, moving like a well-trained MMA fighter while also excelling as an elite kickboxer.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both Wanderlei Silva and Mirko Cro Cop, addresses their weight difference, and provides relevant details about the fight's outcome and characteristics."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both key entities, Wanderlei Silva and Mirko Cro Cop, and provides relevant and informative details about their fight, including weight and performance."
+      }
+    },
+    {
+      "query": "UFC glove vs pride gloves",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "ufc glove",
+        "pride gloves"
+      ],
+      "keywords_found": [
+        "ufc glove",
+        "pride gloves"
+      ],
+      "keywords_missing": [],
+      "answer": "No relevant videos found discussing UFC gloves versus Pride gloves.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the key entities 'ufc glove' and 'pride gloves', nor does it provide any relevant information to address the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention either UFC gloves or Pride gloves, failing to address the key entities from the question."
+      }
+    },
+    {
+      "query": "actors vs standup comedians",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "actors",
+        "standup comedians"
+      ],
+      "keywords_found": [
+        "actors",
+        "standup comedians"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how actors and standup comedians approach their craft differently, noting that actors often strive for high-quality, polished performances suitable for traditional platforms, while standup comedians embraced a more casual, authentic style suited to social media. This shift allowed comedians to quickly gain large followings without the need for expensive production values.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the comparison between actors and standup comedians as asked in the question. Instead, it discusses how they approach their craft differently and mentions a shift towards social media for standup comedians."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both 'actors' and 'standup comedians', provides relevant information about their different approaches to performance, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "David Tail vs Morgan Freeman",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "david tail",
+        "morgan freeman"
+      ],
+      "keywords_found": [
+        "david tail",
+        "morgan freeman"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not contain any direct comparison between David Tail and Morgan Freeman. The video mentions Morgan Freeman positively but does not discuss him in relation to David Tail.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention David Tail and only discusses Morgan Freeman in a general context without addressing the comparison."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer fails to mention David Tail and does not provide a relevant comparison or information about either individual, making it uninformative."
+      }
+    },
+    {
+      "query": "how many videos about carl sagan?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "carl sagan"
+      ],
+      "keywords_found": [
+        "carl sagan"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos specifically about Carl Sagan are mentioned in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Carl Sagan and instead states there are no videos mentioned in the provided context, which is irrelevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Carl Sagan' directly, which is a key entity from the question, and it fails to provide relevant information about the number of videos."
+      }
+    },
+    {
+      "query": "how many videos about northcut?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "northcut"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "northcut"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about svu?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "svu"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "svu"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about giza?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "giza"
+      ],
+      "keywords_found": [
+        "giza"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there is no specific mention of the number of videos about Giza. The transcript discusses a particular video from Joe Rogan Experience where Ben van Kerkwyk talks about an expedition related to the Sphinx and tunnels beneath it, but does not provide information on the total count of videos about Giza.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Giza, it does not address the question about the number of videos, and instead provides unrelated context."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not directly address the question about the number of videos related to Giza, and while it mentions Giza, it fails to provide relevant information regarding the count of videos."
+      }
+    },
+    {
+      "query": "how many videos about ben van kerkwyk?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "ben van kerkwyk"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "ben van kerkwyk"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Chainlink",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "chainlink"
+      ],
+      "keywords_found": [
+        "chainlink"
+      ],
+      "keywords_missing": [],
+      "answer": "Chainlink is a blockchain oracle network that has partnered with large financial institutions, enabling over $25 trillion in transaction value. These partnerships aim to integrate tokenized assets into existing payment systems, potentially allowing banks to put deposits and assets on the blockchain for more efficient transactions. While initially there may be separate products for blockchain services, it's expected that eventually all banking operations will utilize blockchain technology.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'Chainlink' as requested, provides relevant and informative details about its role in blockchain technology and financial institutions, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Chainlink' and provides relevant and informative details about its role as a blockchain oracle network and its partnerships with financial institutions."
+      }
+    },
+    {
+      "query": "mstr",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "mstr"
+      ],
+      "keywords_found": [
+        "mstr"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses MSTR, noting that while it is generally good to very good, there are some areas of concern. The stock has shown higher highs and lows but may need to break key resistance levels before becoming \"very very sexy.\" On a broader market context, the video suggests MSTR could see favorable conditions due to increasing global liquidity.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The question 'mstr' is too vague and does not provide enough context for a meaningful response. The answer attempts to address MSTR but lacks specificity and relevance, making it unclear what exactly the video discussed."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'MSTR' directly, provides relevant information about its stock performance and market context, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "Unity",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "unity"
+      ],
+      "keywords_found": [
+        "unity"
+      ],
+      "keywords_missing": [],
+      "answer": "Unity in these contexts refers to a sense of shared values, identities, or goals among individuals. In the video about influencing people, Warren Buffett emphasizes unity by considering his shareholders as family members, highlighting a strong bond that discourages selling shares even when it might be financially beneficial. In the Jordan Peterson discussion, unity is linked to social cohesion and the balance between order and chaos within a society, emphasizing the importance of disciplined res",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions unity, it does not directly address what 'Unity' refers to in a single, concise manner. The response provides context from discussions but lacks clarity and directness."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'unity' and provides relevant context about its meaning and implications in social and financial scenarios, making it informative."
+      }
+    },
+    {
+      "query": "CNBC",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "cnbc"
+      ],
+      "keywords_found": [
+        "cnbc"
+      ],
+      "keywords_missing": [],
+      "answer": "The context mentions a video reaction to Tom Lee's interview on CNBC, discussing market movements and the role of the Federal Reserve.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly mention CNBC as requested in the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'CNBC' and provides relevant context about a video reaction to an interview, making it informative and directly addressing the question."
+      }
+    },
+    {
+      "query": "XRP",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "xrp"
+      ],
+      "keywords_found": [
+        "xrp"
+      ],
+      "keywords_missing": [],
+      "answer": "XRP discussions in the videos suggest it has potential for significant growth, with some analysts predicting it could reach $7 to $26 or even higher. However, there are also concerns due to ongoing legal issues with the SEC, which may temporarily stall its progress.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions XRP as requested, provides relevant information about its potential growth and legal concerns, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'XRP' directly, provides relevant information about its potential growth and legal issues, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "volume analysis",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "volume",
+        "analysis"
+      ],
+      "keywords_found": [
+        "volume",
+        "analysis"
+      ],
+      "keywords_missing": [],
+      "answer": "Volume analysis is crucial in identifying trend sustainability. High buying volume during uptrends indicates strong support, while declining selling volume suggests weakening bears. For instance, in Palantir Technologies (PLTR), increasing buying volume over four months supports a bullish stance. In Coinbase stock, consolidation areas with low volume suggest an upcoming push upwards, potentially to key resistance levels around 350. Volume profiles also show that MARA has seen significant buying ",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'volume analysis' as requested and provides relevant information about how volume can indicate trend sustainability in different stocks. It does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'volume' and 'analysis' as required. It provides relevant and informative insights about volume analysis in stock trading, including examples and implications, without hallucinating information."
+      }
+    },
+    {
+      "query": "price predictions",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "price",
+        "predictions"
+      ],
+      "keywords_found": [
+        "price",
+        "predictions"
+      ],
+      "keywords_missing": [],
+      "answer": "Price predictions for Palantir Technologies ($PLTR) vary, with some analysts suggesting it could reach significant highs like 1.618 or 2.618 Fibonacci levels, potentially around $69 to over $100, while others consider more conservative targets closer to $35-$37 or even a potential decline back to the $25-$28 range.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the concept of 'price predictions' in a general sense but instead provides specific price predictions for Palantir Technologies stock. The question was more likely asking about the methodology or general approach to making price predictions rather than specific stock predictions."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'price predictions' and provides specific price ranges for Palantir Technologies, making it relevant and informative. It does not contain hallucinated information."
+      }
+    },
+    {
+      "query": "Market psychology",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "market",
+        "psychology"
+      ],
+      "keywords_found": [
+        "market",
+        "psychology"
+      ],
+      "keywords_missing": [],
+      "answer": "Market psychology plays a crucial role in investment decisions, often more so than macroeconomic factors or company fundamentals. Emmanuel Lemelson emphasizes that understanding human behavior and market dynamics is essential for successful investing, highlighting how hype and fan support can drive stock prices despite poor underlying metrics.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both 'market' and 'psychology', is relevant to the topic of market psychology, and provides insightful information without hallucination."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'market' and 'psychology', directly addressing the key entities from the question. It is relevant and informative, discussing the impact of market psychology on investment decisions and providing insights into human behavior in the market context. There is no indication of hallucination in the information presented."
+      }
+    },
+    {
+      "query": "investment strategy",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "investment",
+        "strategy"
+      ],
+      "keywords_found": [
+        "investment",
+        "strategy"
+      ],
+      "keywords_missing": [],
+      "answer": "The investment strategies discussed include an all-weather approach focused on large-cap technology stocks, balancing risk and reward through both top-down and bottom-up analysis. Another strategy involves physical gold, mining exploration funds, and a stagflationary fund that invests in TIPS, oil, gold, and real estate, using trend-following methodologies to potentially perform well in inflationary environments.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'investment' and 'strategy', provides specific examples of investment strategies, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'investment' and 'strategy' while providing relevant and informative details about various investment strategies, including specific asset classes and methodologies."
+      }
+    },
+    {
+      "query": "market performance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "market",
+        "performance"
+      ],
+      "keywords_found": [
+        "market",
+        "performance"
+      ],
+      "keywords_missing": [],
+      "answer": "The market performance has been sideways since January, with the S&P 500 trading range-bound. Tech stocks, particularly AI-related ones, have performed exceptionally well, while retail stocks have held their own despite economic contraction. Overall, there seems to be more bullish sentiment than bearish in equity predictions.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'market' and 'performance', is relevant to the question, and provides specific details about market trends and stock performances without introducing any incorrect information."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'market' and 'performance', providing relevant and informative insights about the current state of the market and its performance, without any hallucinated information."
+      }
+    },
+    {
+      "query": "current stock vs Palantir",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "current stock",
+        "palantir"
+      ],
+      "keywords_found": [
+        "palantir"
+      ],
+      "keywords_missing": [
+        "current stock"
+      ],
+      "answer": "The video discusses Palantir Technologies (PLTR) and suggests that it is forming a bullish formation, potentially targeting around $29. The analysis indicates strong support at the $25-$27 range and forecasts further upward movement if this level is broken, with potential targets in the 30s and beyond.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'current stock' or directly compare Palantir's stock to another company's stock as requested."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Palantir' and discusses its current stock analysis, including price targets and support levels, making it relevant and informative."
+      }
+    },
+    {
+      "query": "Unity Software vs Metaport",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "unity software",
+        "metaport"
+      ],
+      "keywords_found": [
+        "unity software",
+        "metaport"
+      ],
+      "keywords_missing": [],
+      "answer": "Unity Software and Metaport are compared in terms of market capitalization, institutional support, and price action. Unity is significantly larger with more institutional ownership and shows signs of accumulation over time, whereas Metaport has struggled with declining stock performance and faces challenges in the competitive landscape despite some subscriber growth.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Unity Software and Metaport as requested. Instead, it focuses on market capitalization, institutional support, and price action, which are not the primary focus of a direct comparison between these two entities."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both Unity Software and Metaport, provides relevant comparisons between the two, and offers informative insights regarding their market positions and performance without any hallucinated information."
+      }
+    },
+    {
+      "query": "linear scale vs log scale",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "linear scale",
+        "log scale"
+      ],
+      "keywords_found": [
+        "linear scale"
+      ],
+      "keywords_missing": [
+        "log scale"
+      ],
+      "answer": "The speaker discusses how linear scales are more beneficial for identifying support and resistance levels, especially in backtesting scenarios. Linear scales allow for a perfect square formation, which is not possible on logarithmic scales due to their exponential nature. Additionally, the linear scale helps in confirming support zones as price tends to gravitate back towards them after significant movements away from these areas.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not accurately address the question about linear scale vs log scale. It focuses on a specific application in financial markets and support/resistance levels rather than providing a general comparison between linear and logarithmic scales."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer only discusses linear scales and does not mention log scales, failing to address both key entities from the question."
+      }
+    },
+    {
+      "query": "S&P 500 vs Bitcoin",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p 500",
+        "bitcoin"
+      ],
+      "keywords_found": [
+        "s&p 500",
+        "bitcoin"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses the relationship between Bitcoin and the S&P 500, noting that typically Bitcoin is expected to outperform the S&P 500 due to its higher volatility. However, it mentions that recently, Bitcoin's performance relative to the S&P 500 has been underwhelming, with the ratio of Bitcoin divided by the S&P 500 peaking at 15 in 2021 and currently making lower highs, indicating potential maturation or weakness in the asset.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both S&P 500 and Bitcoin, is relevant by discussing their relationship, and provides informative insights into recent performance trends without making any incorrect claims."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both the S&P 500 and Bitcoin, discusses their relationship, and provides relevant information about their performance, including historical context and current trends."
+      }
+    },
+    {
+      "query": "Metaport vs Tesla",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "metaport",
+        "tesla"
+      ],
+      "keywords_found": [
+        "metaport",
+        "tesla"
+      ],
+      "keywords_missing": [],
+      "answer": "The video does not mention \"Metaport\" or compare it directly with Tesla. It discusses Hyundai's Ionic 9 and its charging capabilities, noting that the Knack version of Tesla Superchargers takes longer to charge compared to CCS chargers, but does not provide information about a \"Metaport.\"",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'Metaport' or compare it directly with Tesla as requested in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer fails to mention 'Metaport' or provide a comparison with 'Tesla', which are the key entities from the question. It discusses unrelated content about Hyundai and Tesla Superchargers, making it irrelevant to the question."
+      }
+    },
+    {
+      "query": "how many videos about chainlink?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "chainlink"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "chainlink"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about mstr?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "mstr"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "mstr"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about unity?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "unity"
+      ],
+      "keywords_found": [
+        "unity"
+      ],
+      "keywords_missing": [],
+      "answer": "No relevant videos about Unity were found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Unity, it does not directly address how many videos about Unity exist, which is the core of the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Unity' and fails to provide relevant information regarding the number of videos about Unity."
+      }
+    },
+    {
+      "query": "how many videos about xrp?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "xrp"
+      ],
+      "keywords_found": [
+        "xrp"
+      ],
+      "keywords_missing": [],
+      "answer": "There are three videos about XRP mentioned in the provided context.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions the key entity 'XRP' from the question and provides a relevant and informative response about the number of videos related to XRP."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'XRP' and provides relevant information about the number of videos, addressing the question accurately."
+      }
+    },
+    {
+      "query": "how many videos about cnbc?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "cnbc"
+      ],
+      "keywords_found": [
+        "cnbc"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not mention any videos about CNBC.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention CNBC and instead refers to CNBC as 'the provided context', which is unclear."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'CNBC' as required by the question, and it fails to provide relevant information regarding the number of videos about CNBC."
+      }
+    },
+    {
+      "query": "Nevada",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nevada"
+      ],
+      "keywords_found": [
+        "nevada"
+      ],
+      "keywords_missing": [],
+      "answer": "Nevada is highly ranked for mining due to its long history and supportive infrastructure, making it favorable for investors. The state has a robust mining culture, minimal opposition from local residents, and benefits from low taxes and good transportation links, which reduce initial capital costs compared to other regions.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Nevada as requested and provides relevant and informative details about its mining industry."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Nevada' and provides relevant and informative details about its mining industry, infrastructure, and investment climate without any hallucinated information."
+      }
+    },
+    {
+      "query": "Philadelphia Fed",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "philadelphia fed"
+      ],
+      "keywords_found": [
+        "philadelphia fed"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos in the provided context mention the Philadelphia Fed.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Philadelphia Fed' and instead provides irrelevant information about the absence of videos."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Philadelphia Fed' and fails to provide relevant information regarding it."
+      }
+    },
+    {
+      "query": "Tony Blair",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "keywords_found": [
+        "tony blair"
+      ],
+      "keywords_missing": [],
+      "answer": "Tony Blair is discussed in the context of his involvement with the World Economic Forum and his advocacy for measures such as vaccine passports and digital identification, which aligns with the forum's agenda known as the Great Reset.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Tony Blair, it does not directly address the question by providing basic biographical or well-known facts about him. The information provided seems to be related to his involvement with the World Economic Forum and advocacy for specific measures, which may or may not be accurate but is not a direct response to the simple query about who Tony Blair is."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Tony Blair' and provides relevant information about his involvement with the World Economic Forum and related topics, without any apparent hallucinations."
+      }
+    },
+    {
+      "query": "California",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "california"
+      ],
+      "keywords_found": [
+        "california"
+      ],
+      "keywords_missing": [],
+      "answer": "The conversation discusses how California, particularly its northern regions like Humboldt County, is a significant area for marijuana cultivation due to its favorable climate and efforts by cartels. It mentions that much of California's land mass (around 60-70%) could be used for growing marijuana, and there are issues with illegal grows in national forests using toxic pesticides.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions California and provides relevant information about marijuana cultivation in its northern regions, which is directly related to the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions California and provides relevant information about its marijuana cultivation, addressing the question effectively."
+      }
+    },
+    {
+      "query": "China",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "china"
+      ],
+      "keywords_found": [
+        "china"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses China's 5-year plan, focusing on its goals to increase reliance on scientific and technological advancement, broaden economic openness, and modernize its industrial system. One commentator expresses skepticism about the effectiveness of state planning in efficiently allocating capital, citing historical inefficiencies and a tendency for capital to be monopolized by those closest to power. Another notes some successes in China's tech sector, such as leading global production i",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions China and provides relevant and informative details about its 5-year plan, including economic openness and technological advancement. It also includes a perspective on the effectiveness of state planning, which adds depth to the response."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'China' and provides relevant information about its 5-year plan, addressing the key entity/topic from the question."
+      }
+    },
+    {
+      "query": "recession severity",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "recession",
+        "severity"
+      ],
+      "keywords_found": [
+        "recession",
+        "severity"
+      ],
+      "keywords_missing": [],
+      "answer": "The severity of the upcoming recession, according to Lyn Alden, is expected to depend on various factors including the type of work individuals do and the assets they own. She predicts it will likely be a stagflationary recession, where inflation could return as soon as policymakers attempt to exit the recession, due to high levels of debt at both private and sovereign levels, which make the situation more inflationary compared to previous recessions.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both 'recession' and 'severity', is relevant to the question, and provides specific details about the predicted nature of the recession according to Lyn Alden."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'recession' and 'severity', providing relevant and informative insights about the expected severity of the upcoming recession and its potential characteristics."
+      }
+    },
+    {
+      "query": "Consumer debt",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "consumer",
+        "debt"
+      ],
+      "keywords_found": [
+        "consumer",
+        "debt"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos discuss consumer debt levels, noting that while current debt service payments as a percentage of disposable income are near historical lows, there is concern about the rate of change and potential shocks like rising unemployment. Claudia Sahm mentions that credit delinquencies have started to climb back up as pandemic relief ends, making it harder for households to withstand high interest expenses.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'consumer debt' as expected and provides relevant and informative details about current debt levels, concerns, and related factors."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'consumer' and 'debt', addresses the topic of consumer debt levels, and provides relevant information about current trends and concerns related to consumer debt."
+      }
+    },
+    {
+      "query": "Federal Reserve Policy",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "federal",
+        "reserve",
+        "policy"
+      ],
+      "keywords_found": [
+        "federal",
+        "reserve",
+        "policy"
+      ],
+      "keywords_missing": [],
+      "answer": "The Federal Reserve faces pressure from other central banks, particularly Japan's potential shift away from yield curve control. The Fed is focused on domestic policy despite these external pressures. Regarding monetary policy, there are expectations that interest rates may stay elevated at around five percent as the Fed aims to contain inflation and stabilize the banking system.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the federal reserve policy but instead discusses external pressures and monetary policy expectations. It lacks direct mentions of 'federal', 'reserve', or 'policy' in a clear context related to the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Federal Reserve' and discusses its policy in relation to interest rates and inflation, making it relevant and informative without any hallucinated information."
+      }
+    },
+    {
+      "query": "trade uncertainty",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "trade",
+        "uncertainty"
+      ],
+      "keywords_found": [
+        "trade",
+        "uncertainty"
+      ],
+      "keywords_missing": [],
+      "answer": "Trade policy uncertainty has peaked and is expected to subside by mid-next year, potentially unleashing pent-up investment. However, there remains concern among investors about the ongoing trade wars and the lack of a clear pattern in tariffs, which introduces significant uncertainty.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both 'trade' and 'uncertainty', is relevant to the question about trade uncertainty, and does not introduce any hallucinated information."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'trade' and 'uncertainty', directly addressing the key entities from the question. It provides relevant information about trade policy uncertainty and its implications, making it informative. There is no indication of hallucination, as the content aligns with current discussions on trade."
+      }
+    },
+    {
+      "query": "Crypto strategic reserve",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "crypto",
+        "strategic",
+        "reserve"
+      ],
+      "keywords_found": [
+        "crypto",
+        "strategic",
+        "reserve"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses Trump's proposal for a crypto strategic reserve, which includes various cryptocurrencies like XRP, Solana, and Cardano alongside Bitcoin and Ethereum. The speaker expresses support for allowing markets to explore alternative currencies but acknowledges personal uncertainty about cryptocurrencies while praising the historical role of private money systems.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the concept of a 'strategic reserve' in the context of cryptocurrencies. While it mentions crypto assets and strategic elements, it focuses more on Trump's proposal and personal opinions rather than providing a clear definition or explanation of what a crypto strategic reserve entails."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'crypto', 'strategic', and 'reserve', directly addressing the key topics from the question. It provides relevant information about Trump's proposal and discusses various cryptocurrencies, making it informative. There is no indication of hallucination in the details provided."
+      }
+    },
+    {
+      "query": "S&P 500 vs NASDAQ",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p 500",
+        "nasdaq"
+      ],
+      "keywords_found": [
+        "s&p 500",
+        "nasdaq"
+      ],
+      "keywords_missing": [],
+      "answer": "The video suggests that the S&P 500 may lag behind the NASDAQ (QQQ), which could be positive for the overall stock market. This outperformance by the NASDAQ relative to the S&P 500 is seen as a potential indicator of an upcoming bullish trend, particularly due to strong performance from Nvidia and other tech stocks.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare the S&P 500 and NASDAQ as requested. Instead, it discusses a potential outperformance of the NASDAQ relative to the S&P 500 and mentions specific stocks like Nvidia, which were not part of the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both the S&P 500 and NASDAQ, providing relevant information about their performance relative to each other and discussing implications for the stock market."
+      }
+    },
+    {
+      "query": "Current deficit vs 50-year average",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "current deficit",
+        "50-year average"
+      ],
+      "keywords_found": [
+        "current deficit",
+        "50-year average"
+      ],
+      "keywords_missing": [],
+      "answer": "The current deficit for fiscal year 2024 is projected to be around $1.9 trillion, which is significantly higher than the 50-year average of 3.7% of GDP. This indicates a substantial increase in the deficit compared to historical norms.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both the current deficit and the 50-year average, provides specific numerical values, and compares them, making it relevant and informative."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both the current deficit and the 50-year average, providing relevant and informative context about the deficit's comparison to historical norms."
+      }
+    },
+    {
+      "query": "S&P vs NASDAQ",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p",
+        "nasdaq"
+      ],
+      "keywords_found": [
+        "s&p",
+        "nasdaq"
+      ],
+      "keywords_missing": [],
+      "answer": "The video does not explicitly mention a comparison between the S&P and NASDAQ. It primarily discusses large caps versus small caps, noting the outperformance of large caps over the past year and five years, and suggests that midcaps might become more compelling if earnings recover.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention S&P or NASDAQ directly and instead focuses on large caps, small caps, and midcaps. It does not address the comparison between the two specific indices as asked."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention either the S&P or NASDAQ, failing to address the key entities from the question."
+      }
+    },
+    {
+      "query": "Canadian equities vs Australian equities",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "canadian equities",
+        "australian equities"
+      ],
+      "keywords_found": [
+        "canadian equities"
+      ],
+      "keywords_missing": [
+        "australian equities"
+      ],
+      "answer": "The video discusses how Canadian equities underperformed compared to their Australian counterparts, attributing this partly to less stringent company oversight in Canada's bull cycles and lower trust in local companies. It also mentions potential legislative changes that could encourage more investment in Canada.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Canadian equities, it does not directly compare them to Australian equities as requested. The answer provides additional context about legislative changes and company oversight that are not explicitly asked for in the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both Canadian equities and Australian equities, provides relevant information about their performance comparison, and discusses factors influencing this performance without any hallucinated information."
+      }
+    },
+    {
+      "query": "Bitcoin vs Ethereum",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "bitcoin",
+        "ethereum"
+      ],
+      "keywords_found": [
+        "bitcoin",
+        "ethereum"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how Bitcoin and Ethereum are seen as more stable compared to other altcoins, with some analysts predicting a potential decline in Ethereum's valuation relative to Bitcoin. It also highlights differences between the two cryptocurrencies, noting that while both have risen in value, Ethereum might be considered less safe than Bitcoin due to its centralized control structures.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare Bitcoin and Ethereum as requested in the question. It introduces additional concepts like stability, valuation predictions, and safety that are not explicitly asked for."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both Bitcoin and Ethereum, addresses their stability and valuation differences, and provides relevant information without hallucinating."
+      }
+    },
+    {
+      "query": "how many videos about california?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "california"
+      ],
+      "keywords_found": [
+        "california"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video about California mentioned in the provided context, which is the Mini Cooper Roadtrip Review.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions California as requested and provides a relevant and specific example of a video related to the topic."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'California' and provides relevant information about the number of videos related to it, specifically identifying one video."
+      }
+    },
+    {
+      "query": "how many videos about nevada?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nevada"
+      ],
+      "keywords_found": [
+        "nevada"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video mentioned that involves Nevada, which is \"Lets Explore SEMA! Part 1 // Vlog Series 027\".",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Nevada as requested and provides a specific video title that relates to the topic."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions Nevada and provides relevant information about a specific video related to it, addressing the question appropriately."
+      }
+    },
+    {
+      "query": "how many videos about tony blair?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "keywords_found": [
+        "tony blair"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos about Tony Blair are found in the provided context.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions Tony Blair, it does not address whether there are any videos about him, failing to fully respond to the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Tony Blair' as required by the question, making it incomplete and not directly addressing the inquiry."
+      }
+    },
+    {
+      "query": "how many videos about china?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "china"
+      ],
+      "keywords_found": [
+        "china"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video about China in the provided context, titled \"What China's Crackdown on Algorithm's Means for the US.\"",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions China as requested and is relevant to the question. It also correctly uses the provided context without hallucination."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'China' and provides relevant information about the number of videos related to it, specifically stating there is one video."
+      }
+    },
+    {
+      "query": "how many videos about philadelphia fed?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "philadelphia fed"
+      ],
+      "keywords_found": [
+        "philadelphia fed"
+      ],
+      "keywords_missing": [],
+      "answer": "No videos in the provided context are specifically about the Philadelphia Fed.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "While the answer mentions the key entity 'Philadelphia Fed', it does not address whether there are any videos about it. The answer is incomplete as it only states that no videos were found in a specific context but does not provide information on the overall availability of such videos."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention the key entity 'Philadelphia Fed' directly, which is essential to address the question."
+      }
+    },
+    {
+      "query": "Miniatures",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "miniatures"
+      ],
+      "keywords_found": [
+        "miniatures"
+      ],
+      "keywords_missing": [],
+      "answer": "The discussion revolves around miniatures, particularly in the context of model cars. The speakers mention that miniature models can appear fake due to lighting, surface detail, and background elements. They also compare miniatures to CGI effects used in films, noting how certain techniques like making miniatures slightly larger or improving lighting can make them more convincing.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'miniatures' as requested and provides relevant and informative details about the topic, including issues related to lighting and surface detail, as well as a comparison to CGI effects."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'miniatures' and provides relevant information about their use in model cars, comparisons to CGI, and techniques to enhance their realism."
+      }
+    },
+    {
+      "query": "Russia",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "russia"
+      ],
+      "keywords_found": [
+        "russia"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how external pressures, such as economic sanctions and proxy wars, have unified Russia internally. It contrasts this with the U.S., suggesting that despite worse economic inequalities, Russia is not closer to macro breakdown due to factors like a baby bust and geopolitical unity against external threats.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly mention 'Russia' as a key entity/topic in the response, and the content provided seems to be about Russia's internal unity against external pressures compared to the U.S., which was not explicitly asked for."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'Russia' and provides relevant information about its internal dynamics in the context of external pressures, making it informative and directly addressing the question."
+      }
+    },
+    {
+      "query": "Max Amini",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "max amini"
+      ],
+      "keywords_found": [
+        "max amini"
+      ],
+      "keywords_missing": [],
+      "answer": "Max Amini is a comedian who discusses his experiences traveling and performing stand-up comedy in various locations, including India. He shares stories about his travels, such as dealing with airport stress and accepting an ice bucket challenge with Maz Jobrani. His content often includes personal anecdotes and interactions with fans.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the question as it provides details about Max Amini's content and experiences that are not explicitly asked for. The question simply asks to mention 'max amini', which is done but lacks context or relevance."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Max Amini' and provides relevant information about his career as a comedian, including his experiences and anecdotes, which aligns with the question."
+      }
+    },
+    {
+      "query": "Dr. Seri",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dr. seri"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "dr. seri"
+      ],
+      "answer": "The context mentions Dr. Engel, who is described as a doctor trained in various fields including psychiatry and functional medicine. He took an unconventional path to combine different medical approaches for better patient care.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Dr. Seri, which is the key entity in the question. It instead discusses Dr. Engel, who was not mentioned in the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention Dr. Seri, which is the key entity from the question. Instead, it discusses Dr. Engel, making it irrelevant to the question asked."
+      }
+    },
+    {
+      "query": "Jesus Christ",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "jesus christ"
+      ],
+      "keywords_found": [
+        "jesus christ"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses theories suggesting the word \"Christ\" had roots in ancient practices related to drugs and shamanism, long before the figure of Jesus Christ as traditionally understood. It mentions controversial claims about the use of the term \"Christ\" in contexts unrelated to religion, including its potential connection to substances and rituals.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly mention Jesus Christ and instead discusses theories about the term 'Christ' that are unrelated to the traditional religious figure."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not directly mention 'Jesus Christ' as a key entity/topic, focusing instead on theories about the term 'Christ' without adequately addressing the figure of Jesus Christ."
+      }
+    },
+    {
+      "query": "Marriage",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "marriage"
+      ],
+      "keywords_found": [
+        "marriage"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses concerns about the potential impact of allowing same-sex marriage on traditional heterosexual relationships, arguing that expanding the definition of marriage might make it seem meaningless and affect societal views on its importance. The speaker believes that marriage is crucial for human civilization but expresses doubt that legalizing same-sex marriage would significantly change how straight people view or practice their own marriages.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly address the question 'Marriage' by providing basic information about what marriage is or its general characteristics. Instead, it focuses on a specific debate regarding same-sex marriage."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'marriage' and discusses its implications, making it relevant and informative. It does not contain hallucinated information."
+      }
+    },
+    {
+      "query": "job roles",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "job",
+        "roles"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "job",
+        "roles"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "Audience participation",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "audience",
+        "participation"
+      ],
+      "keywords_found": [
+        "audience",
+        "participation"
+      ],
+      "keywords_missing": [],
+      "answer": "The videos discuss how audience participation can affect crowd work performances, noting that audiences should focus on the rhythm of jokes and not interrupt unnecessarily. Some comics find it disruptive when the audience asks personal questions during a performance, preferring instead for the audience to engage with the material being presented.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'audience' and 'participation', discusses how audience participation can affect performances, and provides relevant examples without introducing incorrect information."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'audience' and 'participation,' directly addressing the key entities from the question. It is relevant and informative, discussing the impact of audience participation on performances and providing insights into the preferences of comics regarding audience engagement."
+      }
+    },
+    {
+      "query": "comedy interactions",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "comedy",
+        "interactions"
+      ],
+      "keywords_found": [
+        "comedy",
+        "interactions"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses comedy interactions, including how context is crucial for understanding humor, as seen in the example of telling a joke without proper setup leading to confusion. It also mentions interactions with comedians like Patrice and Kurt Metzger, highlighting how these experiences shaped the speaker's approach to comedy and his relationships within the comedy community.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both 'comedy' and 'interactions', is relevant to the question, and does not contain any hallucinations."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions both 'comedy' and 'interactions,' directly addressing the key entities from the question. It provides relevant and informative content about the importance of context in humor and personal experiences with comedians, which enhances the understanding of comedy interactions."
+      }
+    },
+    {
+      "query": "emotional impact",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "emotional",
+        "impact"
+      ],
+      "keywords_found": [
+        "emotional",
+        "impact"
+      ],
+      "keywords_missing": [],
+      "answer": "The video discusses how early experiences, such as not being comforted when crying, can unconsciously shape a child's belief that they are unlovable and the world is unsafe. This impacts their emotional development and can lead to lifelong challenges in forming secure attachments and trusting others.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions 'emotional' and discusses its impact on a child's development, which is relevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'emotional' and 'impact,' directly addressing the key entities from the question. It is relevant and informative, discussing how early experiences affect emotional development and relationships. The information provided is accurate and does not appear to be hallucinated."
+      }
+    },
+    {
+      "query": "Indians vs Western cultures",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "indians",
+        "western cultures"
+      ],
+      "keywords_found": [
+        "indians",
+        "western cultures"
+      ],
+      "keywords_missing": [],
+      "answer": "The video highlights differences between Indians and Western cultures, noting that Indians are generally described as humble and down-to-earth, often going unnoticed despite their achievements. In contrast, individuals from Western cultures may be more vocal about themselves and better recognized for their accomplishments.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions both Indians and Western cultures as expected. It provides a relevant comparison between the two cultures regarding humility and recognition of achievements."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions both 'Indians' and 'Western cultures', provides relevant information about their cultural differences, and does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "cops in LA vs cops in Texas",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "cops in la",
+        "cops in texas"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "cops in la",
+        "cops in texas"
+      ],
+      "answer": "The video does not directly compare cops in Los Angeles to those in Texas. It discusses general concerns about police training, qualifications, and the respect for law enforcement roles, focusing on issues faced by police officers in Los Angeles.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare cops in Los Angeles to those in Texas as requested. It instead discusses general concerns about police training and qualifications without providing specific information about the differences or similarities between LA and Texas police forces."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'cops in Texas' and only partially addresses 'cops in LA', failing to directly compare the two as requested."
+      }
+    },
+    {
+      "query": "white people vs other ethnic groups",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "white people",
+        "other ethnic groups"
+      ],
+      "keywords_found": [
+        "other ethnic groups"
+      ],
+      "keywords_missing": [
+        "white people"
+      ],
+      "answer": "The discussion revolves around the historical experiences of different racial communities, with a focus on how the White community has generally not faced as many severe setbacks compared to others. The speaker acknowledges that while some poor White individuals exist and may face hardships, historically, global tyranny, violence, and genocide have disproportionately affected other ethnic groups.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not directly compare white people to other ethnic groups as requested. It focuses more on historical experiences and hardships faced by different racial communities without making a direct comparison between white people and other ethnic groups."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer mentions 'White community' and 'other ethnic groups,' addressing the key entities from the question. It provides relevant information about the historical context and experiences of these groups, and it does not contain any hallucinated information."
+      }
+    },
+    {
+      "query": "British buildings vs Jesus",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "british buildings",
+        "jesus"
+      ],
+      "keywords_found": [
+        "british buildings",
+        "jesus"
+      ],
+      "keywords_missing": [],
+      "answer": "The video does not contain any discussion related to \"British buildings vs Jesus.\" The content focuses on archaeological evidence and historical figures mentioned in the New Testament, such as Pontius Pilate, Caiaphas, and Herod Antipas.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention 'British buildings' or directly address the comparison implied in 'vs Jesus', making it irrelevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention either 'British buildings' or 'Jesus,' failing to address the key entities from the question."
+      }
+    },
+    {
+      "query": "British faces vs Persian faces",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "british faces",
+        "persian faces"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "british faces",
+        "persian faces"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about dr. seri?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dr. seri"
+      ],
+      "keywords_found": [
+        "dr. seri"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there are no specific videos about Dr. Seri mentioned. The context lists channels and video counts but does not contain any information related to Dr. Seri.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Dr. Seri and is not relevant to the question."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Dr. Seri' directly, failing to address the key entity from the question. Additionally, it lacks relevance and informativeness regarding the specific inquiry about videos related to Dr. Seri."
+      }
+    },
+    {
+      "query": "how many videos about max amini?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "max amini"
+      ],
+      "keywords_found": [
+        "max amini"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video about Max Amini in the provided context.",
+      "validation_qwen": {
+        "pass": true,
+        "reason": "The answer mentions Max Amini, is relevant to the question, and correctly states the number of videos found without hallucinating."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Max Amini' and provides relevant information about the number of videos, which directly addresses the question."
+      }
+    },
+    {
+      "query": "how many videos about miniatures?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "miniatures"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "miniatures"
+      ],
+      "answer": "",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "Empty answer"
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "Empty answer"
+      }
+    },
+    {
+      "query": "how many videos about russia?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "russia"
+      ],
+      "keywords_found": [
+        "russia"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video about Russia mentioned in the provided context, which is \"Joe Rogan Experience #1787 - Dakota Meyer.\"",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not provide a numerical count of videos about Russia as requested in the question."
+      },
+      "validation_gpt4o": {
+        "pass": true,
+        "reason": "The answer correctly mentions 'Russia' and provides relevant information about the specific video related to the topic."
+      }
+    },
+    {
+      "query": "how many videos about jesus christ?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "jesus christ"
+      ],
+      "keywords_found": [
+        "jesus christ"
+      ],
+      "keywords_missing": [],
+      "answer": "Based on the provided context, there are no videos about Jesus Christ listed.",
+      "validation_qwen": {
+        "pass": false,
+        "reason": "The answer does not mention Jesus Christ and instead states there are no videos listed, which is not relevant to the question as it could be asking for an estimate or a general number rather than a specific count."
+      },
+      "validation_gpt4o": {
+        "pass": false,
+        "reason": "The answer does not mention 'Jesus Christ' and fails to provide relevant information regarding the number of videos about him."
+      }
+    }
+  ]
+}

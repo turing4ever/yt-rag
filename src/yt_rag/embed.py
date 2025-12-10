@@ -126,6 +126,14 @@ def embed_all_sections(
         existing_ids = set(store.get_all_ids())
         all_sections = [s for s in all_sections if s.id not in existing_ids]
 
+    # Always update system info (even if no new sections to embed)
+    from datetime import datetime
+    actual_model = model or (DEFAULT_OLLAMA_EMBED_MODEL if use_local else DEFAULT_EMBEDDING_MODEL)
+    db.set_system_info("embedding_backend", "ollama" if use_local else "openai")
+    db.set_system_info("embedding_model", actual_model)
+    db.set_system_info("embedding_dimension", str(store.dimension))
+    db.set_system_info("sections_index_size", str(store.size))
+
     if not all_sections:
         return EmbedResult(sections_embedded=0, tokens_used=0)
 
@@ -133,6 +141,9 @@ def embed_all_sections(
 
     # Save index
     store.save()
+
+    # Update last embed time
+    db.set_system_info("last_embed_at", datetime.now().isoformat())
 
     return result
 

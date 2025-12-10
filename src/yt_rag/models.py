@@ -18,6 +18,7 @@ class Channel(BaseModel):
     subscriber_count: int | None = None
     tags: list[str] | None = None
     handle: str | None = None  # @username
+    category: str | None = None  # e.g., 'automotive', 'finance', 'comedy'
     last_synced_at: datetime | None = None
 
 
@@ -177,4 +178,27 @@ class ChatMessage(BaseModel):
     session_id: str
     role: str  # 'user' or 'assistant'
     content: str
+    created_at: datetime | None = None
+
+
+class Keyword(BaseModel):
+    """Extracted keyword from video transcripts."""
+
+    id: int | None = None
+    keyword: str
+    frequency: int = 0  # Total occurrences across all videos
+    video_count: int = 0  # Number of videos containing this keyword
+    category: str | None = None  # e.g., 'automotive', 'technical', 'brand'
+    is_stopword: bool = False
+    created_at: datetime | None = None
+
+
+class Synonym(BaseModel):
+    """Synonym mapping for keyword boosting."""
+
+    id: int | None = None
+    keyword: str  # The primary/canonical term
+    synonym: str  # A word that should match as equivalent
+    source: str = "manual"  # 'manual', 'wordnet', 'llm', etc.
+    approved: bool = False  # Whether reviewed/approved by user
     created_at: datetime | None = None

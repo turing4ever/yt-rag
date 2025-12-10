@@ -26,7 +26,17 @@ from .openai_client import (
     aollama_chat_stream,
     aollama_embed_text,
 )
-from .search import SearchHit, _compute_keyword_boost
+from .search import (
+    SearchHit,
+    QueryType,
+    analyze_query_with_llm,
+    classify_query,
+    compute_relevance_metrics,
+    expand_terms_with_synonyms,
+    extract_entity_terms,
+    filter_with_llm_analysis,
+    find_precise_timestamp,
+)
 from .vectorstore import get_sections_store, get_summaries_store
 
 
@@ -55,26 +65,32 @@ class AskResult:
     latency_ms: int
 
 
-RAG_SYSTEM_PROMPT = """You are a helpful assistant answering questions about YouTube videos.
+RAG_SYSTEM_PROMPT = """You are a helpful assistant that answers questions based on YouTube video transcripts.
 
-Guidelines:
-1. Base answers on the provided context
-2. Cite sources with [Title](URL)
-3. Be concise"""
+CRITICAL: You must ONLY answer based on the provided context. NEVER mention videos, channels, or content that is not explicitly in the context. If the context doesn't contain relevant information, say so - do not guess or make up answers.
 
-RAG_USER_PROMPT = """Context from video transcripts:
+IMPORTANT: Write a short paragraph answer only. Do NOT:
+- List numbered items
+- Include URLs or timestamps
+- Format as "Channel | Video Title"
+- Repeat the source entries
+- Mention any videos not in the provided context
+
+Only discuss topics explicitly mentioned in the user's query. If the user searches a single keyword (like a car model), just say what videos are available - do not describe the video content or add any details.
+
+The system displays sources separately. Keep answers to 1-2 sentences."""
+
+RAG_USER_PROMPT = """Context from video transcripts (found via semantic search and synonym matching):
 
 {context}
 
-Question: {question}
-
-Answer using the context above. Cite sources with markdown links."""
+Question: {question}"""
 
 RAG_CONVERSATION_PROMPT = """Context from video transcripts:
 
 {context}
 
-Answer the user's question using the context above. Cite sources with markdown links."""
+Answer the user's question using the context above."""
 
 
 def _format_context(
@@ -285,6 +301,9 @@ class RAGService:
                     tags=video.tags,
                     score=result.score,
                     timestamp_url=timestamp_url,
+                    view_count=video.view_count,
+                    like_count=video.like_count,
+                    published_at=video.published_at,
                 )
             )
 
@@ -376,6 +395,9 @@ class RAGService:
                     tags=video.tags,
                     score=result.score,
                     timestamp_url=timestamp_url,
+                    view_count=video.view_count,
+                    like_count=video.like_count,
+                    published_at=video.published_at,
                 )
             )
 
@@ -442,6 +464,7 @@ class RAGService:
         use_ollama: bool = True,
         ollama_model: str = DEFAULT_OLLAMA_MODEL,
         conversation_history: list[dict[str, str]] | None = None,
+        cached_hits: list[SearchHit] | None = None,
     ) -> AsyncIterator[str | SearchHit | dict]:
         """Search and stream the answer using two-phase retrieval.
 
@@ -451,16 +474,247 @@ class RAGService:
         Args:
             query: User's question
             conversation_history: Prior messages [{"role": "user"|"assistant", "content": "..."}]
+            cached_hits: Previous search results for follow-up queries
 
         Yields:
             - VideoHit objects from summary search
             - SearchHit objects from section search
             - dict with {"type": "search_done", ...} when search completes
+            - dict with {"type": "followup", "cached_hits": [...]} for follow-up questions
             - str chunks of the answer as they stream
             - dict with {"type": "done", "latency_ms": N} at the end
         """
+        import logging
+
+        logger = logging.getLogger(__name__)
         start_time = time.time()
 
+        # Analyze query with LLM to detect intent and extract keywords
+        llm_analysis = analyze_query_with_llm(query, use_local=use_ollama)
+
+        # Check for META queries (library stats) - LLM classification only
+        if llm_analysis and llm_analysis.query_type == QueryType.META:
+            logger.info(f"Meta query detected, returning stats without search")
+
+            # Get comprehensive library stats
+            stats = self.db.get_stats()
+            channels = self.db.list_channels()
+            system_info = self.db.get_all_system_info()
+
+            # Get index info
+            sections_store = self.store
+            summaries_store = self.summaries_store
+            index_type = "GPU" if sections_store.use_gpu else "CPU"
+
+            # Build comprehensive stats text
+            stats_lines = [
+                "**Library Statistics**",
+                f"- Videos: {stats.get('videos_fetched', 0):,} (fetched) / {stats.get('videos_total', 0):,} (total)",
+                f"- Channels: {len(channels)}",
+                f"- Sections: {stats.get('sections', 0):,}",
+                f"- Summaries: {stats.get('summaries', 0):,}",
+                f"- Segments: {stats.get('segments', 0):,}",
+                "",
+                "**Index Info**",
+                f"- Sections index: {sections_store.size:,} vectors ({sections_store.dimension}d, {index_type})",
+                f"- Summaries index: {summaries_store.size:,} vectors ({summaries_store.dimension}d, {index_type})",
+                f"- Embedding: {system_info.get('embedding_backend', 'ollama')} ({system_info.get('embedding_model', 'unknown')})",
+            ]
+
+            # Add last embed timestamp if available
+            if system_info.get("last_embed_at"):
+                stats_lines.append(f"- Last indexed: {system_info.get('last_embed_at', 'unknown')[:19]}")
+
+            stats_lines.extend([
+                "",
+                "**Channels**",
+                ", ".join(ch.name for ch in channels[:20]) + ("..." if len(channels) > 20 else ""),
+            ])
+            stats_text = "\n".join(stats_lines)
+
+            # Signal "search" complete with no results
+            yield {
+                "type": "search_done",
+                "count": 0,
+                "video_summaries": 0,
+                "total_matched_videos": 0,
+                "meta_query": True,
+            }
+
+            # Just yield the answer directly, no LLM needed
+            yield stats_text
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            yield {"type": "done", "latency_ms": latency_ms, "section_hits": []}
+            return
+
+        # Handle follow-up questions using cached results
+        if llm_analysis and llm_analysis.query_type == QueryType.FOLLOWUP and cached_hits:
+            logger.info(f"Follow-up query detected: {llm_analysis.reasoning}")
+            # Signal follow-up mode with cached hits
+            yield {"type": "followup", "cached_hits": cached_hits}
+
+            # Build context from cached hits for LLM answer
+            section_hits = cached_hits[:top_k]
+            for hit in section_hits:
+                yield hit
+
+            # Signal search completion
+            yield {
+                "type": "search_done",
+                "count": len(section_hits),
+                "video_summaries": 0,
+                "total_matched_videos": len({h.video_id for h in section_hits}),
+            }
+
+            # Generate answer using cached context
+            context = _format_context(section_hits, db=self.db)
+
+            messages = [
+                {"role": "system", "content": RAG_SYSTEM_PROMPT},
+            ]
+
+            # Add conversation history if provided
+            if conversation_history:
+                messages.extend(conversation_history[-10:])  # Last 10 messages for context
+
+            messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"})
+
+            # Stream answer
+            if use_ollama:
+                async for chunk in aollama_chat_stream(
+                    messages=messages,
+                    model=ollama_model,
+                    temperature=temperature,
+                ):
+                    yield chunk
+            else:
+                async for chunk in achat_completion_stream(
+                    messages=messages,
+                    model=chat_model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                ):
+                    yield chunk
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            yield {"type": "done", "latency_ms": latency_ms, "section_hits": section_hits}
+            return
+
+        # Handle popularity queries - search by view count instead of semantics
+        if llm_analysis and llm_analysis.query_type == QueryType.POPULARITY:
+            logger.info(f"Popularity query detected: {llm_analysis.reasoning}")
+
+            # Extract channel filter from keywords if present (e.g., "joe rogan" -> find channel)
+            channel_filter = None
+            title_filter = None
+            if llm_analysis.keywords:
+                keyword_str = " ".join(llm_analysis.keywords)
+
+                # Try to find a matching channel by name or handle
+                channels = self.db.list_channels()
+                for ch in channels:
+                    # Check channel name
+                    if keyword_str.lower() in ch.name.lower():
+                        channel_filter = ch.id
+                        break
+                    # Check handle (e.g., @PowerfulJRE)
+                    if ch.handle and keyword_str.lower() in ch.handle.lower():
+                        channel_filter = ch.id
+                        break
+
+                # If no channel match, use as title filter to find videos with keywords
+                if not channel_filter:
+                    title_filter = keyword_str
+
+            # Calculate published_after date from time_filter_days
+            published_after = None
+            if llm_analysis.time_filter_days:
+                from datetime import datetime, timedelta
+                published_after = datetime.now() - timedelta(days=llm_analysis.time_filter_days)
+                logger.info(f"Time filter: last {llm_analysis.time_filter_days} days (after {published_after.date()})")
+
+            # Get top videos by view count
+            top_videos = self.db.get_top_videos_by_views(
+                limit=top_k,
+                channel_id=channel_filter or channel_id,
+                title_contains=title_filter,
+                published_after=published_after,
+            )
+
+            if not top_videos:
+                yield {"type": "error", "message": "No videos with view count data. Run 'yt-rag refresh-meta --video --force' first."}
+                return
+
+            # Build SearchHits from top videos (use first section of each)
+            hits: list[SearchHit] = []
+            for video in top_videos:
+                sections = self.db.get_sections(video.id)
+                if not sections:
+                    continue
+                section = sections[0]  # Use first section
+                channel = self.db.get_channel(video.channel_id) if video.channel_id else None
+
+                timestamp = round(section.start_time) if section.start_time else 0
+                timestamp_url = f"https://youtube.com/watch?v={video.id}&t={timestamp}s"
+
+                hit = SearchHit(
+                    section=section,
+                    video_id=video.id,
+                    video_title=video.title,
+                    video_url=video.url,
+                    channel_id=video.channel_id,
+                    channel_name=channel.name if channel else None,
+                    host=video.host,
+                    tags=video.tags,
+                    score=1.0,  # Placeholder score
+                    timestamp_url=timestamp_url,
+                    view_count=video.view_count,
+                    like_count=video.like_count,
+                    published_at=video.published_at,
+                )
+                hits.append(hit)
+                yield hit
+
+            # Signal search completion
+            yield {
+                "type": "search_done",
+                "count": len(hits),
+                "video_summaries": 0,
+                "total_matched_videos": len(hits),
+            }
+
+            # Generate answer
+            if hits:
+                context = _format_context(hits, db=self.db)
+                messages = [
+                    {"role": "system", "content": RAG_SYSTEM_PROMPT},
+                ]
+                if conversation_history:
+                    messages.extend(conversation_history[-10:])
+                messages.append({"role": "user", "content": f"Context:\n{context}\n\nQuestion: {query}"})
+
+                if use_ollama:
+                    async for chunk in aollama_chat_stream(
+                        messages=messages,
+                        model=ollama_model,
+                        temperature=temperature,
+                    ):
+                        yield chunk
+                else:
+                    async for chunk in achat_completion_stream(
+                        messages=messages,
+                        model=chat_model,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                    ):
+                        yield chunk
+
+            latency_ms = int((time.time() - start_time) * 1000)
+            yield {"type": "done", "latency_ms": latency_ms, "section_hits": hits}
+            return
+
+        # Regular search flow
         # Search phase - embed query using appropriate backend
         query_embedding = await self._embed_query(query)
 
@@ -512,6 +766,9 @@ class RAGService:
                 video_hits.append(video_hit)
                 yield video_hit
 
+        # Classify query for retrieval strategy
+        query_type = classify_query(query)
+
         # Phase 2: Search sections for detailed content
         # Do a broad search to count ALL matching videos
         broad_results = self.store.search(
@@ -530,7 +787,7 @@ class RAGService:
 
         total_matched_videos = len(all_matched_video_ids)
 
-        # Phase 2b: Hybrid search - apply keyword boosting and re-rank
+        # Phase 2b: Hybrid search - apply relevance scoring and re-rank
         # Take oversampled pool for re-ranking
         oversample_k = max(top_k, DEFAULT_TOP_K_OVERSAMPLE)
         if oversample_k < len(broad_results):
@@ -538,13 +795,35 @@ class RAGService:
         else:
             candidate_results = broad_results
 
-        # Build hits with keyword-boosted scores
-        candidate_hits: list[tuple[float, SearchHit]] = []  # (boosted_score, hit)
+        # Filter by score threshold (use lower threshold for entity searches)
+        min_threshold = score_threshold * 0.7 if query_type == QueryType.ENTITY else score_threshold
+        candidate_results = [r for r in candidate_results if r.score >= min_threshold]
+
+        # Use LLM analysis (already done above, or do it now if not a follow-up)
+        # Filter to only results with keyword/synonym matches to avoid semantic drift
+        if llm_analysis:
+            # Use the analysis from earlier
+            candidate_results, _ = filter_with_llm_analysis(
+                query, candidate_results, self.db, use_local=use_ollama
+            )
+            query_type = llm_analysis.query_type
+            logger.info(
+                f"LLM analysis: type={query_type.value}, "
+                f"keywords={llm_analysis.keywords}, "
+                f"reasoning={llm_analysis.reasoning!r}"
+            )
+        else:
+            # LLM analysis failed earlier, try again
+            candidate_results, llm_analysis = filter_with_llm_analysis(
+                query, candidate_results, self.db, use_local=use_ollama
+            )
+            if llm_analysis:
+                query_type = llm_analysis.query_type
+
+        # Build hits with relevance-based scores
+        candidate_hits: list[tuple[float, SearchHit]] = []  # (score, hit)
 
         for result in candidate_results:
-            if result.score < score_threshold:
-                continue
-
             section = self.db.get_section(result.id)
             if not section:
                 continue
@@ -555,17 +834,19 @@ class RAGService:
 
             channel = self.db.get_channel(video.channel_id) if video.channel_id else None
 
-            # Compute keyword boost
-            keyword_boost = _compute_keyword_boost(
+            # Compute relevance metrics (multiplicative + additive scoring)
+            metrics = compute_relevance_metrics(
                 query=query,
+                query_type=query_type,
+                semantic_score=result.score,
                 video_title=video.title,
                 section_title=section.title,
                 section_content=section.content,
             )
 
-            boosted_score = result.score + keyword_boost
-
-            timestamp = round(section.start_time) if section.start_time else 0
+            # Find precise timestamp within section where query terms appear
+            precise_ts = find_precise_timestamp(query, section, self.db)
+            timestamp = round(precise_ts) if precise_ts else (round(section.start_time) if section.start_time else 0)
             timestamp_url = f"https://youtube.com/watch?v={video.id}&t={timestamp}s"
 
             hit = SearchHit(
@@ -577,12 +858,16 @@ class RAGService:
                 channel_name=channel.name if channel else None,
                 host=video.host,
                 tags=video.tags,
-                score=boosted_score,  # Use boosted score
+                score=metrics.final_score,  # Use new relevance-based score
                 timestamp_url=timestamp_url,
+                metrics=metrics,
+                view_count=video.view_count,
+                like_count=video.like_count,
+                published_at=video.published_at,
             )
-            candidate_hits.append((boosted_score, hit))
+            candidate_hits.append((metrics.final_score, hit))
 
-        # Sort by boosted score (descending) and take top_k
+        # Sort by relevance score (descending) and take top_k
         candidate_hits.sort(key=lambda x: x[0], reverse=True)
         hits = []
         for _, hit in candidate_hits[:top_k]:
@@ -599,11 +884,16 @@ class RAGService:
 
         # Generate streaming answer with both video summaries and section details
         if hits or video_hits:
+            # Filter video summaries to only include videos that have relevant sections
+            # This prevents irrelevant summary matches from polluting the context
+            section_video_ids = {hit.video_id for hit in hits}
+            filtered_video_hits = [vh for vh in video_hits if vh.video_id in section_video_ids]
+
             context = _format_context(
                 hits,
                 db=self.db,
                 total_matched_videos=total_summary_matches,  # Use summary count - more accurate
-                video_hits=video_hits,
+                video_hits=filtered_video_hits,
             )
 
             # Enhance "how many" questions with the actual count
@@ -669,7 +959,7 @@ class RAGService:
             yield "No relevant content found for your query."
 
         latency_ms = int((time.time() - start_time) * 1000)
-        yield {"type": "done", "latency_ms": latency_ms}
+        yield {"type": "done", "latency_ms": latency_ms, "section_hits": hits}
 
     def get_status(self) -> dict:
         """Get database and index status."""

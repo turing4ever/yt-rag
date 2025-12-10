@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Report (filtered: disagree)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            font-size: 14px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 24px; font-weight: bold; color: #333; }
+        .stat-box .label { color: #666; font-size: 12px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #333;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 500;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        tr:hover { background: #f8f9fa; }
+        .num { width: 40px; text-align: center; color: #999; }
+        .meta { width: 280px; }
+        .query { font-size: 15px; margin-bottom: 8px; }
+        .channel, .video, .type, .keywords { font-size: 12px; color: #666; margin: 2px 0; }
+        .video {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+        .answer-cell { width: 35%; }
+        .answer {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .empty-answer { color: #999; font-style: italic; }
+        .validation { width: 300px; }
+        .val-qwen, .val-gpt { margin-bottom: 10px; }
+        .reason { font-size: 11px; color: #666; margin-top: 4px; }
+        .agreement { margin-top: 8px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .badge-pass { background: #d4edda; color: #155724; }
+        .badge-fail { background: #f8d7da; color: #721c24; }
+        .badge-agree { background: #d1ecf1; color: #0c5460; }
+        .badge-disagree { background: #fff3cd; color: #856404; }
+        .badge-unknown { background: #e2e3e5; color: #383d41; }
+        .type-check { width: 80px; text-align: center; }
+        .kw-found {
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }
+        .kw-missing {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }
+        .filter-info {
+            background: #fff3cd;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 RAG Benchmark Report</h1>
+        <p>Pipeline: qwen (local) | Validators: qwen, gpt-4o-mini</p>
+
+        <div class="summary">
+            <div class="summary-grid">
+                <div class="stat-box">
+                    <div class="value">160</div>
+                    <div class="label">Total Tests</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">57.5%</div>
+                    <div class="label">Classification (92/160)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">81.0%</div>
+                    <div class="label">Keyword Match (196/242)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">33.1%</div>
+                    <div class="label">Qwen Pass (53)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">63.1%</div>
+                    <div class="label">GPT-4o Pass (101)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class='filter-info'>Filtered: disagree (50 results)</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Test Info</th>
+                    <th>RAG Answer</th>
+                    <th>Validation</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr class="result-row">
+            <td class="num">1</td>
+            <td class="meta">
+                <div class="query"><strong>Car Upgrades</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Mustang GT vs E92 BMW M3 | Weighing Cost and Performance</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">upgrades</span><span class="kw-missing">car</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The videos discuss upgrades to the 2025 Genesis G80 Sport, including engine options, suspension improvements, and the 2025 Porsche 911 992.2 with its hybridization and increased horsepower through a new turbo technology and electric motor integration.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly mention &#x27;car upgrades&#x27; as requested in the question. It discusses specific models and features but does not clearly address general car upgrades.">✗ Fail</span>
+                    <div class="reason">The answer does not directly mention &#x27;car upgrades&#x27; as requested in the question. It discusses specific models and features but does not clearly address general car upgrades.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;upgrades&#x27; related to specific car models, addressing the key topics of &#x27;car&#x27; and &#x27;upgrades&#x27; while providing relevant and informative details about the upgrades.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;upgrades&#x27; related to specific car models, addressing the key topics of &#x27;car&#x27; and &#x27;upgrades&#x27; while providing relevant and informative details about the upgrades.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">2</td>
+            <td class="meta">
+                <div class="query"><strong>Nonprofit Operations</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Shelby GT350R Giveaway/Fundraiser Q&amp;A with TRI Industries</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">nonprofit</span><span class="kw-missing">operations</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The discussion in the video highlights that the nonprofit operates at an extremely low overhead cost, with only 8% going towards basic operating expenses, leaving nearly all funds to directly benefit the children. This approach is contrasted with typical nonprofits where a larger portion of funds are spent on administrative costs.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer does not directly mention &#x27;operations&#x27;, it provides relevant information about nonprofit spending on operations. However, the question specifically asks for information related to nonprofit operations, which are not explicitly discussed in the given answer.">✗ Fail</span>
+                    <div class="reason">While the answer does not directly mention &#x27;operations&#x27;, it provides relevant information about nonprofit spending on operations. However, the question specifically asks for information related to nonprofit operations, which are not explicitly discussed in the given answer.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;nonprofit&#x27; and &#x27;operations,&#x27; addresses the question by discussing the low overhead costs of the nonprofit, and provides relevant and accurate information without hallucination.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;nonprofit&#x27; and &#x27;operations,&#x27; addresses the question by discussing the low overhead costs of the nonprofit, and provides relevant and accurate information without hallucination.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">3</td>
+            <td class="meta">
+                <div class="query"><strong>Driving Experience</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 The Unfavorable Scion FR-S / BRZ Review Chapter 3 | COMING SOON</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">driving</span> <span class="kw-found">experience</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The videos discuss various driving experiences, from the immediate adjustments needed for a new Lexus UX to the refined dynamics of a 2016 VW Golf R. One vlogger shares a wild first experience driving an unlicensed, borrowed van filled with adult content and friends to Six Flags amusement park.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions driving experiences, it does not directly address the concept of &#x27;driving experience&#x27; as a personal or professional skill or knowledge. Instead, it focuses on various scenarios and events related to driving.">✗ Fail</span>
+                    <div class="reason">While the answer mentions driving experiences, it does not directly address the concept of &#x27;driving experience&#x27; as a personal or professional skill or knowledge. Instead, it focuses on various scenarios and events related to driving.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;driving&#x27; and &#x27;experience&#x27; while providing relevant examples of different driving experiences, making it informative and aligned with the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;driving&#x27; and &#x27;experience&#x27; while providing relevant examples of different driving experiences, making it informative and aligned with the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">4</td>
+            <td class="meta">
+                <div class="query"><strong>LFA vs RC</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Lexus LFA | A Proper Goodbye</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">lfa</span> <span class="kw-found">rc</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video mentions that the LFA refocused Lexus on its purpose, leading to the development of the RC F as part of their F product line. The LFA was more of a skunkworks design, while the RC F represents an evolution and continuation of this series with improved suspension and engine characteristics.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare LFA and RC as requested. It provides context about the LFA and RC F but does not address their differences or similarities.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare LFA and RC as requested. It provides context about the LFA and RC F but does not address their differences or similarities.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions both LFA and RC, providing relevant information about their relationship and differences, and does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions both LFA and RC, providing relevant information about their relationship and differences, and does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">5</td>
+            <td class="meta">
+                <div class="query"><strong>Pro 4X</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">pro 4x</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Videos available are &quot;An Idiot Proof 4x4? // 2022 Nissan Frontier Pro-4X Off-Road&quot; and &quot;The Last Simple Reliable Truck? // 2025 Nissan Frontier Pro4X Review&quot;.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention &#x27;Pro 4X&#x27; directly, although it is implied in the context of the Frontier Pro-4X Off-Road video. However, the question specifically asks for &#x27;Pro 4X&#x27;, which should be explicitly mentioned.">✗ Fail</span>
+                    <div class="reason">The answer does not mention &#x27;Pro 4X&#x27; directly, although it is implied in the context of the Frontier Pro-4X Off-Road video. However, the question specifically asks for &#x27;Pro 4X&#x27;, which should be explicitly mentioned.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Pro-4X&#x27; in the context of relevant videos, directly addressing the key entity/topic from the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Pro-4X&#x27; in the context of relevant videos, directly addressing the key entity/topic from the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ entity
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">6</td>
+            <td class="meta">
+                <div class="query"><strong>Project Car Assembly</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 Aghh! So Close // MASSIVE Suspension Upgrade &amp; Overhaul</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">project</span> <span class="kw-found">car</span> <span class="kw-found">assembly</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video describes the assembly process of a drive shaft for a car project, focusing on proper fitting of the CV joint components and ensuring they are well-lubricated to function correctly.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer is relevant to car assembly, it does not directly address a project on car assembly as expected. It focuses specifically on the drive shaft and CV joint components.">✗ Fail</span>
+                    <div class="reason">While the answer is relevant to car assembly, it does not directly address a project on car assembly as expected. It focuses specifically on the drive shaft and CV joint components.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;car&#x27; and &#x27;assembly&#x27; and is relevant to the project context, providing informative details about the assembly process.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;car&#x27; and &#x27;assembly&#x27; and is relevant to the project context, providing informative details about the assembly process.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">7</td>
+            <td class="meta">
+                <div class="query"><strong>Performance</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 This Was More Fun Than The Hellcat? // 2021 Miata Manual Review</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">performance</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses the performance of a Shelby GT350, highlighting its powerful engine and high-performance tires and brakes suitable for track use.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention performance in terms of system evaluation or metrics as implied by the question.">✗ Fail</span>
+                    <div class="reason">The answer does not mention performance in terms of system evaluation or metrics as implied by the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;performance&#x27; and provides relevant information about the Shelby GT350&#x27;s engine, tires, and brakes, which are all related to its performance capabilities.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;performance&#x27; and provides relevant information about the Shelby GT350&#x27;s engine, tires, and brakes, which are all related to its performance capabilities.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">8</td>
+            <td class="meta">
+                <div class="query"><strong>car maintenance</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 Installing Track-Ready Cooling Upgrades // Project TT Quattro</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">car</span> <span class="kw-found">maintenance</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Videos related to car maintenance include &quot;Buying A Long Term Toyota GR86 | Plans and Process,&quot; which discusses touchless washes versus hand washing, proper car care in winter, and avoiding damage; &quot;The Engine is Almost Ready! // Project MR2 Turbo Pt.12,&quot; focusing on engine cleaning and maintenance tasks like changing coolant lines and oil pan gaskets; and &quot;VLOG 7: Winter Woes and Other Crap,&quot; which addresses challenges of maintaining cars during snowy seasons, such as dealing with salt and limi</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions &#x27;car&#x27; and touches on maintenance topics, it does not directly address common car maintenance practices or provide specific advice related to car maintenance as implied by the question.">✗ Fail</span>
+                    <div class="reason">While the answer mentions &#x27;car&#x27; and touches on maintenance topics, it does not directly address common car maintenance practices or provide specific advice related to car maintenance as implied by the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;car&#x27; and &#x27;maintenance&#x27; while providing relevant and informative content about car maintenance through various video examples.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;car&#x27; and &#x27;maintenance&#x27; while providing relevant and informative content about car maintenance through various video examples.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">9</td>
+            <td class="meta">
+                <div class="query"><strong>manual vs automatic</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 This Was More Fun Than The Hellcat? // 2021 Miata Manual Review</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">manual</span> <span class="kw-found">automatic</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The debate between manual and automatic transmissions continues, with some enthusiasts preferring manuals for their engaging driving experience and longevity, while modern automatics offer faster response times and better performance across various metrics.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not address the RAG system&#x27;s answer quality for the given question about manual vs automatic, but instead discusses the pros and cons of manual and automatic transmissions. This is irrelevant to the evaluation context.">✗ Fail</span>
+                    <div class="reason">The answer does not address the RAG system&#x27;s answer quality for the given question about manual vs automatic, but instead discusses the pros and cons of manual and automatic transmissions. This is irrelevant to the evaluation context.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;manual&#x27; and &#x27;automatic&#x27; transmissions, addresses the debate between them, and provides relevant information about their characteristics and advantages.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;manual&#x27; and &#x27;automatic&#x27; transmissions, addresses the debate between them, and provides relevant information about their characteristics and advantages.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">10</td>
+            <td class="meta">
+                <div class="query"><strong>manual transmission vs competitors</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">manual transmission</span> <span class="kw-found">competitors</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Videos discussing manual transmissions compared to their automatic counterparts or other competitors include &quot;A Manual Trans Makes ANYTHING Better! // 2021 Tacoma TRD Pro Review&quot; and &quot;Manual vs Automatic | Debate Over?&quot;. These videos highlight the engagement and enjoyment factor of driving a manual transmission, especially in older models like the S2000, while noting that modern manual transmissions may not receive as much development due to declining demand.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions manual transmission, it does not directly compare it to competitors as requested.">✗ Fail</span>
+                    <div class="reason">While the answer mentions manual transmission, it does not directly compare it to competitors as requested.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;manual transmission&#x27; and discusses its comparison to &#x27;competitors&#x27; (automatic transmissions), providing relevant information about the enjoyment of driving manual cars and the decline in development for modern manuals.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;manual transmission&#x27; and discusses its comparison to &#x27;competitors&#x27; (automatic transmissions), providing relevant information about the enjoyment of driving manual cars and the decline in development for modern manuals.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">11</td>
+            <td class="meta">
+                <div class="query"><strong>OE end link vs new end link</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 Aghh! So Close // MASSIVE Suspension Upgrade &amp; Overhaul</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">new end link</span><span class="kw-missing">oe end link</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video compares original equipment (OE) end links with new ones, noting the significant difference in thickness and appearance. The narrator finds the new end links much thicker and aesthetically pleasing, though they also mention some scuff marks on them.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the comparison between OE end link and new end link in terms of functionality or performance. It focuses more on appearance and thickness.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the comparison between OE end link and new end link in terms of functionality or performance. It focuses more on appearance and thickness.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;OE end link&#x27; and &#x27;new end link&#x27;, provides relevant information about their differences in thickness and appearance, and does not include any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;OE end link&#x27; and &#x27;new end link&#x27;, provides relevant information about their differences in thickness and appearance, and does not include any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">12</td>
+            <td class="meta">
+                <div class="query"><strong>2014 Chevy SS vs 2015 Chevy SS</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 600WHP LSA Supercharged Holden Commodore // Chevy SS Review</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">2014 chevy ss</span><span class="kw-missing">2015 chevy ss</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The 2014 Chevy SS reviewed in the video has an automatic transmission (GM 6l80 6-speed) compared to a manual transmission (Tremec tr6060) in the 2015 model. Additionally, the 2014 car features Granatelli springs and CTS-V wheels for lowered suspension, while the 2015 version does not have these modifications.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions the key entities (2014 Chevy SS and 2015 Chevy SS), it does not directly compare these two models as requested. Instead, it provides details about specific components of one model without a clear comparison between the two years.">✗ Fail</span>
+                    <div class="reason">While the answer mentions the key entities (2014 Chevy SS and 2015 Chevy SS), it does not directly compare these two models as requested. Instead, it provides details about specific components of one model without a clear comparison between the two years.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both the 2014 Chevy SS and the 2015 Chevy SS, providing relevant comparisons regarding transmission types and modifications, which directly addresses the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions both the 2014 Chevy SS and the 2015 Chevy SS, providing relevant comparisons regarding transmission types and modifications, which directly addresses the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">13</td>
+            <td class="meta">
+                <div class="query"><strong>Snowflake</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will Palantir CRUSH earnings again? | PLTR Stock (Watch before Monday)</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">snowflake</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The analysis of Snowflake (SNOW) suggests it has broken down from an ascending triangle pattern, experiencing a significant drop. The video discusses potential support at the trend line and RSI levels in the low 30s, but overall, the bullish momentum is lost, making it risky to enter a position.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention &#x27;Snowflake&#x27; as a key entity/topic from the question and instead discusses stock analysis which is irrelevant to the query about Snowflake (the cloud data warehousing service).">✗ Fail</span>
+                    <div class="reason">The answer does not mention &#x27;Snowflake&#x27; as a key entity/topic from the question and instead discusses stock analysis which is irrelevant to the query about Snowflake (the cloud data warehousing service).</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Snowflake&#x27; and provides relevant analysis about its stock performance, including technical patterns and market sentiment, making it informative and directly related to the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Snowflake&#x27; and provides relevant analysis about its stock performance, including technical patterns and market sentiment, making it informative and directly related to the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">14</td>
+            <td class="meta">
+                <div class="query"><strong>dxy</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 PayPal Q4 Earnings Predictions</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">dxy</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The DXY (U.S. Dollar Index) was discussed in the video &quot;Why Did Fed Crash Markets Today? ‘Something Is Going To Break’&quot; where Komal Sri-Kumar anticipated a stronger U.S. dollar due to potential tariffs, and in &quot;Market Thoughts,&quot; which analyzed the index as looking weak with lower highs and potential for further decline.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The question &#x27;dxy&#x27; is unclear and does not specify what aspect of DXY the user is asking about. The answer assumes the user is referring to the U.S. Dollar Index but does not directly address a specific query related to dxy.">✗ Fail</span>
+                    <div class="reason">The question &#x27;dxy&#x27; is unclear and does not specify what aspect of DXY the user is asking about. The answer assumes the user is referring to the U.S. Dollar Index but does not directly address a specific query related to dxy.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;DXY&#x27; and provides relevant information about its discussion in videos, making it informative and directly addressing the question.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;DXY&#x27; and provides relevant information about its discussion in videos, making it informative and directly addressing the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">15</td>
+            <td class="meta">
+                <div class="query"><strong>Technology Platform</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will SoFi Crush Earnings Estimates (Q4)?</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">technology</span> <span class="kw-found">platform</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The discussion around technology platforms includes smart glasses as a future interface, potential integration of AI in various products like Apple&#x27;s Vision Pro, and advancements in automotive safety technologies such as mmWave radar. These platforms are seen as foundational enablers for new business models driven by software, with the tech sector expected to continue growing within the S&amp;P 500.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer discusses technology platforms, it does not directly mention &#x27;technology platform&#x27; as requested in the question. The response provides relevant information about technological advancements but lacks directness and focus on the exact terms specified.">✗ Fail</span>
+                    <div class="reason">While the answer discusses technology platforms, it does not directly mention &#x27;technology platform&#x27; as requested in the question. The response provides relevant information about technological advancements but lacks directness and focus on the exact terms specified.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;technology platforms&#x27; and discusses relevant examples, making it informative and aligned with the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;technology platforms&#x27; and discusses relevant examples, making it informative and aligned with the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">16</td>
+            <td class="meta">
+                <div class="query"><strong>integration strategies</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Archer vs Joby: Which is the better eVTOL stock to invest in?</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">integration</span> <span class="kw-found">strategies</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses potential integration strategies for AI with blockchain technology, mentioning applications like verifying identity through immutable records to combat deep fakes.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the term &#x27;integration strategies&#x27; as asked in the question. Instead, it provides an example of a potential application involving AI and blockchain technology.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the term &#x27;integration strategies&#x27; as asked in the question. Instead, it provides an example of a potential application involving AI and blockchain technology.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;integration strategies&#x27; and provides relevant information about integrating AI with blockchain technology, which aligns with the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;integration strategies&#x27; and provides relevant information about integrating AI with blockchain technology, which aligns with the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">17</td>
+            <td class="meta">
+                <div class="query"><strong>Financial Services</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will SoFi Crush Earnings Estimates (Q4)?</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">financial</span> <span class="kw-found">services</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video suggests that SoFi&#x27;s Financial Services segment is expected to show significant growth, with a projected $264 million print, representing 90% year-over-year growth. This growth partly comes from loan origination activities and the technology platform, though the latter is currently experiencing slower-than-expected revenue growth due to comparatives from the previous year.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly mention &#x27;financial services&#x27; or &#x27;financial&#x27; as key terms from the question.">✗ Fail</span>
+                    <div class="reason">The answer does not directly mention &#x27;financial services&#x27; or &#x27;financial&#x27; as key terms from the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Financial Services&#x27; and provides relevant information about SoFi&#x27;s growth in this segment, addressing the question effectively.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Financial Services&#x27; and provides relevant information about SoFi&#x27;s growth in this segment, addressing the question effectively.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">18</td>
+            <td class="meta">
+                <div class="query"><strong>Coca-Cola vs Pepsi</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Archer vs Joby: Which is the better eVTOL stock to invest in?</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">coca-cola</span> <span class="kw-found">pepsi</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses how Coca-Cola originally contained cocaine, which gives it a unique flavor compared to Pepsi. The speaker expresses a preference for Coca-Cola over Pepsi and other sodas, finding the former tastier and more authentic.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare Coca-Cola and Pepsi as requested. It introduces irrelevant information about the historical content of Coca-Cola and personal preferences that are not asked for in the question.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare Coca-Cola and Pepsi as requested. It introduces irrelevant information about the historical content of Coca-Cola and personal preferences that are not asked for in the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both Coca-Cola and Pepsi, provides relevant information about their differences, and expresses a preference, making it informative and aligned with the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions both Coca-Cola and Pepsi, provides relevant information about their differences, and expresses a preference, making it informative and aligned with the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">19</td>
+            <td class="meta">
+                <div class="query"><strong>Microsoft vs Google</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will Tariffs Kill PayPal and Google Stocks?</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">microsoft</span> <span class="kw-found">google</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Microsoft is positioned well for AI investment, particularly through its focus on enterprise solutions and business-oriented AI agents, whereas Google has a stronger consumer-facing approach. The analysis suggests Microsoft might be better suited for companies looking to implement AI, potentially placing it in the A tier alongside Meta and Amazon.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare Microsoft and Google as requested. It focuses more on AI investment strategies of these companies rather than providing a direct comparison between them.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare Microsoft and Google as requested. It focuses more on AI investment strategies of these companies rather than providing a direct comparison between them.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both Microsoft and Google, providing a relevant comparison of their approaches to AI investment, which directly addresses the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions both Microsoft and Google, providing a relevant comparison of their approaches to AI investment, which directly addresses the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">20</td>
+            <td class="meta">
+                <div class="query"><strong>Visa vs PayPal</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will Tariffs Kill PayPal and Google Stocks?</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">visa</span> <span class="kw-found">paypal</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses Visa&#x27;s partnership with Solana to facilitate transactions using stablecoins like USDC, while PayPal announced a $7 billion deal with Blue Owl Capital to sell their buy now pay later portfolio. These partnerships indicate that both companies are adapting to the shift towards digital assets and expanding their services in the financial technology sector.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention PayPal or Visa directly, and instead discusses unrelated partnerships and deals.">✗ Fail</span>
+                    <div class="reason">The answer does not mention PayPal or Visa directly, and instead discusses unrelated partnerships and deals.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both Visa and PayPal, providing relevant information about their recent partnerships and adaptations in the financial technology sector.">✓ Pass</span>
+                    <div class="reason">The answer mentions both Visa and PayPal, providing relevant information about their recent partnerships and adaptations in the financial technology sector.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">21</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about dxy?</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-found">dxy</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">No videos about &quot;dxy&quot; were found in the provided context.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;dxy&#x27; as requested and is relevant to the question. It also correctly states that no videos were found, without hallucinating additional information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;dxy&#x27; as requested and is relevant to the question. It also correctly states that no videos were found, without hallucinating additional information.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="The answer does not mention &#x27;dxy&#x27; directly and fails to provide relevant information regarding the number of videos about it.">✗ Fail</span>
+                    <div class="reason">The answer does not mention &#x27;dxy&#x27; directly and fails to provide relevant information regarding the number of videos about it.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">Qwen✓ GPT✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">22</td>
+            <td class="meta">
+                <div class="query"><strong>Facebook</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 One-handed Pistol Manipulation</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">facebook</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The videos mention using Facebook as a way to share information, especially for the firearms community, but note that many users are not enthusiastic about it personally.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the question about Facebook and lacks specific details related to the entity.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the question about Facebook and lacks specific details related to the entity.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Facebook&#x27; and discusses its use for sharing information, which is relevant to the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Facebook&#x27; and discusses its use for sharing information, which is relevant to the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">23</td>
+            <td class="meta">
+                <div class="query"><strong>gunsmithing education</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 44 Magnum Model 629-8</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">gunsmithing</span> <span class="kw-found">education</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Gunsmithing education should include a hands-on element regardless of whether the program is online or in-person. Additionally, it&#x27;s important to choose an accredited program and one that has high student satisfaction based on reviews and alumni feedback.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer is relevant, it does not directly address the question about gunsmithing education. It focuses more on the nature of the educational program rather than providing information specific to gunsmithing education.">✗ Fail</span>
+                    <div class="reason">While the answer is relevant, it does not directly address the question about gunsmithing education. It focuses more on the nature of the educational program rather than providing information specific to gunsmithing education.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;gunsmithing&#x27; and &#x27;education&#x27;, addresses the importance of hands-on experience, accreditation, and student satisfaction, making it relevant and informative.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;gunsmithing&#x27; and &#x27;education&#x27;, addresses the importance of hands-on experience, accreditation, and student satisfaction, making it relevant and informative.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">24</td>
+            <td class="meta">
+                <div class="query"><strong>gun enjoyment</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 Ruger LCR 22  Chapter 2</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">gun</span><span class="kw-missing">enjoyment</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The videos mention several guns that are enjoyable to shoot, including the Mossberg 590 A1 shotgun and the Springfield XDm 5.25 in 45 acp pistol. Additionally, there is discussion about affordable firearms like surplus rifles such as the Mouser or K31, which can be fun and historically significant for those on a budget.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the concept of &#x27;enjoyment&#x27; in relation to guns but instead provides a list of specific firearms. While it mentions enjoyment indirectly through the phrase &#x27;enjoyable to shoot&#x27;, it lacks a clear focus on the subjective experience of enjoying guns.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the concept of &#x27;enjoyment&#x27; in relation to guns but instead provides a list of specific firearms. While it mentions enjoyment indirectly through the phrase &#x27;enjoyable to shoot&#x27;, it lacks a clear focus on the subjective experience of enjoying guns.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;gun&#x27; and &#x27;enjoyment&#x27; while providing relevant information about enjoyable firearms and their historical significance.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;gun&#x27; and &#x27;enjoyment&#x27; while providing relevant information about enjoyable firearms and their historical significance.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">25</td>
+            <td class="meta">
+                <div class="query"><strong>big game hunting</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 Original Henry Rifle Big Game Hunt</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">big</span> <span class="kw-found">game</span> <span class="kw-found">hunting</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Big game hunting videos are available featuring firearms like the Marlin JM Model 1895 .45-70, Ed Brown Special Forces 1911, and Dirty Harry&#x27;s 44 Magnum. These videos show hunters using these powerful weapons to take down various targets, often starting and ending with a gong to mark the beginning and end of the hunt.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions &#x27;big game hunting&#x27;, it does not directly address the question by providing a straightforward definition or description of big game hunting. Instead, it focuses on specific firearms and videos related to the topic, which is tangential rather than directly answering the question.">✗ Fail</span>
+                    <div class="reason">While the answer mentions &#x27;big game hunting&#x27;, it does not directly address the question by providing a straightforward definition or description of big game hunting. Instead, it focuses on specific firearms and videos related to the topic, which is tangential rather than directly answering the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;big game hunting&#x27; directly and provides relevant information about hunting videos and firearms used in big game hunting, making it informative and on-topic.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;big game hunting&#x27; directly and provides relevant information about hunting videos and firearms used in big game hunting, making it informative and on-topic.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">26</td>
+            <td class="meta">
+                <div class="query"><strong>apprenticeship program vs formal education</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 44 Magnum Model 629-8</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">apprenticeship program</span> <span class="kw-found">formal education</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video mentions both apprenticeship programs and formal education as ways to learn gunsmithing techniques. While an apprenticeship can provide practical experience, a formal education offers a structured and comprehensive learning environment. Both methods have their advantages, but it&#x27;s important to choose a school that meets specific criteria such as accreditation and high student satisfaction.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare apprenticeship programs vs formal education as requested in the question. It introduces a specific context of gunsmithing and mentions accreditation criteria, which are not relevant to the core comparison.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare apprenticeship programs vs formal education as requested in the question. It introduces a specific context of gunsmithing and mentions accreditation criteria, which are not relevant to the core comparison.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions both &#x27;apprenticeship program&#x27; and &#x27;formal education&#x27;, providing relevant information about their advantages and considerations.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions both &#x27;apprenticeship program&#x27; and &#x27;formal education&#x27;, providing relevant information about their advantages and considerations.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">27</td>
+            <td class="meta">
+                <div class="query"><strong>original Henry vs modern Henry</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 Original Henry Rifle Big Game Hunt</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">modern henry</span><span class="kw-missing">original henry</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The original 1860 Henry rifle loaded through the tube, while modern Henry rifles use a loading gate. The modern replica aims to honor the historical name but uses contemporary design elements, making it more practical for shooting compared to the original&#x27;s rimfire cartridges.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions &#x27;original Henry&#x27; and &#x27;modern Henry&#x27;, it does not directly address the comparison between the original and modern versions as implied by &#x27;original Henry vs modern Henry&#x27;. The response focuses more on the differences in loading mechanisms and practicality rather than providing a direct comparison.">✗ Fail</span>
+                    <div class="reason">While the answer mentions &#x27;original Henry&#x27; and &#x27;modern Henry&#x27;, it does not directly address the comparison between the original and modern versions as implied by &#x27;original Henry vs modern Henry&#x27;. The response focuses more on the differences in loading mechanisms and practicality rather than providing a direct comparison.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;original Henry&#x27; and &#x27;modern Henry,&#x27; providing relevant and informative details about their loading mechanisms and design differences.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;original Henry&#x27; and &#x27;modern Henry,&#x27; providing relevant and informative details about their loading mechanisms and design differences.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">28</td>
+            <td class="meta">
+                <div class="query"><strong>Kimber revolver vs Jframe Smith and Wesson</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 200 Dollar Revolver VS 800 Dollar Revolver</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">kimber revolver</span><span class="kw-missing">jframe smith and wesson</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses the Kimber revolver, noting its impressive design despite being from a company not traditionally known for revolvers. It mentions that the Kimber fits well in terms of size for 357 Magnum rounds but hasn&#x27;t been fired yet. The host also compares it to other options like the Smith &amp; Wesson Model 642, suggesting that even experienced gun owners struggle with choosing between revolver and semi-automatic options for carry guns.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention Jframe Smith &amp; Wesson, which is a key part of the question. It also incorrectly compares Kimber revolver to Smith &amp; Wesson Model 642 without addressing the Jframe Smith &amp; Wesson specifically.">✗ Fail</span>
+                    <div class="reason">The answer does not mention Jframe Smith &amp; Wesson, which is a key part of the question. It also incorrectly compares Kimber revolver to Smith &amp; Wesson Model 642 without addressing the Jframe Smith &amp; Wesson specifically.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both the Kimber revolver and the Jframe Smith &amp; Wesson (Model 642), providing relevant information about their design and comparison, which directly addresses the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions both the Kimber revolver and the Jframe Smith &amp; Wesson (Model 642), providing relevant information about their design and comparison, which directly addresses the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">29</td>
+            <td class="meta">
+                <div class="query"><strong>Mossberg 500 vs Hatsan Escort Slugger</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 Hatsan Escort Slugger shotgun</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">mossberg 500</span> <span class="kw-found">hatsan escort slugger</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The Mossberg 500 and Hatsan Escort Slugger are both pump shotguns, but the Mossberg is typically shorter at just over 18 inches with a different grip configuration, while the Hatsan is made in Turkey, is more affordable, and has some users reporting better feeding performance.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions both Mossberg 500 and Hatsan Escort Slugger, it does not directly compare their specific features related to slug guns as implied by the question title. The information provided is somewhat relevant but lacks direct comparison.">✗ Fail</span>
+                    <div class="reason">While the answer mentions both Mossberg 500 and Hatsan Escort Slugger, it does not directly compare their specific features related to slug guns as implied by the question title. The information provided is somewhat relevant but lacks direct comparison.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions both the Mossberg 500 and Hatsan Escort Slugger, provides relevant comparisons between the two shotguns, and does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions both the Mossberg 500 and Hatsan Escort Slugger, provides relevant comparisons between the two shotguns, and does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">30</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about 44 magnum?</strong></div>
+                <div class="channel">📺 hickok45</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-found">44 magnum</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Based on the provided context, there is one video that mentions the .44 Magnum, which is &quot;Sunday Shoot-a-Round #201.&quot;</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions &#x27;44 Magnum&#x27;, it does not address how many videos there are about 44 Magnum. It only provides information about one video.">✗ Fail</span>
+                    <div class="reason">While the answer mentions &#x27;44 Magnum&#x27;, it does not address how many videos there are about 44 Magnum. It only provides information about one video.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions the key entity &#x27;44 Magnum&#x27; and provides relevant information about the specific video that discusses it.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions the key entity &#x27;44 Magnum&#x27; and provides relevant information about the specific video that discusses it.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">31</td>
+            <td class="meta">
+                <div class="query"><strong>Discount Codes</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 Joe Rogan Experience #400 - Joey &quot;CoCo&quot; Diaz, Duncan Trussell</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">discount</span> <span class="kw-found">codes</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Discount codes are available for purchasing equipment used in filming, with a coupon offering a discount of 37-37 cents per $7000 spent. Additionally, there is a 20% off discount for the bond course from Alfonso Peccatiello&#x27;s Macro Compass platform, valid for the first 100 people.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the topic of discount codes related to purchasing equipment used in filming as expected. It introduces unrelated discounts for a course.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the topic of discount codes related to purchasing equipment used in filming as expected. It introduces unrelated discounts for a course.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both &#x27;discount&#x27; and &#x27;codes&#x27;, provides relevant information about available discounts, and does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions both &#x27;discount&#x27; and &#x27;codes&#x27;, provides relevant information about available discounts, and does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">32</td>
+            <td class="meta">
+                <div class="query"><strong>Primal Bells</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 Joe Rogan Experience #517 - Crash, from Float Lab</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">primal</span> <span class="kw-found">bells</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Primal Bells are a type of kettlebell inspired by great apes, including gorillas, orangutans, chimpanzees, and howler monkeys. These artistic kettlebells are designed to be both functional and visually appealing, with 3D mapping for balance and durability.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention &#x27;primal&#x27; or &#x27;bells&#x27; directly as expected. It provides information about kettlebells inspired by great apes but does not address the specific term &#x27;Primal Bells&#x27;.">✗ Fail</span>
+                    <div class="reason">The answer does not mention &#x27;primal&#x27; or &#x27;bells&#x27; directly as expected. It provides information about kettlebells inspired by great apes but does not address the specific term &#x27;Primal Bells&#x27;.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;Primal Bells&#x27; and provides relevant information about their design and inspiration, addressing the question effectively.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;Primal Bells&#x27; and provides relevant information about their design and inspiration, addressing the question effectively.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">33</td>
+            <td class="meta">
+                <div class="query"><strong>actors vs standup comedians</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 Joe Rogan Experience #2126 - Donnell Rawlings</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">actors</span> <span class="kw-found">standup comedians</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses how actors and standup comedians approach their craft differently, noting that actors often strive for high-quality, polished performances suitable for traditional platforms, while standup comedians embraced a more casual, authentic style suited to social media. This shift allowed comedians to quickly gain large followings without the need for expensive production values.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the comparison between actors and standup comedians as asked in the question. Instead, it discusses how they approach their craft differently and mentions a shift towards social media for standup comedians.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the comparison between actors and standup comedians as asked in the question. Instead, it discusses how they approach their craft differently and mentions a shift towards social media for standup comedians.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions both &#x27;actors&#x27; and &#x27;standup comedians&#x27;, provides relevant information about their different approaches to performance, and does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions both &#x27;actors&#x27; and &#x27;standup comedians&#x27;, provides relevant information about their different approaches to performance, and does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">34</td>
+            <td class="meta">
+                <div class="query"><strong>mstr</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 Why I think #Bitcoin could be going much, much higher from here</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">mstr</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses MSTR, noting that while it is generally good to very good, there are some areas of concern. The stock has shown higher highs and lows but may need to break key resistance levels before becoming &quot;very very sexy.&quot; On a broader market context, the video suggests MSTR could see favorable conditions due to increasing global liquidity.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The question &#x27;mstr&#x27; is too vague and does not provide enough context for a meaningful response. The answer attempts to address MSTR but lacks specificity and relevance, making it unclear what exactly the video discussed.">✗ Fail</span>
+                    <div class="reason">The question &#x27;mstr&#x27; is too vague and does not provide enough context for a meaningful response. The answer attempts to address MSTR but lacks specificity and relevance, making it unclear what exactly the video discussed.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;MSTR&#x27; directly, provides relevant information about its stock performance and market context, and does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;MSTR&#x27; directly, provides relevant information about its stock performance and market context, and does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">35</td>
+            <td class="meta">
+                <div class="query"><strong>Unity</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">unity</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Unity in these contexts refers to a sense of shared values, identities, or goals among individuals. In the video about influencing people, Warren Buffett emphasizes unity by considering his shareholders as family members, highlighting a strong bond that discourages selling shares even when it might be financially beneficial. In the Jordan Peterson discussion, unity is linked to social cohesion and the balance between order and chaos within a society, emphasizing the importance of disciplined res</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions unity, it does not directly address what &#x27;Unity&#x27; refers to in a single, concise manner. The response provides context from discussions but lacks clarity and directness.">✗ Fail</span>
+                    <div class="reason">While the answer mentions unity, it does not directly address what &#x27;Unity&#x27; refers to in a single, concise manner. The response provides context from discussions but lacks clarity and directness.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;unity&#x27; and provides relevant context about its meaning and implications in social and financial scenarios, making it informative.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;unity&#x27; and provides relevant context about its meaning and implications in social and financial scenarios, making it informative.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">36</td>
+            <td class="meta">
+                <div class="query"><strong>CNBC</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">cnbc</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The context mentions a video reaction to Tom Lee&#x27;s interview on CNBC, discussing market movements and the role of the Federal Reserve.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly mention CNBC as requested in the question.">✗ Fail</span>
+                    <div class="reason">The answer does not directly mention CNBC as requested in the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;CNBC&#x27; and provides relevant context about a video reaction to an interview, making it informative and directly addressing the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;CNBC&#x27; and provides relevant context about a video reaction to an interview, making it informative and directly addressing the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">37</td>
+            <td class="meta">
+                <div class="query"><strong>price predictions</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 10 Altcoins that Flashed a Buy Signal, and their Potential Targets!</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">price</span> <span class="kw-found">predictions</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Price predictions for Palantir Technologies ($PLTR) vary, with some analysts suggesting it could reach significant highs like 1.618 or 2.618 Fibonacci levels, potentially around $69 to over $100, while others consider more conservative targets closer to $35-$37 or even a potential decline back to the $25-$28 range.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the concept of &#x27;price predictions&#x27; in a general sense but instead provides specific price predictions for Palantir Technologies stock. The question was more likely asking about the methodology or general approach to making price predictions rather than specific stock predictions.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the concept of &#x27;price predictions&#x27; in a general sense but instead provides specific price predictions for Palantir Technologies stock. The question was more likely asking about the methodology or general approach to making price predictions rather than specific stock predictions.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;price predictions&#x27; and provides specific price ranges for Palantir Technologies, making it relevant and informative. It does not contain hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;price predictions&#x27; and provides specific price ranges for Palantir Technologies, making it relevant and informative. It does not contain hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">38</td>
+            <td class="meta">
+                <div class="query"><strong>current stock vs Palantir</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 5 Stocks I&#x27;m buying, 5 Stocks I stopped buying, and 2 Stocks I sold</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">palantir</span><span class="kw-missing">current stock</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses Palantir Technologies (PLTR) and suggests that it is forming a bullish formation, potentially targeting around $29. The analysis indicates strong support at the $25-$27 range and forecasts further upward movement if this level is broken, with potential targets in the 30s and beyond.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not mention &#x27;current stock&#x27; or directly compare Palantir&#x27;s stock to another company&#x27;s stock as requested.">✗ Fail</span>
+                    <div class="reason">The answer does not mention &#x27;current stock&#x27; or directly compare Palantir&#x27;s stock to another company&#x27;s stock as requested.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Palantir&#x27; and discusses its current stock analysis, including price targets and support levels, making it relevant and informative.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Palantir&#x27; and discusses its current stock analysis, including price targets and support levels, making it relevant and informative.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">39</td>
+            <td class="meta">
+                <div class="query"><strong>Unity Software vs Metaport</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 Metaverse Plays: $MTTR $U $AAPL $META $SAND $MANA $GALA</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">unity software</span> <span class="kw-found">metaport</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Unity Software and Metaport are compared in terms of market capitalization, institutional support, and price action. Unity is significantly larger with more institutional ownership and shows signs of accumulation over time, whereas Metaport has struggled with declining stock performance and faces challenges in the competitive landscape despite some subscriber growth.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare Unity Software and Metaport as requested. Instead, it focuses on market capitalization, institutional support, and price action, which are not the primary focus of a direct comparison between these two entities.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare Unity Software and Metaport as requested. Instead, it focuses on market capitalization, institutional support, and price action, which are not the primary focus of a direct comparison between these two entities.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions both Unity Software and Metaport, provides relevant comparisons between the two, and offers informative insights regarding their market positions and performance without any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions both Unity Software and Metaport, provides relevant comparisons between the two, and offers informative insights regarding their market positions and performance without any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">40</td>
+            <td class="meta">
+                <div class="query"><strong>Tony Blair</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 World In &#x27;Threatening State&#x27; Warns Former Bank Of England Economist | Charles Goodhart</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">tony blair</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Tony Blair is discussed in the context of his involvement with the World Economic Forum and his advocacy for measures such as vaccine passports and digital identification, which aligns with the forum&#x27;s agenda known as the Great Reset.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions Tony Blair, it does not directly address the question by providing basic biographical or well-known facts about him. The information provided seems to be related to his involvement with the World Economic Forum and advocacy for specific measures, which may or may not be accurate but is not a direct response to the simple query about who Tony Blair is.">✗ Fail</span>
+                    <div class="reason">While the answer mentions Tony Blair, it does not directly address the question by providing basic biographical or well-known facts about him. The information provided seems to be related to his involvement with the World Economic Forum and advocacy for specific measures, which may or may not be accurate but is not a direct response to the simple query about who Tony Blair is.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;Tony Blair&#x27; and provides relevant information about his involvement with the World Economic Forum and related topics, without any apparent hallucinations.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;Tony Blair&#x27; and provides relevant information about his involvement with the World Economic Forum and related topics, without any apparent hallucinations.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">41</td>
+            <td class="meta">
+                <div class="query"><strong>Federal Reserve Policy</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 Fed’s Bombshell Announcement That Shocked Markets: ‘Buckle Up’ For 2025 Says DiMartino Booth</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">federal</span> <span class="kw-found">reserve</span> <span class="kw-found">policy</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The Federal Reserve faces pressure from other central banks, particularly Japan&#x27;s potential shift away from yield curve control. The Fed is focused on domestic policy despite these external pressures. Regarding monetary policy, there are expectations that interest rates may stay elevated at around five percent as the Fed aims to contain inflation and stabilize the banking system.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the federal reserve policy but instead discusses external pressures and monetary policy expectations. It lacks direct mentions of &#x27;federal&#x27;, &#x27;reserve&#x27;, or &#x27;policy&#x27; in a clear context related to the question.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the federal reserve policy but instead discusses external pressures and monetary policy expectations. It lacks direct mentions of &#x27;federal&#x27;, &#x27;reserve&#x27;, or &#x27;policy&#x27; in a clear context related to the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Federal Reserve&#x27; and discusses its policy in relation to interest rates and inflation, making it relevant and informative without any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Federal Reserve&#x27; and discusses its policy in relation to interest rates and inflation, making it relevant and informative without any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">42</td>
+            <td class="meta">
+                <div class="query"><strong>Crypto strategic reserve</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 Bitcoin Is About To Rebound To $180k: VanEck&#x27;s Matthew Sigel On Next Moves</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">crypto</span> <span class="kw-found">strategic</span> <span class="kw-found">reserve</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses Trump&#x27;s proposal for a crypto strategic reserve, which includes various cryptocurrencies like XRP, Solana, and Cardano alongside Bitcoin and Ethereum. The speaker expresses support for allowing markets to explore alternative currencies but acknowledges personal uncertainty about cryptocurrencies while praising the historical role of private money systems.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the concept of a &#x27;strategic reserve&#x27; in the context of cryptocurrencies. While it mentions crypto assets and strategic elements, it focuses more on Trump&#x27;s proposal and personal opinions rather than providing a clear definition or explanation of what a crypto strategic reserve entails.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the concept of a &#x27;strategic reserve&#x27; in the context of cryptocurrencies. While it mentions crypto assets and strategic elements, it focuses more on Trump&#x27;s proposal and personal opinions rather than providing a clear definition or explanation of what a crypto strategic reserve entails.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;crypto&#x27;, &#x27;strategic&#x27;, and &#x27;reserve&#x27;, directly addressing the key topics from the question. It provides relevant information about Trump&#x27;s proposal and discusses various cryptocurrencies, making it informative. There is no indication of hallucination in the details provided.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;crypto&#x27;, &#x27;strategic&#x27;, and &#x27;reserve&#x27;, directly addressing the key topics from the question. It provides relevant information about Trump&#x27;s proposal and discusses various cryptocurrencies, making it informative. There is no indication of hallucination in the details provided.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">43</td>
+            <td class="meta">
+                <div class="query"><strong>S&amp;P 500 vs NASDAQ</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 Fed’s Bombshell Announcement That Shocked Markets: ‘Buckle Up’ For 2025 Says DiMartino Booth</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">s&amp;p 500</span> <span class="kw-found">nasdaq</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video suggests that the S&amp;P 500 may lag behind the NASDAQ (QQQ), which could be positive for the overall stock market. This outperformance by the NASDAQ relative to the S&amp;P 500 is seen as a potential indicator of an upcoming bullish trend, particularly due to strong performance from Nvidia and other tech stocks.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare the S&amp;P 500 and NASDAQ as requested. Instead, it discusses a potential outperformance of the NASDAQ relative to the S&amp;P 500 and mentions specific stocks like Nvidia, which were not part of the question.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare the S&amp;P 500 and NASDAQ as requested. Instead, it discusses a potential outperformance of the NASDAQ relative to the S&amp;P 500 and mentions specific stocks like Nvidia, which were not part of the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both the S&amp;P 500 and NASDAQ, providing relevant information about their performance relative to each other and discussing implications for the stock market.">✓ Pass</span>
+                    <div class="reason">The answer mentions both the S&amp;P 500 and NASDAQ, providing relevant information about their performance relative to each other and discussing implications for the stock market.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">44</td>
+            <td class="meta">
+                <div class="query"><strong>Canadian equities vs Australian equities</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 Market About To &#x27;Come Back To Reality’: These Are Warning Signs | Ian Harris</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">canadian equities</span><span class="kw-missing">australian equities</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses how Canadian equities underperformed compared to their Australian counterparts, attributing this partly to less stringent company oversight in Canada&#x27;s bull cycles and lower trust in local companies. It also mentions potential legislative changes that could encourage more investment in Canada.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="While the answer mentions Canadian equities, it does not directly compare them to Australian equities as requested. The answer provides additional context about legislative changes and company oversight that are not explicitly asked for in the question.">✗ Fail</span>
+                    <div class="reason">While the answer mentions Canadian equities, it does not directly compare them to Australian equities as requested. The answer provides additional context about legislative changes and company oversight that are not explicitly asked for in the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both Canadian equities and Australian equities, provides relevant information about their performance comparison, and discusses factors influencing this performance without any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions both Canadian equities and Australian equities, provides relevant information about their performance comparison, and discusses factors influencing this performance without any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">45</td>
+            <td class="meta">
+                <div class="query"><strong>Bitcoin vs Ethereum</strong></div>
+                <div class="channel">📺 David Lin </div>
+                <div class="video">🎬 Bitcoin Is About To Rebound To $180k: VanEck&#x27;s Matthew Sigel On Next Moves</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">bitcoin</span> <span class="kw-found">ethereum</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses how Bitcoin and Ethereum are seen as more stable compared to other altcoins, with some analysts predicting a potential decline in Ethereum&#x27;s valuation relative to Bitcoin. It also highlights differences between the two cryptocurrencies, noting that while both have risen in value, Ethereum might be considered less safe than Bitcoin due to its centralized control structures.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare Bitcoin and Ethereum as requested in the question. It introduces additional concepts like stability, valuation predictions, and safety that are not explicitly asked for.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare Bitcoin and Ethereum as requested in the question. It introduces additional concepts like stability, valuation predictions, and safety that are not explicitly asked for.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions both Bitcoin and Ethereum, addresses their stability and valuation differences, and provides relevant information without hallucinating.">✓ Pass</span>
+                    <div class="reason">The answer mentions both Bitcoin and Ethereum, addresses their stability and valuation differences, and provides relevant information without hallucinating.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">46</td>
+            <td class="meta">
+                <div class="query"><strong>Russia</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 Top 10 Hilarious Moments in Texas | Max Amini | Standup Comedy</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">russia</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses how external pressures, such as economic sanctions and proxy wars, have unified Russia internally. It contrasts this with the U.S., suggesting that despite worse economic inequalities, Russia is not closer to macro breakdown due to factors like a baby bust and geopolitical unity against external threats.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly mention &#x27;Russia&#x27; as a key entity/topic in the response, and the content provided seems to be about Russia&#x27;s internal unity against external pressures compared to the U.S., which was not explicitly asked for.">✗ Fail</span>
+                    <div class="reason">The answer does not directly mention &#x27;Russia&#x27; as a key entity/topic in the response, and the content provided seems to be about Russia&#x27;s internal unity against external pressures compared to the U.S., which was not explicitly asked for.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;Russia&#x27; and provides relevant information about its internal dynamics in the context of external pressures, making it informative and directly addressing the question.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;Russia&#x27; and provides relevant information about its internal dynamics in the context of external pressures, making it informative and directly addressing the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">47</td>
+            <td class="meta">
+                <div class="query"><strong>Max Amini</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 Max Amini Picks on Game of Thrones Filmmaker Mohsen Mousavi</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-found">max amini</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">Max Amini is a comedian who discusses his experiences traveling and performing stand-up comedy in various locations, including India. He shares stories about his travels, such as dealing with airport stress and accepting an ice bucket challenge with Maz Jobrani. His content often includes personal anecdotes and interactions with fans.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the question as it provides details about Max Amini&#x27;s content and experiences that are not explicitly asked for. The question simply asks to mention &#x27;max amini&#x27;, which is done but lacks context or relevance.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the question as it provides details about Max Amini&#x27;s content and experiences that are not explicitly asked for. The question simply asks to mention &#x27;max amini&#x27;, which is done but lacks context or relevance.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;Max Amini&#x27; and provides relevant information about his career as a comedian, including his experiences and anecdotes, which aligns with the question.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;Max Amini&#x27; and provides relevant information about his career as a comedian, including his experiences and anecdotes, which aligns with the question.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">48</td>
+            <td class="meta">
+                <div class="query"><strong>Marriage</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 Mumbai Madness | Part 1 | Max Amini | Standup Comedy</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-found">marriage</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The video discusses concerns about the potential impact of allowing same-sex marriage on traditional heterosexual relationships, arguing that expanding the definition of marriage might make it seem meaningless and affect societal views on its importance. The speaker believes that marriage is crucial for human civilization but expresses doubt that legalizing same-sex marriage would significantly change how straight people view or practice their own marriages.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly address the question &#x27;Marriage&#x27; by providing basic information about what marriage is or its general characteristics. Instead, it focuses on a specific debate regarding same-sex marriage.">✗ Fail</span>
+                    <div class="reason">The answer does not directly address the question &#x27;Marriage&#x27; by providing basic information about what marriage is or its general characteristics. Instead, it focuses on a specific debate regarding same-sex marriage.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;marriage&#x27; and discusses its implications, making it relevant and informative. It does not contain hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;marriage&#x27; and discusses its implications, making it relevant and informative. It does not contain hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">49</td>
+            <td class="meta">
+                <div class="query"><strong>white people vs other ethnic groups</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 WE NEED ACTION! - Max Amini</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-found">other ethnic groups</span><span class="kw-missing">white people</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">The discussion revolves around the historical experiences of different racial communities, with a focus on how the White community has generally not faced as many severe setbacks compared to others. The speaker acknowledges that while some poor White individuals exist and may face hardships, historically, global tyranny, violence, and genocide have disproportionately affected other ethnic groups.</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not directly compare white people to other ethnic groups as requested. It focuses more on historical experiences and hardships faced by different racial communities without making a direct comparison between white people and other ethnic groups.">✗ Fail</span>
+                    <div class="reason">The answer does not directly compare white people to other ethnic groups as requested. It focuses more on historical experiences and hardships faced by different racial communities without making a direct comparison between white people and other ethnic groups.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer mentions &#x27;White community&#x27; and &#x27;other ethnic groups,&#x27; addressing the key entities from the question. It provides relevant information about the historical context and experiences of these groups, and it does not contain any hallucinated information.">✓ Pass</span>
+                    <div class="reason">The answer mentions &#x27;White community&#x27; and &#x27;other ethnic groups,&#x27; addressing the key entities from the question. It provides relevant information about the historical context and experiences of these groups, and it does not contain any hallucinated information.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">50</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about russia?</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-found">russia</span></div>
+            </td>
+            <td class="answer-cell"><div class="answer">There is one video about Russia mentioned in the provided context, which is &quot;Joe Rogan Experience #1787 - Dakota Meyer.&quot;</div></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="The answer does not provide a numerical count of videos about Russia as requested in the question.">✗ Fail</span>
+                    <div class="reason">The answer does not provide a numerical count of videos about Russia as requested in the question.</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-pass" title="The answer correctly mentions &#x27;Russia&#x27; and provides relevant information about the specific video related to the topic.">✓ Pass</span>
+                    <div class="reason">The answer correctly mentions &#x27;Russia&#x27; and provides relevant information about the specific video related to the topic.</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-disagree">GPT✓ Qwen✗</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

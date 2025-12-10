@@ -1,0 +1,2595 @@
+{
+  "source_file": "tests/data/benchmark_generated_gpt-4o.json",
+  "validation_model": "gpt-4o-mini",
+  "validation_backend": "openai",
+  "total_tests": 160,
+  "summary": {
+    "classification": {
+      "correct": 97,
+      "total": 160,
+      "accuracy": 60.62499999999999
+    },
+    "answer_keywords": {
+      "hits": 128,
+      "total": 242,
+      "accuracy": 52.892561983471076
+    },
+    "timing_avg_ms": {
+      "parallel": 1129.675,
+      "search": 2.91875,
+      "filter": 1.1625,
+      "answer": 731.9875,
+      "total": 1867.01875
+    }
+  },
+  "results": [
+    {
+      "query": "Nettuno Engine",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "nettuno engine"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "nettuno engine"
+      ],
+      "answer": "",
+      "total_ms": 1798
+    },
+    {
+      "query": "Handook RS3",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "handook rs3"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "handook rs3"
+      ],
+      "answer": "There is a video available discussing the Audi RS3, including its engine and features, as well as comparisons to the Golf R.",
+      "total_ms": 3465
+    },
+    {
+      "query": "Maserati Grecale Trofeo",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_found": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding the Maserati Grecale Trofeo in the provided context.",
+      "total_ms": 3657
+    },
+    {
+      "query": "Chevrolet Corvette C6 Z06",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_found": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_missing": [],
+      "answer": "The context includes a video discussing the Chevrolet Corvette C6 Z06, highlighting its performance, particularly the V8 engine and driving experience. It emphasizes the car's capabilities on the trac",
+      "total_ms": 2939
+    },
+    {
+      "query": "C7 Corvette",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "c7 corvette"
+      ],
+      "keywords_found": [
+        "c7 corvette"
+      ],
+      "keywords_missing": [],
+      "answer": "There are videos available discussing the C7 Corvette, including a deep dive on the C7 Z06, which covers its interior, exterior, and mechanical aspects, as well as comparisons with the C8 Corvette. An",
+      "total_ms": 4417
+    },
+    {
+      "query": "Car Upgrades",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "upgrades"
+      ],
+      "keywords_found": [
+        "upgrades"
+      ],
+      "keywords_missing": [
+        "car"
+      ],
+      "answer": "The video discusses various upgrades made to the Toyota GR Corolla, focusing on both aftermarket modifications and maintenance. Key upgrades include switching to a 5W30 full synthetic oil for better t",
+      "total_ms": 2733
+    },
+    {
+      "query": "High Cost of Modern Cars",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "high",
+        "cost",
+        "of"
+      ],
+      "keywords_found": [
+        "high",
+        "cost",
+        "of"
+      ],
+      "keywords_missing": [],
+      "answer": "The high cost of modern cars is a significant concern, with many people struggling to afford both the purchase price and the long-term ownership expenses. Factors such as rising vehicle prices, expens",
+      "total_ms": 3939
+    },
+    {
+      "query": "Nonprofit Operations",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "nonprofit",
+        "operations"
+      ],
+      "keywords_found": [
+        "nonprofit"
+      ],
+      "keywords_missing": [
+        "operations"
+      ],
+      "answer": "The nonprofit organization TRI Industries operates as a social enterprise, functioning like a business with sales, production, and marketing to generate funds. Since 1977, they have focused on employi",
+      "total_ms": 3364
+    },
+    {
+      "query": "Social Enterprise",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "social",
+        "enterprise"
+      ],
+      "keywords_found": [
+        "social",
+        "enterprise"
+      ],
+      "keywords_missing": [],
+      "answer": "A social enterprise is an organization that operates like a business, focusing on sales, production, and marketing, while using its funds to support a social mission. In the context provided, TRI Indu",
+      "total_ms": 3873
+    },
+    {
+      "query": "Driving Experience",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "driving",
+        "experience"
+      ],
+      "keywords_found": [
+        "driving",
+        "experience"
+      ],
+      "keywords_missing": [],
+      "answer": "The driving experience varies across different vehicles, with some reviews highlighting aspects like balance and handling, as seen in the Corvette C7 Stingray, which checked all boxes except for the a",
+      "total_ms": 2689
+    },
+    {
+      "query": "rear radiators vs front radiators",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "rear radiators",
+        "front radiators"
+      ],
+      "keywords_found": [
+        "rear radiators",
+        "front radiators"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information comparing rear radiators to front radiators. It mainly discusses the front radiators of the Porsche 911 Turbo 996 and their design features.",
+      "total_ms": 3083
+    },
+    {
+      "query": "Alfa 4C vs MX-5",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "alfa 4c",
+        "mx-5"
+      ],
+      "keywords_found": [
+        "alfa 4c",
+        "mx-5"
+      ],
+      "keywords_missing": [],
+      "answer": "The context provided does not contain specific information comparing the Alfa 4C and the Mazda MX-5.",
+      "total_ms": 2804
+    },
+    {
+      "query": "Kia CVT vs Toyota CVT",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "kia cvt",
+        "toyota cvt"
+      ],
+      "keywords_found": [
+        "kia cvt",
+        "toyota cvt"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain information comparing Kia CVT to Toyota CVT.",
+      "total_ms": 2243
+    },
+    {
+      "query": "LS7 vs LT1",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "ls7",
+        "lt1"
+      ],
+      "keywords_found": [
+        "ls7",
+        "lt1"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information comparing the LS7 and LT1 engines. It mentions the LS7 in relation to the Corvette's oiling system but does not detail a direct comparison with the LT",
+      "total_ms": 2567
+    },
+    {
+      "query": "LFA vs RC",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "lfa",
+        "rc"
+      ],
+      "keywords_found": [
+        "lfa",
+        "rc"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information comparing the LFA and the RC models.",
+      "total_ms": 2357
+    },
+    {
+      "query": "how many videos about maserati grecale trofeo?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_found": [
+        "maserati grecale trofeo"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not contain any information about videos related to the Maserati Grecale Trofeo.",
+      "total_ms": 2515
+    },
+    {
+      "query": "how many videos about c7 corvette?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "c7 corvette"
+      ],
+      "keywords_found": [
+        "c7 corvette"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video specifically about the C7 Corvette, titled \"Corvette C7 Z06 | Absolute Beast.\"",
+      "total_ms": 2588
+    },
+    {
+      "query": "how many videos about handook rs3?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "handook rs3"
+      ],
+      "keywords_found": [
+        "handook rs3"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos specifically about the \"handook rs3\" mentioned in the provided context.",
+      "total_ms": 1797
+    },
+    {
+      "query": "how many videos about chevrolet corvette c6 z06?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_found": [
+        "chevrolet corvette c6 z06"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video specifically about the Chevrolet Corvette C6 Z06 titled \"Corvette C6 Z06 | Best of a Generation.\"",
+      "total_ms": 2919
+    },
+    {
+      "query": "how many videos about nettuno engine?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nettuno engine"
+      ],
+      "keywords_found": [
+        "nettuno engine"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to the Nettuno engine.",
+      "total_ms": 2063
+    },
+    {
+      "query": "Pro 4X",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "pro 4x"
+      ],
+      "keywords_found": [
+        "pro 4x"
+      ],
+      "keywords_missing": [],
+      "answer": "The Pro 4X is the most expensive model of the Nissan Frontier, priced at about forty-six thousand dollars with optional packages. It features a 3.8 liter VQ V6 engine paired with a nine-speed automati",
+      "total_ms": 3361
+    },
+    {
+      "query": "Hilux",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "hilux"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "hilux"
+      ],
+      "answer": "",
+      "total_ms": 1111
+    },
+    {
+      "query": "Billstein",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "billstein"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "billstein"
+      ],
+      "answer": "",
+      "total_ms": 1228
+    },
+    {
+      "query": "2024 MX-5 Miata ND3",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "2024 mx-5 miata nd3"
+      ],
+      "answer": "There is a video discussing the Mazda Miata ND3, which covers its mechanical impressions, engineering changes, and driving characteristics. It highlights the ND3's lightweight design, suspension featu",
+      "total_ms": 3315
+    },
+    {
+      "query": "Mach 275",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "mach 275"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "mach 275"
+      ],
+      "answer": "",
+      "total_ms": 1874
+    },
+    {
+      "query": "car repair",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "repair"
+      ],
+      "keywords_found": [
+        "car",
+        "repair"
+      ],
+      "keywords_missing": [],
+      "answer": "There are several videos discussing car repair, including challenges with modern automotive repairs, specific repair experiences with a 1998 Honda Prelude, and general frustrations faced in the automo",
+      "total_ms": 2818
+    },
+    {
+      "query": "Project Car Assembly",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "project",
+        "car",
+        "assembly"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "project",
+        "car",
+        "assembly"
+      ],
+      "answer": "",
+      "total_ms": 1159
+    },
+    {
+      "query": "Performance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "performance"
+      ],
+      "keywords_found": [
+        "performance"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses performance in modern vehicles, highlighting advancements in horsepower accessibility and driving technology. It mentions that modern cars, like the Corvette ZR1, can achieve imp",
+      "total_ms": 2749
+    },
+    {
+      "query": "Car Projects",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "projects"
+      ],
+      "keywords_found": [
+        "car",
+        "projects"
+      ],
+      "keywords_missing": [],
+      "answer": "The context includes discussions about car projects, particularly in the \"Shoppe Talk with Turbowski and Other Items\" video, where the idea of undertaking a project car is mentioned, albeit with a hum",
+      "total_ms": 3028
+    },
+    {
+      "query": "car maintenance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "car",
+        "maintenance"
+      ],
+      "keywords_found": [
+        "car",
+        "maintenance"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses various challenges related to car maintenance, particularly in winter conditions and with rusty vehicles. It highlights issues like dealing with salt damage, difficulties in perf",
+      "total_ms": 2936
+    },
+    {
+      "query": "Miata vs Hellcat",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "miata",
+        "hellcat"
+      ],
+      "keywords_found": [
+        "miata",
+        "hellcat"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide a direct comparison between the Miata and the Hellcat. However, it mentions the performance characteristics of the Hellcat, particularly its speed and handling challenges ",
+      "total_ms": 2813
+    },
+    {
+      "query": "manual vs automatic",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "manual",
+        "automatic"
+      ],
+      "keywords_found": [
+        "manual",
+        "automatic"
+      ],
+      "keywords_missing": [],
+      "answer": "The debate between manual and automatic transmissions highlights significant changes in technology and driving experience. Modern automatics are often faster and more versatile than manuals, benefitin",
+      "total_ms": 4455
+    },
+    {
+      "query": "manual transmission vs competitors",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "manual transmission",
+        "competitors"
+      ],
+      "keywords_found": [
+        "manual transmission"
+      ],
+      "keywords_missing": [
+        "competitors"
+      ],
+      "answer": "The discussion around manual transmissions highlights their decline in popularity compared to automatic transmissions, which have significantly improved in performance and technology. While manual tra",
+      "total_ms": 4526
+    },
+    {
+      "query": "OE end link vs new end link",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "oe end link",
+        "new end link"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "oe end link",
+        "new end link"
+      ],
+      "answer": "",
+      "total_ms": 1379
+    },
+    {
+      "query": "2014 Chevy SS vs 2015 Chevy SS",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "2014 chevy ss",
+        "2015 chevy ss"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "2014 chevy ss",
+        "2015 chevy ss"
+      ],
+      "answer": "",
+      "total_ms": 1301
+    },
+    {
+      "query": "how many videos about billstein?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "billstein"
+      ],
+      "keywords_found": [
+        "billstein"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not mention any videos specifically about Billstein.",
+      "total_ms": 1880
+    },
+    {
+      "query": "how many videos about pro 4x?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "pro 4x"
+      ],
+      "keywords_found": [
+        "pro 4x"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos specifically related to \"pro 4x.\"",
+      "total_ms": 3787
+    },
+    {
+      "query": "how many videos about 2024 mx-5 miata nd3?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_found": [
+        "2024 mx-5 miata nd3"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not mention any videos specifically about the 2024 MX-5 Miata ND3.",
+      "total_ms": 2337
+    },
+    {
+      "query": "how many videos about hilux?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "hilux"
+      ],
+      "keywords_found": [
+        "hilux"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not mention any videos about the Toyota Hilux.",
+      "total_ms": 2362
+    },
+    {
+      "query": "how many videos about mach 275?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "mach 275"
+      ],
+      "keywords_found": [
+        "mach 275"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos about Mach 275 in the provided context.",
+      "total_ms": 2393
+    },
+    {
+      "query": "Snowflake",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "snowflake"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "snowflake"
+      ],
+      "answer": "",
+      "total_ms": 1839
+    },
+    {
+      "query": "happy returns",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "happy returns"
+      ],
+      "keywords_found": [
+        "happy returns"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information related to \"happy returns.\"",
+      "total_ms": 1322
+    },
+    {
+      "query": "Alex Christen",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "alex christen"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "alex christen"
+      ],
+      "answer": "",
+      "total_ms": 1002
+    },
+    {
+      "query": "dxy",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "dxy"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "dxy"
+      ],
+      "answer": "",
+      "total_ms": 1073
+    },
+    {
+      "query": "Arch Aviation",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "arch aviation"
+      ],
+      "keywords_found": [
+        "arch aviation"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding \"Arch Aviation\" in the provided context.",
+      "total_ms": 1367
+    },
+    {
+      "query": "Technology Platform",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "technology",
+        "platform"
+      ],
+      "keywords_found": [
+        "technology"
+      ],
+      "keywords_missing": [
+        "platform"
+      ],
+      "answer": "The context discusses the challenges automotive manufacturers face in integrating modern technology into vehicles, particularly in infotainment systems. It highlights how traditional car manufacturers",
+      "total_ms": 3199
+    },
+    {
+      "query": "integration strategies",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "integration",
+        "strategies"
+      ],
+      "keywords_found": [
+        "integration",
+        "strategies"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses integration strategies in the automotive sector, emphasizing the shift from component-oriented development to a more systems engineering approach. This change is driven by the in",
+      "total_ms": 2639
+    },
+    {
+      "query": "Financial Services",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "financial",
+        "services"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "financial",
+        "services"
+      ],
+      "answer": "",
+      "total_ms": 1020
+    },
+    {
+      "query": "Risks",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "risks"
+      ],
+      "keywords_found": [
+        "risks"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses various risks associated with in-car technology and privacy, particularly focusing on how connected car services can expose personal data if not properly managed. It highlights c",
+      "total_ms": 2919
+    },
+    {
+      "query": "Stock Buybacks",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "stock",
+        "buybacks"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "stock",
+        "buybacks"
+      ],
+      "answer": "",
+      "total_ms": 1520
+    },
+    {
+      "query": "Palantir vs other companies",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "palantir",
+        "other companies"
+      ],
+      "keywords_found": [
+        "palantir",
+        "other companies"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about Palantir or comparisons with other companies.",
+      "total_ms": 1806
+    },
+    {
+      "query": "Coca-Cola vs Pepsi",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "coca-cola",
+        "pepsi"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "coca-cola",
+        "pepsi"
+      ],
+      "answer": "",
+      "total_ms": 1180
+    },
+    {
+      "query": "BitMine vs Micro Strategy",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "bitmine",
+        "micro strategy"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "bitmine",
+        "micro strategy"
+      ],
+      "answer": "",
+      "total_ms": 1431
+    },
+    {
+      "query": "Microsoft vs Google",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "microsoft",
+        "google"
+      ],
+      "keywords_found": [
+        "microsoft",
+        "google"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses the decision-making process regarding partnerships for technology in infotainment systems, specifically mentioning that Toyota chose to partner with Google for maps instead of cr",
+      "total_ms": 3077
+    },
+    {
+      "query": "Visa vs PayPal",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "visa",
+        "paypal"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "visa",
+        "paypal"
+      ],
+      "answer": "",
+      "total_ms": 1127
+    },
+    {
+      "query": "how many videos about happy returns?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "happy returns"
+      ],
+      "keywords_found": [
+        "happy returns"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about \"happy returns\" in the provided context.",
+      "total_ms": 1632
+    },
+    {
+      "query": "how many videos about arch aviation?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "arch aviation"
+      ],
+      "keywords_found": [
+        "arch aviation"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about arch aviation in the provided context.",
+      "total_ms": 2234
+    },
+    {
+      "query": "how many videos about dxy?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dxy"
+      ],
+      "keywords_found": [
+        "dxy"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to \"dxy.\"",
+      "total_ms": 1763
+    },
+    {
+      "query": "how many videos about snowflake?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "snowflake"
+      ],
+      "keywords_found": [
+        "snowflake"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos about snowflake mentioned in the provided context.",
+      "total_ms": 2926
+    },
+    {
+      "query": "how many videos about alex christen?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "alex christen"
+      ],
+      "keywords_found": [
+        "alex christen"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about Alex Christen in the provided context.",
+      "total_ms": 1735
+    },
+    {
+      "query": "Ballistol",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "ballistol"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "ballistol"
+      ],
+      "answer": "",
+      "total_ms": 954
+    },
+    {
+      "query": "Hickok45",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "hickok45"
+      ],
+      "answer": "",
+      "total_ms": 942
+    },
+    {
+      "query": "Dolly Parton",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dolly parton"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "dolly parton"
+      ],
+      "answer": "",
+      "total_ms": 1244
+    },
+    {
+      "query": "44 magnum",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "44 magnum"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "44 magnum"
+      ],
+      "answer": "",
+      "total_ms": 1188
+    },
+    {
+      "query": "Facebook",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "facebook"
+      ],
+      "keywords_found": [
+        "facebook"
+      ],
+      "keywords_missing": [],
+      "answer": "The context mentions concerns about personal information being shared on platforms like Facebook, highlighting issues related to data privacy and the risks of having personal data compromised.",
+      "total_ms": 2106
+    },
+    {
+      "query": "gunsmithing education",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "gunsmithing",
+        "education"
+      ],
+      "keywords_found": [
+        "gunsmithing",
+        "education"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about gunsmithing education.",
+      "total_ms": 1803
+    },
+    {
+      "query": "firearm pricing",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "firearm",
+        "pricing"
+      ],
+      "keywords_found": [
+        "firearm",
+        "pricing"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information regarding firearm pricing.",
+      "total_ms": 1973
+    },
+    {
+      "query": "gun enjoyment",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "gun",
+        "enjoyment"
+      ],
+      "keywords_found": [
+        "gun",
+        "enjoyment"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information related to gun enjoyment.",
+      "total_ms": 1635
+    },
+    {
+      "query": "firearms experience",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "firearms",
+        "experience"
+      ],
+      "keywords_found": [
+        "firearms",
+        "experience"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information related to firearms experience.",
+      "total_ms": 1951
+    },
+    {
+      "query": "big game hunting",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "big",
+        "game",
+        "hunting"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "big",
+        "game",
+        "hunting"
+      ],
+      "answer": "",
+      "total_ms": 967
+    },
+    {
+      "query": "apprenticeship program vs formal education",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "apprenticeship program",
+        "formal education"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "apprenticeship program",
+        "formal education"
+      ],
+      "answer": "",
+      "total_ms": 1293
+    },
+    {
+      "query": "Taurus GX4 vs P365",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "taurus gx4",
+        "p365"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "taurus gx4",
+        "p365"
+      ],
+      "answer": "",
+      "total_ms": 873
+    },
+    {
+      "query": "original Henry vs modern Henry",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "original henry",
+        "modern henry"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "original henry",
+        "modern henry"
+      ],
+      "answer": "",
+      "total_ms": 1033
+    },
+    {
+      "query": "Kimber revolver vs Jframe Smith and Wesson",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "kimber revolver",
+        "jframe smith and wesson"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "kimber revolver",
+        "jframe smith and wesson"
+      ],
+      "answer": "",
+      "total_ms": 1084
+    },
+    {
+      "query": "Mossberg 500 vs Hatsan Escort Slugger",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "mossberg 500",
+        "hatsan escort slugger"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "mossberg 500",
+        "hatsan escort slugger"
+      ],
+      "answer": "",
+      "total_ms": 1316
+    },
+    {
+      "query": "how many videos about dolly parton?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dolly parton"
+      ],
+      "keywords_found": [
+        "dolly parton"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos about Dolly Parton in the provided context.",
+      "total_ms": 1708
+    },
+    {
+      "query": "how many videos about 44 magnum?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "44 magnum"
+      ],
+      "keywords_found": [
+        "44 magnum"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos specifically related to the .44 Magnum.",
+      "total_ms": 1940
+    },
+    {
+      "query": "how many videos about facebook?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "facebook"
+      ],
+      "keywords_found": [
+        "facebook"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Facebook.",
+      "total_ms": 2237
+    },
+    {
+      "query": "how many videos about hickok45?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "hickok45"
+      ],
+      "keywords_found": [
+        "hickok45"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no specific details provided about the number of videos related to hickok45 in the context.",
+      "total_ms": 1777
+    },
+    {
+      "query": "how many videos about ballistol?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "ballistol"
+      ],
+      "keywords_found": [
+        "ballistol"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about Ballistol in the provided context.",
+      "total_ms": 1668
+    },
+    {
+      "query": "Northcut",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "northcut"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "northcut"
+      ],
+      "answer": "",
+      "total_ms": 921
+    },
+    {
+      "query": "Ben van Kerkwyk",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "ben van kerkwyk"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "ben van kerkwyk"
+      ],
+      "answer": "",
+      "total_ms": 960
+    },
+    {
+      "query": "Giza",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "giza"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "giza"
+      ],
+      "answer": "",
+      "total_ms": 978
+    },
+    {
+      "query": "SVU",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "svu"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "svu"
+      ],
+      "answer": "",
+      "total_ms": 731
+    },
+    {
+      "query": "Carl Sagan",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "carl sagan"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "carl sagan"
+      ],
+      "answer": "",
+      "total_ms": 486
+    },
+    {
+      "query": "ancient stories",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "ancient",
+        "stories"
+      ],
+      "keywords_found": [
+        "ancient",
+        "stories"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information related to ancient stories.",
+      "total_ms": 1451
+    },
+    {
+      "query": "Discount Codes",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "discount",
+        "codes"
+      ],
+      "keywords_found": [
+        "discount",
+        "codes"
+      ],
+      "keywords_missing": [],
+      "answer": "There are mentions of discount codes in the context provided. One video discusses a coupon code for FlexiSpot, offering $50 off ergonomic chairs and standing desks. Another video mentions a discount r",
+      "total_ms": 2557
+    },
+    {
+      "query": "Weight Management",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "weight",
+        "management"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "weight",
+        "management"
+      ],
+      "answer": "",
+      "total_ms": 685
+    },
+    {
+      "query": "Primal Bells",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "primal",
+        "bells"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "primal",
+        "bells"
+      ],
+      "answer": "",
+      "total_ms": 1256
+    },
+    {
+      "query": "Historical Figures",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "historical",
+        "figures"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "historical",
+        "figures"
+      ],
+      "answer": "",
+      "total_ms": 955
+    },
+    {
+      "query": "Iron Dome vs ballistic missiles",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "iron dome",
+        "ballistic missiles"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "iron dome",
+        "ballistic missiles"
+      ],
+      "answer": "",
+      "total_ms": 972
+    },
+    {
+      "query": "Wanderlei Silva vs Mirko Cro Cop",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "wanderlei silva",
+        "mirko cro cop"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "wanderlei silva",
+        "mirko cro cop"
+      ],
+      "answer": "",
+      "total_ms": 1131
+    },
+    {
+      "query": "UFC glove vs pride gloves",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "ufc glove",
+        "pride gloves"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "ufc glove",
+        "pride gloves"
+      ],
+      "answer": "",
+      "total_ms": 926
+    },
+    {
+      "query": "actors vs standup comedians",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "actors",
+        "standup comedians"
+      ],
+      "keywords_found": [
+        "actors",
+        "standup comedians"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information regarding actors versus standup comedians.",
+      "total_ms": 2511
+    },
+    {
+      "query": "David Tail vs Morgan Freeman",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "david tail",
+        "morgan freeman"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "david tail",
+        "morgan freeman"
+      ],
+      "answer": "",
+      "total_ms": 1373
+    },
+    {
+      "query": "how many videos about carl sagan?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "carl sagan"
+      ],
+      "keywords_found": [
+        "carl sagan"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Carl Sagan.",
+      "total_ms": 1964
+    },
+    {
+      "query": "how many videos about northcut?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "northcut"
+      ],
+      "keywords_found": [
+        "northcut"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about \"northcut\" in the provided context.",
+      "total_ms": 1511
+    },
+    {
+      "query": "how many videos about svu?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "svu"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "svu"
+      ],
+      "answer": "The provided context does not contain any information about videos specifically related to SUVs.",
+      "total_ms": 1802
+    },
+    {
+      "query": "how many videos about giza?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "giza"
+      ],
+      "keywords_found": [
+        "giza"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos about Giza in the provided context.",
+      "total_ms": 1950
+    },
+    {
+      "query": "how many videos about ben van kerkwyk?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "ben van kerkwyk"
+      ],
+      "keywords_found": [
+        "ben van kerkwyk"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no information available regarding videos about Ben Van Kerkwyk in the provided context.",
+      "total_ms": 2072
+    },
+    {
+      "query": "Chainlink",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "chainlink"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "chainlink"
+      ],
+      "answer": "",
+      "total_ms": 1030
+    },
+    {
+      "query": "mstr",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "mstr"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "mstr"
+      ],
+      "answer": "",
+      "total_ms": 832
+    },
+    {
+      "query": "Unity",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "unity"
+      ],
+      "keywords_found": [
+        "unity"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not contain any relevant information about \"Unity.\"",
+      "total_ms": 1522
+    },
+    {
+      "query": "CNBC",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "cnbc"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "cnbc"
+      ],
+      "answer": "",
+      "total_ms": 894
+    },
+    {
+      "query": "XRP",
+      "expected_type": "entity",
+      "got_type": "entity",
+      "type_passed": true,
+      "expected_keywords": [
+        "xrp"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "xrp"
+      ],
+      "answer": "",
+      "total_ms": 1084
+    },
+    {
+      "query": "volume analysis",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "volume",
+        "analysis"
+      ],
+      "keywords_found": [
+        "volume",
+        "analysis"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information specifically related to volume analysis.",
+      "total_ms": 2024
+    },
+    {
+      "query": "price predictions",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "price",
+        "predictions"
+      ],
+      "keywords_found": [
+        "price",
+        "predictions"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses price predictions for various electric vehicles, indicating that many models, such as the Porsche Taycan and Audi E-Tron, may see significant depreciation, with potential used pr",
+      "total_ms": 3746
+    },
+    {
+      "query": "Market psychology",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "market",
+        "psychology"
+      ],
+      "keywords_found": [
+        "market",
+        "psychology"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses market psychology in relation to car brands and consumer behavior, highlighting how manufacturers focus on tech features and luxury to attract buyers. It notes a disconnect betwe",
+      "total_ms": 3045
+    },
+    {
+      "query": "investment strategy",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "investment",
+        "strategy"
+      ],
+      "keywords_found": [
+        "investment",
+        "strategy"
+      ],
+      "keywords_missing": [],
+      "answer": "The investment strategy discussed emphasizes securing substantial funding, as highlighted by a recent $1.5 billion funding round that provides financial stability through Q4 of 2025. The focus is on h",
+      "total_ms": 2771
+    },
+    {
+      "query": "market performance",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "market",
+        "performance"
+      ],
+      "keywords_found": [
+        "market",
+        "performance"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses various aspects of market performance related to cars, including the shift of Mazda towards a premium market strategy and the declining sales of sports cars, which are attributed",
+      "total_ms": 3505
+    },
+    {
+      "query": "current stock vs Palantir",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "current stock",
+        "palantir"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "current stock",
+        "palantir"
+      ],
+      "answer": "",
+      "total_ms": 762
+    },
+    {
+      "query": "Unity Software vs Metaport",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "unity software",
+        "metaport"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "unity software",
+        "metaport"
+      ],
+      "answer": "",
+      "total_ms": 1356
+    },
+    {
+      "query": "linear scale vs log scale",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "linear scale",
+        "log scale"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "linear scale",
+        "log scale"
+      ],
+      "answer": "",
+      "total_ms": 971
+    },
+    {
+      "query": "S&P 500 vs Bitcoin",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p 500",
+        "bitcoin"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "s&p 500",
+        "bitcoin"
+      ],
+      "answer": "",
+      "total_ms": 726
+    },
+    {
+      "query": "Metaport vs Tesla",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "metaport",
+        "tesla"
+      ],
+      "keywords_found": [
+        "metaport",
+        "tesla"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about Metaport or a comparison between Metaport and Tesla.",
+      "total_ms": 2138
+    },
+    {
+      "query": "how many videos about chainlink?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "chainlink"
+      ],
+      "keywords_found": [
+        "chainlink"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Chainlink.",
+      "total_ms": 1527
+    },
+    {
+      "query": "how many videos about mstr?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "mstr"
+      ],
+      "keywords_found": [
+        "mstr"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to \"mstr.\"",
+      "total_ms": 1944
+    },
+    {
+      "query": "how many videos about unity?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "unity"
+      ],
+      "keywords_found": [
+        "unity"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos specifically about \"unity\" mentioned in the provided context.",
+      "total_ms": 1952
+    },
+    {
+      "query": "how many videos about xrp?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "xrp"
+      ],
+      "keywords_found": [
+        "xrp"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to XRP.",
+      "total_ms": 2140
+    },
+    {
+      "query": "how many videos about cnbc?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "cnbc"
+      ],
+      "keywords_found": [
+        "cnbc"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not mention any videos about CNBC.",
+      "total_ms": 1489
+    },
+    {
+      "query": "Nevada",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nevada"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "nevada"
+      ],
+      "answer": "",
+      "total_ms": 1217
+    },
+    {
+      "query": "Philadelphia Fed",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "philadelphia fed"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "philadelphia fed"
+      ],
+      "answer": "",
+      "total_ms": 766
+    },
+    {
+      "query": "Tony Blair",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "tony blair"
+      ],
+      "answer": "",
+      "total_ms": 1653
+    },
+    {
+      "query": "California",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "california"
+      ],
+      "keywords_found": [
+        "california"
+      ],
+      "keywords_missing": [],
+      "answer": "There are several videos that mention California, including discussions about the Mazda MX-30 EV, which is launched as a California-only electric car, and the 2024 Nissan Z Nismo, which features drivi",
+      "total_ms": 2293
+    },
+    {
+      "query": "China",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "china"
+      ],
+      "keywords_found": [
+        "china"
+      ],
+      "keywords_missing": [],
+      "answer": "The context mentions that the 2025 Volvo EX30 was initially designed to be built and manufactured in China with a full Chinese supply chain, but due to tariffs affecting margins, production has since ",
+      "total_ms": 2967
+    },
+    {
+      "query": "recession severity",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "recession",
+        "severity"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "recession",
+        "severity"
+      ],
+      "answer": "",
+      "total_ms": 1130
+    },
+    {
+      "query": "Consumer debt",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "consumer",
+        "debt"
+      ],
+      "keywords_found": [
+        "consumer",
+        "debt"
+      ],
+      "keywords_missing": [],
+      "answer": "The context discusses consumer debt primarily in relation to automotive finance, highlighting issues such as auto loan defaults and the burden of car ownership. It notes that many individuals, particu",
+      "total_ms": 2667
+    },
+    {
+      "query": "Federal Reserve Policy",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "federal",
+        "reserve",
+        "policy"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "federal",
+        "reserve",
+        "policy"
+      ],
+      "answer": "",
+      "total_ms": 877
+    },
+    {
+      "query": "trade uncertainty",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "trade",
+        "uncertainty"
+      ],
+      "keywords_found": [
+        "trade",
+        "uncertainty"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information related to trade uncertainty.",
+      "total_ms": 1626
+    },
+    {
+      "query": "Crypto strategic reserve",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "crypto",
+        "strategic",
+        "reserve"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "crypto",
+        "strategic",
+        "reserve"
+      ],
+      "answer": "",
+      "total_ms": 804
+    },
+    {
+      "query": "S&P 500 vs NASDAQ",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p 500",
+        "nasdaq"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "s&p 500",
+        "nasdaq"
+      ],
+      "answer": "",
+      "total_ms": 1093
+    },
+    {
+      "query": "Current deficit vs 50-year average",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "current deficit",
+        "50-year average"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "current deficit",
+        "50-year average"
+      ],
+      "answer": "",
+      "total_ms": 1029
+    },
+    {
+      "query": "S&P vs NASDAQ",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "s&p",
+        "nasdaq"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "s&p",
+        "nasdaq"
+      ],
+      "answer": "",
+      "total_ms": 959
+    },
+    {
+      "query": "Canadian equities vs Australian equities",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "canadian equities",
+        "australian equities"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "canadian equities",
+        "australian equities"
+      ],
+      "answer": "",
+      "total_ms": 1357
+    },
+    {
+      "query": "Bitcoin vs Ethereum",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "bitcoin",
+        "ethereum"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "bitcoin",
+        "ethereum"
+      ],
+      "answer": "",
+      "total_ms": 845
+    },
+    {
+      "query": "how many videos about california?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "california"
+      ],
+      "keywords_found": [
+        "california"
+      ],
+      "keywords_missing": [],
+      "answer": "There is one video that mentions California, specifically discussing a trip to Santa Monica and experiences related to the Smoking Tire Podcast.",
+      "total_ms": 2965
+    },
+    {
+      "query": "how many videos about nevada?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "nevada"
+      ],
+      "keywords_found": [
+        "nevada"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Nevada.",
+      "total_ms": 1705
+    },
+    {
+      "query": "how many videos about tony blair?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "tony blair"
+      ],
+      "keywords_found": [
+        "tony blair"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Tony Blair.",
+      "total_ms": 1887
+    },
+    {
+      "query": "how many videos about china?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "china"
+      ],
+      "keywords_found": [
+        "china"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos specifically related to China.",
+      "total_ms": 1750
+    },
+    {
+      "query": "how many videos about philadelphia fed?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "philadelphia fed"
+      ],
+      "keywords_found": [
+        "philadelphia fed"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to the Philadelphia Fed.",
+      "total_ms": 1879
+    },
+    {
+      "query": "Miniatures",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "miniatures"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "miniatures"
+      ],
+      "answer": "",
+      "total_ms": 781
+    },
+    {
+      "query": "Russia",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "russia"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "russia"
+      ],
+      "answer": "",
+      "total_ms": 781
+    },
+    {
+      "query": "Max Amini",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "max amini"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "max amini"
+      ],
+      "answer": "",
+      "total_ms": 1009
+    },
+    {
+      "query": "Dr. Seri",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dr. seri"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "dr. seri"
+      ],
+      "answer": "",
+      "total_ms": 751
+    },
+    {
+      "query": "Jesus Christ",
+      "expected_type": "entity",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "jesus christ"
+      ],
+      "keywords_found": [
+        "jesus christ"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no specific videos or content related to \"Jesus Christ\" mentioned in the provided context.",
+      "total_ms": 1698
+    },
+    {
+      "query": "Marriage",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "marriage"
+      ],
+      "keywords_found": [
+        "marriage"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide relevant information about marriage.",
+      "total_ms": 1613
+    },
+    {
+      "query": "job roles",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "job",
+        "roles"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "job",
+        "roles"
+      ],
+      "answer": "",
+      "total_ms": 967
+    },
+    {
+      "query": "Audience participation",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "audience",
+        "participation"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "audience",
+        "participation"
+      ],
+      "answer": "",
+      "total_ms": 995
+    },
+    {
+      "query": "comedy interactions",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "comedy",
+        "interactions"
+      ],
+      "keywords_found": [
+        "comedy",
+        "interactions"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information about comedy interactions.",
+      "total_ms": 1370
+    },
+    {
+      "query": "emotional impact",
+      "expected_type": "topic",
+      "got_type": "topic",
+      "type_passed": true,
+      "expected_keywords": [
+        "emotional",
+        "impact"
+      ],
+      "keywords_found": [
+        "emotional",
+        "impact"
+      ],
+      "keywords_missing": [],
+      "answer": "The emotional impact of car ownership is significant, as many people buy vehicles to recapture feelings or experiences from their youth. This emotional connection can lead to disappointment when the c",
+      "total_ms": 2950
+    },
+    {
+      "query": "Indians vs Western cultures",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "indians",
+        "western cultures"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "indians",
+        "western cultures"
+      ],
+      "answer": "",
+      "total_ms": 1050
+    },
+    {
+      "query": "cops in LA vs cops in Texas",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "cops in la",
+        "cops in texas"
+      ],
+      "keywords_found": [
+        "cops in la",
+        "cops in texas"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information regarding cops in LA versus cops in Texas.",
+      "total_ms": 1767
+    },
+    {
+      "query": "white people vs other ethnic groups",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "white people",
+        "other ethnic groups"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "white people",
+        "other ethnic groups"
+      ],
+      "answer": "",
+      "total_ms": 857
+    },
+    {
+      "query": "British buildings vs Jesus",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "british buildings",
+        "jesus"
+      ],
+      "keywords_found": [
+        "british buildings",
+        "jesus"
+      ],
+      "keywords_missing": [],
+      "answer": "There is no relevant information in the provided context regarding British buildings or Jesus.",
+      "total_ms": 2041
+    },
+    {
+      "query": "British faces vs Persian faces",
+      "expected_type": "comparison",
+      "got_type": "comparison",
+      "type_passed": true,
+      "expected_keywords": [
+        "british faces",
+        "persian faces"
+      ],
+      "keywords_found": [],
+      "keywords_missing": [
+        "british faces",
+        "persian faces"
+      ],
+      "answer": "",
+      "total_ms": 1092
+    },
+    {
+      "query": "how many videos about dr. seri?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "dr. seri"
+      ],
+      "keywords_found": [
+        "dr. seri"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Dr. Seri.",
+      "total_ms": 2229
+    },
+    {
+      "query": "how many videos about max amini?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "max amini"
+      ],
+      "keywords_found": [
+        "max amini"
+      ],
+      "keywords_missing": [],
+      "answer": "The context does not provide specific information about the number of videos related to Max Amini.",
+      "total_ms": 2035
+    },
+    {
+      "query": "how many videos about miniatures?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "miniatures"
+      ],
+      "keywords_found": [
+        "miniatures"
+      ],
+      "keywords_missing": [],
+      "answer": "There are no videos about miniatures mentioned in the provided context.",
+      "total_ms": 2102
+    },
+    {
+      "query": "how many videos about russia?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "russia"
+      ],
+      "keywords_found": [
+        "russia"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Russia.",
+      "total_ms": 1841
+    },
+    {
+      "query": "how many videos about jesus christ?",
+      "expected_type": "list",
+      "got_type": "topic",
+      "type_passed": false,
+      "expected_keywords": [
+        "jesus christ"
+      ],
+      "keywords_found": [
+        "jesus christ"
+      ],
+      "keywords_missing": [],
+      "answer": "The provided context does not contain any information about videos related to Jesus Christ.",
+      "total_ms": 1550
+    }
+  ]
+}

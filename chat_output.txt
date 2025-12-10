@@ -1,0 +1,21 @@
+New session: 352a5f2a
+yt-rag Chat (Ollama)
+Model: qwen2.5:7b-instruct
+Type your questions. Use 'exit' or Ctrl+C to quit.
+Commands: /new, /sessions, /rename <title>
+
+> 
+Yes, several channels have video content doing car comparisons. Channels like savagegeese, hickok45, and Crossroads frequently feature comparison segments in their videos.
+
+Found 1 relevant video (1 sections)
+
+1. savagegeese | Deep Drives with Turbowski | Hyundai Elantra
+   Section: Drag Racing and Car Comparisons
+   of the guy in an Elantra on the drag strip Tima no I'm sorry yeah the Ultima and he 
+looked like he was so involved going Zer to like 90 M an hour you...
+   https://youtube.com/watch?v=7FXWIw3MItw&t=253s
+
+
+(1279ms)
+
+> Goodbye!

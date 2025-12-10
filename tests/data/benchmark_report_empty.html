@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Report (filtered: empty)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            font-size: 14px;
+        }
+        .container { max-width: 1600px; margin: 0 auto; }
+        h1 { color: #333; margin-bottom: 10px; }
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .stat-box {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+        .stat-box .value { font-size: 24px; font-weight: bold; color: #333; }
+        .stat-box .label { color: #666; font-size: 12px; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        th {
+            background: #333;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 500;
+        }
+        td {
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }
+        tr:hover { background: #f8f9fa; }
+        .num { width: 40px; text-align: center; color: #999; }
+        .meta { width: 280px; }
+        .query { font-size: 15px; margin-bottom: 8px; }
+        .channel, .video, .type, .keywords { font-size: 12px; color: #666; margin: 2px 0; }
+        .video {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }
+        .answer-cell { width: 35%; }
+        .answer {
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .empty-answer { color: #999; font-style: italic; }
+        .validation { width: 300px; }
+        .val-qwen, .val-gpt { margin-bottom: 10px; }
+        .reason { font-size: 11px; color: #666; margin-top: 4px; }
+        .agreement { margin-top: 8px; }
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+        .badge-pass { background: #d4edda; color: #155724; }
+        .badge-fail { background: #f8d7da; color: #721c24; }
+        .badge-agree { background: #d1ecf1; color: #0c5460; }
+        .badge-disagree { background: #fff3cd; color: #856404; }
+        .badge-unknown { background: #e2e3e5; color: #383d41; }
+        .type-check { width: 80px; text-align: center; }
+        .kw-found {
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }
+        .kw-missing {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }
+        .filter-info {
+            background: #fff3cd;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 RAG Benchmark Report</h1>
+        <p>Pipeline: qwen (local) | Validators: qwen, gpt-4o-mini</p>
+
+        <div class="summary">
+            <div class="summary-grid">
+                <div class="stat-box">
+                    <div class="value">160</div>
+                    <div class="label">Total Tests</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">57.5%</div>
+                    <div class="label">Classification (92/160)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">81.0%</div>
+                    <div class="label">Keyword Match (196/242)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">33.1%</div>
+                    <div class="label">Qwen Pass (53)</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">63.1%</div>
+                    <div class="label">GPT-4o Pass (101)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class='filter-info'>Filtered: empty (23 results)</div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Test Info</th>
+                    <th>RAG Answer</th>
+                    <th>Validation</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                
+        <tr class="result-row">
+            <td class="num">1</td>
+            <td class="meta">
+                <div class="query"><strong>Nettuno Engine</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Maserati Grecale Trofeo | On a Better Path</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">nettuno engine</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ entity
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">2</td>
+            <td class="meta">
+                <div class="query"><strong>Handook RS3</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Mustang GT vs E92 BMW M3 | Weighing Cost and Performance</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">handook rs3</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ entity
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">3</td>
+            <td class="meta">
+                <div class="query"><strong>rear radiators vs front radiators</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 Lexus LFA | A Proper Goodbye</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-missing">rear radiators</span> <span class="kw-missing">front radiators</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">4</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about handook rs3?</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">handook rs3</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">5</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about chevrolet corvette c6 z06?</strong></div>
+                <div class="channel">📺 savagegeese</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">chevrolet corvette c6 z06</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">6</td>
+            <td class="meta">
+                <div class="query"><strong>Billstein</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 The Harsh Truth.. // 2025 Toyota Tacoma MANUAL Review</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">billstein</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">7</td>
+            <td class="meta">
+                <div class="query"><strong>Mach 275</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 Forester XT Upgrades Part II</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">mach 275</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ entity
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">8</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about billstein?</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">billstein</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">9</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about pro 4x?</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">pro 4x</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">10</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about hilux?</strong></div>
+                <div class="channel">📺 Sarah -n- Tuned</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">hilux</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">11</td>
+            <td class="meta">
+                <div class="query"><strong>Alex Christen</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will PayPal SURPRISE the Stock Market? [PYPL Earnings Prediction]</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">alex christen</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">12</td>
+            <td class="meta">
+                <div class="query"><strong>Stock Buybacks</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 Will PayPal SURPRISE the Stock Market? [PYPL Earnings Prediction]</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-missing">stock</span> <span class="kw-missing">buybacks</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">13</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about arch aviation?</strong></div>
+                <div class="channel">📺 Crossroads</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">arch aviation</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">14</td>
+            <td class="meta">
+                <div class="query"><strong>Northcut</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 Joe Rogan Experience #706 - Brendan Schaub &amp; Fight Companion ? (Part 1)</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">northcut</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">15</td>
+            <td class="meta">
+                <div class="query"><strong>Ben van Kerkwyk</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 Joe Rogan Experience #2417 - Ben van Kerkwyk</div>
+                <div class="type">🏷️ entity</div>
+                <div class="keywords">🔑 <span class="kw-missing">ben van kerkwyk</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">16</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about northcut?</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">northcut</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">17</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about svu?</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">svu</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">18</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about ben van kerkwyk?</strong></div>
+                <div class="channel">📺 PowerfulJRE</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">ben van kerkwyk</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">19</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about chainlink?</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">chainlink</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">20</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about mstr?</strong></div>
+                <div class="channel">📺 Cantonese Cat - TA on Stocks &amp; Crypto</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">mstr</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">21</td>
+            <td class="meta">
+                <div class="query"><strong>job roles</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 Top 10 Hilarious Moments in Texas | Max Amini | Standup Comedy</div>
+                <div class="type">🏷️ topic</div>
+                <div class="keywords">🔑 <span class="kw-missing">job</span> <span class="kw-missing">roles</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ topic
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">22</td>
+            <td class="meta">
+                <div class="query"><strong>British faces vs Persian faces</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 British Attitudes vs. Persian Attitudes - Max Amini</div>
+                <div class="type">🏷️ comparison</div>
+                <div class="keywords">🔑 <span class="kw-missing">british faces</span> <span class="kw-missing">persian faces</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✓ comparison
+            </td>
+        </tr>
+        
+        <tr class="result-row">
+            <td class="num">23</td>
+            <td class="meta">
+                <div class="query"><strong>how many videos about miniatures?</strong></div>
+                <div class="channel">📺 Max Amini</div>
+                <div class="video">🎬 unknown</div>
+                <div class="type">🏷️ list</div>
+                <div class="keywords">🔑 <span class="kw-missing">miniatures</span></div>
+            </td>
+            <td class="answer-cell"><span class="empty-answer">(empty)</span></td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> <span class="badge badge-fail" title="Empty answer">✗ Fail</span>
+                    <div class="reason">Empty answer</div>
+                </div>
+                <div class="agreement">
+                    <span class="badge badge-agree">Agree</span>
+                </div>
+            </td>
+            <td class="type-check">
+                ✗ topic
+            </td>
+        </tr>
+        
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

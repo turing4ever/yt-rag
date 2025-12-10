@@ -1,6 +1,8 @@
 """CLI commands for yt-rag."""
 
 import asyncio
+import logging
+import os
 import tempfile
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -8,6 +10,17 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import typer
+
+# Configure logging based on LOG_LEVEL environment variable
+_log_level = os.environ.get("LOG_LEVEL", "WARNING").upper()
+logging.basicConfig(
+    level=getattr(logging, _log_level, logging.WARNING),
+    format="%(levelname)s %(name)s: %(message)s",
+)
+# Suppress noisy FAISS loader debug messages
+logging.getLogger("faiss").setLevel(logging.WARNING)
+logging.getLogger("faiss.loader").setLevel(logging.WARNING)
+logging.getLogger("faiss._loader").setLevel(logging.WARNING)
 from rich.console import Console
 from rich.progress import (
     BarColumn,
@@ -193,8 +206,13 @@ def update(
     force_embed: bool = typer.Option(
         False, "--force-embed", help="Rebuild all embeddings from scratch"
     ),
+    force_synonym: bool = typer.Option(
+        False, "--force-synonym", help="Regenerate synonyms for all videos"
+    ),
     skip_sync: bool = typer.Option(False, "--skip-sync", help="Skip syncing channels"),
+    skip_meta: bool = typer.Option(False, "--skip-meta", help="Skip metadata refresh"),
     skip_embed: bool = typer.Option(False, "--skip-embed", help="Skip embedding step"),
+    skip_synonym: bool = typer.Option(False, "--skip-synonym", help="Skip synonym generation"),
     test: bool = typer.Option(
         False, "--test", help="Test mode: process 5 videos per channel through entire pipeline"
     ),
@@ -211,6 +229,7 @@ def update(
     3. fetch-transcript: Fetch transcripts for pending videos
     4. process-transcript: Sectionize and summarize videos
     5. embed: Build/update vector index
+    6. synonyms: Generate synonyms for new videos (or all with --force-synonym)
 
     Use --test to run a test with 5 videos per channel through the entire pipeline.
 
@@ -218,9 +237,11 @@ def update(
         yt-rag update                      # Run full pipeline
         yt-rag update --test               # Test run: 5 videos per channel
         yt-rag update --skip-sync          # Skip channel sync
+        yt-rag update --skip-meta          # Skip metadata refresh
         yt-rag update --force-transcript   # Re-fetch ALL transcripts
         yt-rag update --force-meta         # Force refresh all metadata
         yt-rag update --force-embed        # Rebuild all embeddings
+        yt-rag update --force-synonym      # Regenerate all synonyms
         yt-rag update --openai             # Use OpenAI for embeddings
     """
     from datetime import datetime, timedelta
@@ -276,48 +297,51 @@ def update(
         console.print("\n[bold]Step 1: Syncing channels[/bold] [dim](skipped)[/dim]")
 
     # Step 2: Refresh metadata
-    console.print("\n[bold]Step 2: Refreshing metadata[/bold]")
-    cutoff = datetime.now() - timedelta(days=METADATA_FRESHNESS_DAYS)
+    if not skip_meta:
+        console.print("\n[bold]Step 2: Refreshing metadata[/bold]")
+        cutoff = datetime.now() - timedelta(days=METADATA_FRESHNESS_DAYS)
 
-    channels_to_refresh = [c for c in db.list_channels() if not c.description]
-    all_videos = db.list_videos(status="fetched")
-    pending_videos = db.get_pending_videos()
+        channels_to_refresh = [c for c in db.list_channels() if not c.description]
+        all_videos = db.list_videos(status="fetched")
+        pending_videos = db.get_pending_videos()
 
-    if test:
-        videos_to_refresh = [v for v in all_videos + pending_videos if v.id in test_video_ids]
-        console.print(f"[dim]Test mode: {len(videos_to_refresh)} videos[/dim]")
-    elif force_meta:
-        videos_to_refresh = all_videos
-        console.print(f"[yellow]Force: {len(videos_to_refresh)} videos[/yellow]")
+        if test:
+            videos_to_refresh = [v for v in all_videos + pending_videos if v.id in test_video_ids]
+            console.print(f"[dim]Test mode: {len(videos_to_refresh)} videos[/dim]")
+        elif force_meta:
+            videos_to_refresh = all_videos
+            console.print(f"[yellow]Force: {len(videos_to_refresh)} videos[/yellow]")
+        else:
+            videos_to_refresh = [
+                v
+                for v in all_videos
+                if v.metadata_refreshed_at is None or v.metadata_refreshed_at < cutoff
+            ]
+            skipped = len(all_videos) - len(videos_to_refresh)
+            if skipped > 0:
+                console.print(f"[dim]Skipping {skipped} fresh videos[/dim]")
+
+        work_items: list[tuple[str, Channel | Video]] = []
+        work_items.extend([("channel", c) for c in channels_to_refresh])
+        work_items.extend([("video", v) for v in videos_to_refresh])
+
+        if not work_items:
+            console.print("[green]✓[/green] All metadata up to date")
+        else:
+            console.print(
+                f"[dim]{len(channels_to_refresh)} channels + {len(videos_to_refresh)} videos[/dim]"
+            )
+            result = asyncio.run(refresh_metadata_async(work_items, db))
+            parts = []
+            if result.channels_updated or result.channels_errors:
+                parts.append(f"{result.channels_updated} channels")
+            if result.videos_updated or result.videos_errors:
+                parts.append(f"{result.videos_updated} videos")
+            total_errors = result.channels_errors + result.videos_errors
+            error_msg = f", {total_errors} errors" if total_errors else ""
+            console.print(f"[green]✓[/green] Updated {', '.join(parts)}{error_msg}")
     else:
-        videos_to_refresh = [
-            v
-            for v in all_videos
-            if v.metadata_refreshed_at is None or v.metadata_refreshed_at < cutoff
-        ]
-        skipped = len(all_videos) - len(videos_to_refresh)
-        if skipped > 0:
-            console.print(f"[dim]Skipping {skipped} fresh videos[/dim]")
-
-    work_items: list[tuple[str, Channel | Video]] = []
-    work_items.extend([("channel", c) for c in channels_to_refresh])
-    work_items.extend([("video", v) for v in videos_to_refresh])
-
-    if not work_items:
-        console.print("[green]✓[/green] All metadata up to date")
-    else:
-        console.print(
-            f"[dim]{len(channels_to_refresh)} channels + {len(videos_to_refresh)} videos[/dim]"
-        )
-        result = asyncio.run(refresh_metadata_async(work_items, db))
-        parts = []
-        if result.channels_updated or result.channels_errors:
-            parts.append(f"{result.channels_updated} channels")
-        if result.videos_updated or result.videos_errors:
-            parts.append(f"{result.videos_updated} videos")
-        total_errors = result.channels_errors + result.videos_errors
-        error_msg = f", {total_errors} errors" if total_errors else ""
-        console.print(f"[green]✓[/green] Updated {', '.join(parts)}{error_msg}")
+        console.print("\n[bold]Step 2: Refreshing metadata[/bold] [dim](skipped)[/dim]")
 
     # Step 3: Fetch transcripts (uses youtube_transcript_api - parallel, no rate limiting)
     console.print("\n[bold]Step 3: Fetching transcripts[/bold]")
@@ -542,6 +566,50 @@ def update(
                         console.print("[green]✓[/green] All summaries already embedded")
     else:
         console.print("\n[bold]Step 5: Building embeddings[/bold] [dim](skipped)[/dim]")
+
+    # Step 6: Refresh synonyms
+    if not skip_synonym:
+        console.print("\n[bold]Step 6: Generating synonyms[/bold]")
+        from .keywords import refresh_synonyms
+
+        if test:
+            console.print(f"[dim]Test mode: processing {len(test_video_ids)} videos[/dim]")
+            # In test mode, extract keywords from test videos only
+            from .keywords import extract_keywords_from_videos, suggest_synonyms_for_keyword
+
+            keywords = extract_keywords_from_videos(db, list(test_video_ids), min_total_frequency=3)
+            if keywords:
+                for kw in keywords[:50]:
+                    synonyms = suggest_synonyms_for_keyword(kw.keyword)
+                    for syn in synonyms:
+                        db.add_synonym(kw.keyword, syn, source="heuristic", approved=False)
+                console.print(f"[green]✓[/green] Extracted {len(keywords)} keywords from test videos")
+            else:
+                console.print("[green]✓[/green] No keywords extracted")
+        else:
+            if force_synonym:
+                console.print("[yellow]Force mode: regenerating all synonyms[/yellow]")
+
+            with Progress(
+                SpinnerColumn(),
+                TextColumn("[progress.description]{task.description}"),
+                console=console,
+            ) as progress:
+                progress.add_task("Extracting keywords and generating synonyms...", total=None)
+                syn_result = refresh_synonyms(db, force=force_synonym, use_local=use_local)
+
+            if syn_result.videos_analyzed > 0:
+                console.print(
+                    f"[green]✓[/green] Analyzed {syn_result.videos_analyzed} videos, "
+                    f"extracted {syn_result.keywords_extracted} keywords, "
+                    f"added {syn_result.synonyms_added} synonyms"
+                )
+                if syn_result.channels_processed:
+                    console.print(f"[dim]Channels: {', '.join(syn_result.channels_processed)}[/dim]")
+            else:
+                console.print("[green]✓[/green] No new videos to analyze")
+    else:
+        console.print("\n[bold]Step 6: Generating synonyms[/bold] [dim](skipped)[/dim]")
 
     db.close()
     console.print("\n[bold green]✓ Update complete![/bold green]")
@@ -794,6 +862,9 @@ def list_items(
 @app.command()
 def status():
     """Show database statistics."""
+    from .config import DEFAULT_OLLAMA_EMBED_MODEL
+    from .vectorstore import VectorStore, FAISS_GPU_AVAILABLE
+
     db = get_db()
     stats = db.get_stats()
 
@@ -809,6 +880,29 @@ def status():
     table.add_row("Segments", str(stats["segments"]))
     table.add_row("Sections", str(stats["sections"]))
     table.add_row("Summaries", str(stats["summaries"]))
+
+    # Add embedding index info
+    table.add_section()
+    table.add_row("[bold]Embedding Index[/bold]", "")
+
+    # Check local (Ollama) index - this is the primary/default
+    local_sections = VectorStore(name="sections", use_local=True, use_gpu=False)
+    local_summaries = VectorStore(name="summaries", use_local=True, use_gpu=False)
+    local_sections_loaded = local_sections.load()
+    local_summaries_loaded = local_summaries.load()
+
+    if local_sections_loaded or local_summaries_loaded:
+        table.add_row(f"  Model", f"[cyan]{DEFAULT_OLLAMA_EMBED_MODEL}[/cyan]")
+        if local_sections_loaded:
+            table.add_row(f"  Sections", f"[cyan]{local_sections.size:,}[/cyan] ({local_sections.dimension}d)")
+        if local_summaries_loaded:
+            table.add_row(f"  Summaries", f"[cyan]{local_summaries.size:,}[/cyan] ({local_summaries.dimension}d)")
+    else:
+        table.add_row("  [dim]No index[/dim]", "[yellow]Run 'yt-rag embed'[/yellow]")
+
+    # GPU status
+    gpu_status = "[green]Available[/green]" if FAISS_GPU_AVAILABLE else "[dim]Not available[/dim]"
+    table.add_row("  GPU acceleration", gpu_status)
 
     console.print(table)
     db.close()
@@ -1111,14 +1205,18 @@ def ask(
     video: str = typer.Option(None, "-v", "--video", help="Filter to specific video ID"),
     channel: str = typer.Option(None, "-c", "--channel", help="Filter to specific channel ID"),
     no_answer: bool = typer.Option(False, "--no-answer", help="Skip answer generation"),
-    model: str = typer.Option(DEFAULT_CHAT_MODEL, "-m", "--model", help="Chat model"),
-    fast: bool = typer.Option(False, "--fast", help="Use gpt-3.5-turbo for faster response"),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI for embeddings"),
+    model: str = typer.Option(DEFAULT_OLLAMA_MODEL, "-m", "--model", help="Chat model"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI instead of local Ollama"),
 ):
     """Ask a question about video content using RAG."""
-    chat_model = "gpt-3.5-turbo" if fast else model
     use_local = not openai
+    # Use the specified model, or switch to OpenAI model if --openai is set
+    chat_model = model if use_local else (DEFAULT_CHAT_MODEL if model == DEFAULT_OLLAMA_MODEL else model)
     db = get_db()
+
+    # For list/show queries, skip LLM answer generation (CLI formats the output)
+    is_list_query = any(kw in query.lower() for kw in ["show", "list", "find", "top "])
+    should_generate_answer = not no_answer and not is_list_query
 
     with Progress(
         SpinnerColumn(),
@@ -1132,7 +1230,7 @@ def ask(
             top_k=top_k,
             video_id=video,
             channel_id=channel,
-            generate_answer=not no_answer,
+            generate_answer=should_generate_answer,
             chat_model=chat_model,
             use_local=use_local,
         )
@@ -1142,26 +1240,37 @@ def ask(
         db.close()
         return
 
-    # Show answer if generated
+    # Show LLM answer if generated (for regular questions, not list queries)
     if result.answer:
         console.print("\n[bold]Answer:[/bold]")
         console.print(result.answer)
         console.print()
 
-    # Show sources
-    console.print(f"[bold]Sources ({len(result.hits)}):[/bold]")
+    # Show results list with rich formatting (no duplicate "Sources" header)
+    console.print()
     for i, hit in enumerate(result.hits, 1):
-        score_pct = int(hit.score * 100)
-        console.print(f"\n[cyan]{i}.[/cyan] {hit.video_title}")
+        channel_str = f"[magenta]{hit.channel_name}[/magenta] | " if hit.channel_name else ""
+        date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]" if hit.published_at else ""
+        # Truncate section content for preview (first 150 chars)
+        content_preview = hit.section.content[:150].replace("\n", " ").strip()
+        if len(hit.section.content) > 150:
+            content_preview += "..."
+
+        console.print(f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]{date_str}")
         console.print(f"   Section: {hit.section.title}")
-        console.print(f"   Score: {score_pct}% | [link={hit.timestamp_url}]{hit.timestamp_url}[/]")
+        console.print(f"   [dim]{content_preview}[/dim]")
+        console.print(f"   [link={hit.timestamp_url}]{hit.timestamp_url}[/link]")
+        console.print()
 
     # Show stats
-    model_info = f" | Model: {chat_model}" if not no_answer else ""
-    console.print(
-        f"\n[dim]Latency: {result.latency_ms}ms | "
-        f"Tokens: {result.tokens_embedding} embed + {result.tokens_chat} chat{model_info}[/dim]"
-    )
+    if should_generate_answer:
+        model_info = f" | Model: {chat_model}"
+        console.print(
+            f"\n[dim]Latency: {result.latency_ms}ms | "
+            f"Tokens: {result.tokens_embedding} embed + {result.tokens_chat} chat{model_info}[/dim]"
+        )
+    else:
+        console.print(f"\n[dim]Latency: {result.latency_ms}ms | Tokens: {result.tokens_embedding} embed[/dim]")
 
     db.close()
 
@@ -1364,6 +1473,513 @@ def test_list():
 
     console.print(table)
     db.close()
+
+
+@app.command("test")
+def test_benchmark(
+    data_file: str = typer.Option(
+        None,
+        "--data",
+        "-d",
+        help="Path to JSON test data file (default: tests/data/benchmark.json)",
+    ),
+    output_file: str = typer.Option(
+        None,
+        "--output",
+        "-o",
+        help="Save results to JSON file (auto-named if not specified)",
+    ),
+    validate_openai: bool = typer.Option(
+        False, "--validate-openai", help="Also validate with OpenAI (compares Qwen vs GPT-4o validators)"
+    ),
+    verbose: bool = typer.Option(False, "-v", "--verbose", help="Show all results, not just failures"),
+):
+    """Benchmark full RAG pipeline: classification, retrieval, and answer quality.
+
+    Pipeline always uses local models (Qwen + Ollama embeddings).
+
+    Validation includes:
+    - Keyword matching: expected keywords found in answer
+    - LLM validation: Qwen judges answer quality (and GPT-4o if --validate-openai)
+
+    Use --validate-openai to compare Qwen vs GPT-4o as validators side-by-side.
+    """
+    import json
+    from pathlib import Path
+
+    # Find test data file
+    if data_file:
+        data_path = Path(data_file)
+    else:
+        # Look for default test data relative to package
+        pkg_dir = Path(__file__).parent.parent.parent  # src/yt_rag -> src -> project root
+        data_path = pkg_dir / "tests" / "data" / "benchmark.json"
+
+    if not data_path.exists():
+        console.print(f"[red]Error: Test data file not found: {data_path}[/red]")
+        console.print("Create a JSON file with test_cases array containing query/expected_type/expected_keywords")
+        raise typer.Exit(1)
+
+    # Load test data
+    with open(data_path) as f:
+        data = json.load(f)
+
+    test_cases = data.get("test_cases", [])
+    if not test_cases:
+        console.print("[yellow]No test cases found in data file[/yellow]")
+        raise typer.Exit(1)
+
+    # Auto-generate output path
+    if output_file:
+        output_path = Path(output_file)
+    else:
+        base_name = data_path.name.replace("benchmark_generated", "benchmark_results")
+        output_path = data_path.parent / base_name
+
+    _run_full_pipeline_test(test_cases, data_path, output_path, verbose, validate_openai=validate_openai)
+
+
+# LLM validation prompt for judging answer quality
+VALIDATION_PROMPT = """You are evaluating a RAG system's answer quality.
+
+Question: {query}
+Expected to mention: {expected_keywords}
+RAG Answer: {answer}
+
+Evaluate if the answer correctly addresses the question. Consider:
+1. Does the answer mention the key entity/topic from the question?
+2. Is the answer relevant and informative?
+3. Does it correctly use information (not hallucinating)?
+
+Respond with JSON only:
+{{"pass": true/false, "reason": "brief explanation"}}"""
+
+
+def _validate_with_llm(query: str, answer: str, expected_keywords: list, use_openai: bool = False) -> dict:
+    """Use LLM to validate answer quality.
+
+    Returns:
+        dict with 'pass' (bool) and 'reason' (str)
+    """
+    import json as json_module
+
+    from .config import DEFAULT_CHAT_MODEL, DEFAULT_OLLAMA_MODEL
+    from .openai_client import chat_completion, ollama_chat_completion
+
+    if not answer or not answer.strip():
+        return {"pass": False, "reason": "Empty answer"}
+
+    prompt = VALIDATION_PROMPT.format(
+        query=query,
+        expected_keywords=", ".join(expected_keywords) if expected_keywords else "N/A",
+        answer=answer[:500],  # Truncate long answers
+    )
+
+    try:
+        if use_openai:
+            response = chat_completion(
+                messages=[{"role": "user", "content": prompt}],
+                model=DEFAULT_CHAT_MODEL,
+                temperature=0.0,
+                max_tokens=100,
+            )
+        else:
+            response = ollama_chat_completion(
+                messages=[{"role": "user", "content": prompt}],
+                model=DEFAULT_OLLAMA_MODEL,
+                temperature=0.0,
+            )
+
+        content = response.content.strip()
+        # Extract JSON from response
+        if "```json" in content:
+            content = content.split("```json")[1].split("```")[0].strip()
+        elif "```" in content:
+            content = content.split("```")[1].split("```")[0].strip()
+
+        result = json_module.loads(content)
+        return {
+            "pass": bool(result.get("pass", False)),
+            "reason": result.get("reason", ""),
+        }
+    except Exception as e:
+        return {"pass": False, "reason": f"Validation error: {e}"}
+
+
+def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: bool, validate_openai: bool = False):
+    """Run full pipeline test with timing breakdown.
+
+    Pipeline always uses local models (Qwen + Ollama embeddings).
+    Validation uses both keyword matching and LLM-based judging.
+    If validate_openai=True, compares Qwen vs GPT-4o as validators.
+
+    Args:
+        test_cases: List of test case dicts
+        data_path: Path to input data file
+        output_path: Path for output results
+        verbose: Show detailed output
+        validate_openai: Also validate with OpenAI for comparison
+    """
+    import json
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+
+    from .config import DEFAULT_OLLAMA_EMBED_MODEL, DEFAULT_OLLAMA_MODEL
+    from .openai_client import ollama_chat_completion, ollama_embed_text
+    from .search import (
+        RAG_SYSTEM_PROMPT,
+        RAG_USER_PROMPT,
+        analyze_query_with_llm,
+        format_context,
+        get_sections_store,
+        get_synonyms_map,
+    )
+
+    console.print(f"[bold]Running {len(test_cases)} full pipeline tests[/bold]")
+    console.print(f"Pipeline: Qwen (local Ollama)")
+    console.print(f"Validators: Qwen" + (" + GPT-4o" if validate_openai else ""))
+    console.print(f"Data file: {data_path}")
+    console.print(f"Output file: {output_path}\n")
+
+    db = get_db()
+    store = get_sections_store(use_local=True)
+
+    if store.size == 0:
+        console.print("[red]No vectors indexed. Run 'yt-rag embed' first.[/red]")
+        db.close()
+        raise typer.Exit(1)
+
+    # Aggregate timing stats
+    timings = {
+        "parallel": [],
+        "search": [],
+        "filter": [],
+        "answer": [],
+        "validate": [],
+        "total": [],
+    }
+
+    # Evaluation results
+    results = []
+    classification_correct = 0
+    keyword_hits = 0
+    keyword_total = 0
+    qwen_validation_pass = 0
+    gpt_validation_pass = 0
+
+    with Progress(
+        SpinnerColumn(),
+        TextColumn("[progress.description]{task.description}"),
+        BarColumn(),
+        MofNCompleteColumn(),
+        TimeElapsedColumn(),
+        console=console,
+    ) as progress:
+        task = progress.add_task("Testing...", total=len(test_cases))
+
+        for case in test_cases:
+            query = case["query"]
+            expected_type = case.get("expected_type")
+            expected_keywords = case.get("expected_keywords", [])
+            t_start = time.time()
+
+            # Handle META queries specially - no search/LLM needed
+            if expected_type == "meta":
+                from .search import classify_query, QueryType
+                t_classify = time.time()
+                got_type = classify_query(query).value
+                type_passed = got_type == "meta"
+                if type_passed:
+                    classification_correct += 1
+
+                # For meta queries, the "answer" is the stats from DB
+                stats = db.get_stats()
+                channels = db.list_channels()
+                answer = (
+                    f"Library contains {stats.get('videos_fetched', 0):,} videos "
+                    f"across {len(channels)} channels."
+                )
+
+                # META queries always pass validation (no keywords to check)
+                result_entry = {
+                    "query": query,
+                    "expected_type": expected_type,
+                    "got_type": got_type,
+                    "type_passed": type_passed,
+                    "expected_keywords": [],
+                    "keywords_found": [],
+                    "keywords_missing": [],
+                    "answer": answer,
+                    "validation_qwen": {"pass": True, "reason": "Meta query - stats returned"},
+                }
+                if validate_openai:
+                    result_entry["validation_gpt4o"] = {"pass": True, "reason": "Meta query - stats returned"}
+                    gpt_validation_pass += 1
+                qwen_validation_pass += 1
+                results.append(result_entry)
+
+                # Minimal timing entries
+                timings["parallel"].append(int((time.time() - t_classify) * 1000))
+                timings["search"].append(0)
+                timings["filter"].append(0)
+                timings["answer"].append(0)
+                timings["validate"].append(0)
+                timings["total"].append(int((time.time() - t_start) * 1000))
+                progress.update(task, advance=1)
+                continue
+
+            # Stage 1: Parallel parsing and embedding (always local)
+            t_parallel_start = time.time()
+
+            def do_parse():
+                return analyze_query_with_llm(query, use_local=True)
+
+            def do_embed():
+                return ollama_embed_text(query, DEFAULT_OLLAMA_EMBED_MODEL)
+
+            with ThreadPoolExecutor(max_workers=2) as executor:
+                parse_future = executor.submit(do_parse)
+                embed_future = executor.submit(do_embed)
+                analysis = parse_future.result()
+                embed_result = embed_future.result()
+
+            t_parallel_end = time.time()
+            timings["parallel"].append(int((t_parallel_end - t_parallel_start) * 1000))
+
+            # Classification check
+            got_type = analysis.query_type.value if analysis else "ERROR"
+            type_passed = got_type == expected_type if expected_type else True
+            if type_passed and expected_type:
+                classification_correct += 1
+
+            # Stage 2: Vector search
+            t_search_start = time.time()
+            search_results = store.search(query_embedding=embed_result.embedding, top_k=50)
+            t_search_end = time.time()
+            timings["search"].append(int((t_search_end - t_search_start) * 1000))
+
+            # Stage 3: Keyword filtering
+            t_filter_start = time.time()
+            if analysis and analysis.keywords:
+                keywords = set(analysis.keywords)
+                filtered = []
+                for result in search_results:
+                    section = db.get_section(result.id)
+                    if not section:
+                        continue
+                    video = db.get_video(section.video_id)
+                    if not video:
+                        continue
+                    all_text = f"{video.title} {section.title} {section.content}".lower()
+                    if any(kw in all_text for kw in keywords):
+                        filtered.append(result)
+                search_results = filtered[:10]
+            else:
+                search_results = search_results[:10]
+            t_filter_end = time.time()
+            timings["filter"].append(int((t_filter_end - t_filter_start) * 1000))
+
+            # Stage 4: Answer generation (always local)
+            t_answer_start = time.time()
+            hits = []
+            for r in search_results[:5]:
+                section = db.get_section(r.id)
+                if section:
+                    video = db.get_video(section.video_id)
+                    if video:
+                        from .search import SearchHit
+
+                        hits.append(
+                            SearchHit(
+                                section=section,
+                                video_id=video.id,
+                                video_title=video.title,
+                                video_url=video.url,
+                                channel_id=video.channel_id,
+                                channel_name=None,
+                                host=None,
+                                tags=None,
+                                score=r.score,
+                                timestamp_url=f"https://youtube.com/watch?v={video.id}",
+                            )
+                        )
+
+            answer = ""
+            if hits:
+                context = format_context(hits, db=db)
+                messages = [
+                    {"role": "system", "content": RAG_SYSTEM_PROMPT},
+                    {"role": "user", "content": RAG_USER_PROMPT.format(context=context, question=query)},
+                ]
+                response = ollama_chat_completion(messages=messages, model=DEFAULT_OLLAMA_MODEL, temperature=0.1)
+                answer = response.content
+
+            t_answer_end = time.time()
+            timings["answer"].append(int((t_answer_end - t_answer_start) * 1000))
+
+            # Stage 5: Validation
+            t_validate_start = time.time()
+
+            # Keyword validation
+            answer_lower = answer.lower()
+            keywords_found = [kw for kw in expected_keywords if kw.lower() in answer_lower]
+            keywords_missing = [kw for kw in expected_keywords if kw.lower() not in answer_lower]
+            keyword_hits += len(keywords_found)
+            keyword_total += len(expected_keywords)
+
+            # LLM validation (Qwen)
+            qwen_result = _validate_with_llm(query, answer, expected_keywords, use_openai=False)
+            if qwen_result["pass"]:
+                qwen_validation_pass += 1
+
+            # LLM validation (GPT-4o) if requested
+            gpt_result = None
+            if validate_openai:
+                gpt_result = _validate_with_llm(query, answer, expected_keywords, use_openai=True)
+                if gpt_result["pass"]:
+                    gpt_validation_pass += 1
+
+            t_validate_end = time.time()
+            timings["validate"].append(int((t_validate_end - t_validate_start) * 1000))
+
+            t_end = time.time()
+            timings["total"].append(int((t_end - t_start) * 1000))
+
+            # Store result
+            result_entry = {
+                "query": query,
+                "expected_type": expected_type,
+                "got_type": got_type,
+                "type_passed": type_passed,
+                "expected_keywords": expected_keywords,
+                "keywords_found": keywords_found,
+                "keywords_missing": keywords_missing,
+                "answer": answer[:500],
+                "validation_qwen": qwen_result,
+            }
+            if gpt_result:
+                result_entry["validation_gpt4o"] = gpt_result
+            results.append(result_entry)
+
+            progress.update(task, advance=1)
+
+    db.close()
+
+    # Print timing summary
+    console.print()
+    console.print("[bold]Timing Breakdown (avg ms)[/bold]")
+
+    timing_table = Table()
+    timing_table.add_column("Stage")
+    timing_table.add_column("Avg (ms)", justify="right")
+    timing_table.add_column("Min", justify="right")
+    timing_table.add_column("Max", justify="right")
+
+    for stage, values in timings.items():
+        if not values:
+            continue
+        timing_table.add_row(
+            stage.capitalize(),
+            f"{sum(values) / len(values):.0f}",
+            f"{min(values)}",
+            f"{max(values)}",
+        )
+    console.print(timing_table)
+
+    # Quality metrics
+    console.print()
+    console.print("[bold]Quality Metrics[/bold]")
+
+    type_cases = [r for r in results if r["expected_type"]]
+    if type_cases:
+        console.print(f"  Classification: {classification_correct}/{len(type_cases)} ({classification_correct / len(type_cases) * 100:.1f}%)")
+
+    if keyword_total > 0:
+        console.print(f"  Keyword Match: {keyword_hits}/{keyword_total} ({keyword_hits / keyword_total * 100:.1f}%)")
+
+    # LLM Validation comparison
+    console.print()
+    console.print("[bold]LLM Validation Results[/bold]")
+
+    val_table = Table()
+    val_table.add_column("Validator")
+    val_table.add_column("Pass", justify="right")
+    val_table.add_column("Fail", justify="right")
+    val_table.add_column("Rate", justify="right")
+
+    total = len(test_cases)
+    val_table.add_row(
+        "Qwen (local)",
+        str(qwen_validation_pass),
+        str(total - qwen_validation_pass),
+        f"{qwen_validation_pass / total * 100:.1f}%",
+    )
+
+    if validate_openai:
+        val_table.add_row(
+            "GPT-4o-mini",
+            str(gpt_validation_pass),
+            str(total - gpt_validation_pass),
+            f"{gpt_validation_pass / total * 100:.1f}%",
+        )
+
+        # Agreement analysis
+        agree = sum(1 for r in results if r["validation_qwen"]["pass"] == r.get("validation_gpt4o", {}).get("pass"))
+        console.print(val_table)
+        console.print(f"\n  Agreement: {agree}/{total} ({agree / total * 100:.1f}%)")
+
+        # Disagreements
+        qwen_only = [r for r in results if r["validation_qwen"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")]
+        gpt_only = [r for r in results if not r["validation_qwen"]["pass"] and r.get("validation_gpt4o", {}).get("pass")]
+        console.print(f"  Qwen pass, GPT fail: {len(qwen_only)}")
+        console.print(f"  GPT pass, Qwen fail: {len(gpt_only)}")
+    else:
+        console.print(val_table)
+
+    # Show failures if verbose
+    if verbose:
+        failures = [r for r in results if not r["validation_qwen"]["pass"]]
+        if failures:
+            console.print(f"\n[yellow]Qwen Validation Failures ({len(failures)}):[/yellow]")
+            for r in failures[:10]:
+                console.print(f"  {r['query'][:50]}")
+                console.print(f"    Reason: {r['validation_qwen']['reason']}")
+
+    # Save results
+    output_data = {
+        "source_file": str(data_path),
+        "pipeline": "qwen (local)",
+        "validators": ["qwen"] + (["gpt-4o-mini"] if validate_openai else []),
+        "total_tests": len(test_cases),
+        "summary": {
+            "classification": {
+                "correct": classification_correct,
+                "total": len(type_cases),
+                "accuracy": classification_correct / len(type_cases) * 100 if type_cases else 0,
+            },
+            "keyword_match": {
+                "hits": keyword_hits,
+                "total": keyword_total,
+                "accuracy": keyword_hits / keyword_total * 100 if keyword_total else 0,
+            },
+            "llm_validation": {
+                "qwen": {"pass": qwen_validation_pass, "rate": qwen_validation_pass / total * 100},
+            },
+            "timing_avg_ms": {k: sum(v) / len(v) if v else 0 for k, v in timings.items()},
+        },
+        "results": results,
+    }
+
+    if validate_openai:
+        output_data["summary"]["llm_validation"]["gpt4o"] = {
+            "pass": gpt_validation_pass,
+            "rate": gpt_validation_pass / total * 100,
+        }
+
+    with open(output_path, "w") as f:
+        json.dump(output_data, f, indent=2)
+
+    console.print(f"\n[green]Results saved to: {output_path}[/green]")
 
 
 def _format_duration(seconds: int | None) -> str:
@@ -1602,6 +2218,203 @@ def version():
 
 
 @app.command()
+def keywords(
+    limit: int = typer.Option(10, "-n", "--limit", help="Number of videos to analyze"),
+    top_k: int = typer.Option(50, "-k", "--top-k", help="Top keywords to show"),
+    channel: str = typer.Option(None, "-c", "--channel", help="Filter by channel ID"),
+    save: bool = typer.Option(False, "--save", help="Save keywords to database"),
+):
+    """Extract and analyze keywords from video transcripts."""
+    from .keywords import extract_keywords_from_videos, suggest_synonyms_for_keyword
+
+    db = get_db()
+    conn = db.connect()
+
+    # Get videos to analyze
+    if channel:
+        rows = conn.execute(
+            """
+            SELECT v.id, v.title FROM videos v
+            JOIN sections s ON v.id = s.video_id
+            WHERE v.transcript_status = 'fetched' AND v.channel_id = ?
+            GROUP BY v.id
+            LIMIT ?
+            """,
+            (channel, limit),
+        ).fetchall()
+    else:
+        rows = conn.execute(
+            """
+            SELECT v.id, v.title FROM videos v
+            JOIN sections s ON v.id = s.video_id
+            WHERE v.transcript_status = 'fetched'
+            GROUP BY v.id
+            LIMIT ?
+            """,
+            (limit,),
+        ).fetchall()
+
+    if not rows:
+        console.print("[yellow]No videos with transcripts found.[/yellow]")
+        db.close()
+        return
+
+    video_ids = [row[0] for row in rows]
+    console.print(f"Analyzing {len(video_ids)} videos...")
+
+    keywords_list = extract_keywords_from_videos(db, video_ids, min_total_frequency=5)
+
+    console.print(f"\n[bold]Top {min(top_k, len(keywords_list))} keywords:[/bold]\n")
+
+    table = Table()
+    table.add_column("Freq", justify="right", style="cyan")
+    table.add_column("Videos", justify="right")
+    table.add_column("Keyword", style="green")
+    table.add_column("Suggested Synonyms", style="dim")
+
+    for kw in keywords_list[:top_k]:
+        synonyms = suggest_synonyms_for_keyword(kw.keyword)
+        syn_str = ", ".join(synonyms[:4]) if synonyms else "-"
+        table.add_row(str(kw.frequency), str(kw.video_count), kw.keyword, syn_str)
+
+    console.print(table)
+
+    if save:
+        for kw in keywords_list:
+            db.upsert_keyword(kw.keyword, kw.frequency, kw.video_count)
+        console.print(f"\n[green]✓[/green] Saved {len(keywords_list)} keywords to database")
+
+    db.close()
+
+
+@app.command()
+def synonyms(
+    action: str = typer.Argument("list", help="Action: list, generate, approve, reject, remove"),
+    keywords: list[str] = typer.Argument(None, help="Keywords to remove (for 'remove' action)"),
+    keyword: str = typer.Option(None, "-k", "--keyword", help="Keyword to work with"),
+    synonym: str = typer.Option(None, "-s", "--synonym", help="Synonym to add/approve/reject"),
+    pending: bool = typer.Option(False, "--pending", help="Show pending synonyms only"),
+    limit: int = typer.Option(10, "-n", "--limit", help="Number of keywords to process"),
+):
+    """Manage synonym mappings for search boosting.
+
+    Actions:
+      list     - List current synonyms
+      generate - Generate synonym suggestions for top keywords
+      approve  - Approve a synonym (keyword + synonym required)
+      reject   - Reject a synonym (keyword + synonym required)
+      add      - Add a manual synonym (keyword + synonym required)
+      remove   - Remove all synonyms for keyword(s)
+
+    Examples:
+      yt-rag synonyms list
+      yt-rag synonyms remove car truck vehicle
+      yt-rag synonyms add -k mpg -s "fuel economy"
+    """
+    from .keywords import suggest_synonyms_for_keyword
+    from .search import DEFAULT_SYNONYMS, refresh_synonyms_cache
+
+    db = get_db()
+
+    if action == "list":
+        if pending:
+            syns = db.list_pending_synonyms(limit=50)
+            console.print(f"[bold]Pending synonyms ({len(syns)}):[/bold]\n")
+            for s in syns:
+                console.print(f"  {s.keyword} -> {s.synonym} [dim]({s.source})[/dim]")
+        else:
+            all_syns = db.get_all_synonyms(approved_only=False)
+            if not all_syns:
+                # Show defaults
+                console.print("[bold]Using default synonyms:[/bold]\n")
+                for kw, syns_list in DEFAULT_SYNONYMS.items():
+                    console.print(f"  [green]{kw}[/green] -> {', '.join(syns_list)}")
+            else:
+                console.print(f"[bold]Synonyms ({len(all_syns)} keywords):[/bold]\n")
+                for kw, syns_list in all_syns.items():
+                    console.print(f"  [green]{kw}[/green] -> {', '.join(syns_list)}")
+
+    elif action == "generate":
+        # Get top keywords from database or generate fresh
+        top_keywords = db.get_keywords(limit=limit)
+        if not top_keywords:
+            console.print("[yellow]No keywords in database. Run 'yt-rag keywords --save' first.[/yellow]")
+            db.close()
+            return
+
+        console.print(f"[bold]Generating synonyms for top {len(top_keywords)} keywords:[/bold]\n")
+
+        count = 0
+        for kw in top_keywords:
+            synonyms_list = suggest_synonyms_for_keyword(kw.keyword)
+            if synonyms_list:
+                console.print(f"  [green]{kw.keyword}[/green] -> {', '.join(synonyms_list)}")
+                for syn in synonyms_list:
+                    db.add_synonym(kw.keyword, syn, source="heuristic", approved=False)
+                    count += 1
+
+        console.print(f"\n[green]✓[/green] Added {count} synonym suggestions (pending approval)")
+        console.print("Use 'yt-rag synonyms list --pending' to review")
+
+    elif action == "approve":
+        if not keyword or not synonym:
+            console.print("[red]Error: --keyword and --synonym required for approve[/red]")
+            db.close()
+            return
+        db.approve_synonym(keyword, synonym)
+        refresh_synonyms_cache()
+        console.print(f"[green]✓[/green] Approved: {keyword} -> {synonym}")
+
+    elif action == "reject":
+        if not keyword or not synonym:
+            console.print("[red]Error: --keyword and --synonym required for reject[/red]")
+            db.close()
+            return
+        db.reject_synonym(keyword, synonym)
+        console.print(f"[green]✓[/green] Rejected: {keyword} -> {synonym}")
+
+    elif action == "add":
+        if not keyword or not synonym:
+            console.print("[red]Error: --keyword and --synonym required for add[/red]")
+            db.close()
+            return
+        db.add_synonym(keyword, synonym, source="manual", approved=True)
+        refresh_synonyms_cache()
+        console.print(f"[green]✓[/green] Added: {keyword} -> {synonym}")
+
+    elif action == "remove":
+        # Get keywords from positional args or --keyword option
+        kws_to_remove = list(keywords) if keywords else []
+        if keyword:
+            kws_to_remove.append(keyword)
+
+        if not kws_to_remove:
+            console.print("[red]Error: specify keywords to remove[/red]")
+            console.print("Usage: yt-rag synonyms remove keyword1 keyword2 ...")
+            db.close()
+            return
+
+        total_removed = 0
+        for kw in kws_to_remove:
+            count = db.remove_synonyms_for_keyword(kw)
+            if count > 0:
+                console.print(f"[green]✓[/green] Removed {count} synonyms for '{kw}'")
+                total_removed += count
+            else:
+                console.print(f"[dim]No synonyms found for '{kw}'[/dim]")
+
+        if total_removed > 0:
+            refresh_synonyms_cache()
+            console.print(f"\n[green]✓[/green] Total: removed {total_removed} synonyms")
+
+    else:
+        console.print(f"[red]Unknown action: {action}[/red]")
+        console.print("Valid actions: list, generate, approve, reject, add, remove")
+
+    db.close()
+
+
+@app.command()
 def chat(
     video: str = typer.Option(None, "-v", "--video", help="Filter to specific video ID"),
     channel: str = typer.Option(None, "-c", "--channel", help="Filter to specific channel ID"),
@@ -1621,6 +2434,8 @@ def chat(
       --new         Start a fresh session
       --session ID  Resume a specific session (prefix match)
       --list        Show recent sessions
+
+    Follow-up questions are automatically detected (e.g., "tell me more about the first one").
 
     Without flags, resumes the most recent session or creates a new one.
     """
@@ -1713,8 +2528,11 @@ def chat(
     console.print("Type your questions. Use 'exit' or Ctrl+C to quit.")
     console.print("[dim]Commands: /new, /sessions, /rename <title>[/dim]\n")
 
+    # Cache for search results to support follow-up questions
+    cached_search_hits: list[SearchHit] = []
+
     async def run_chat():
-        nonlocal current_session
+        nonlocal current_session, cached_search_hits
 
         while True:
             try:
@@ -1762,6 +2580,13 @@ def chat(
             # Save user message
             session_mgr.add_user_message(query)
 
+            # Parse "top N" from query to override top_k
+            import re
+            query_top_k = top_k
+            top_n_match = re.search(r'\btop\s+(\d+)\b', query.lower())
+            if top_n_match:
+                query_top_k = int(top_n_match.group(1))
+
             # Get conversation history for context
             conv_history = session_mgr.get_messages_for_llm(limit=history)
             # Remove the last message (current query) since we pass it separately
@@ -1773,41 +2598,43 @@ def chat(
             answer_started = False
             answer_chunks: list[str] = []
 
-            seen_videos: set[str] = set()
+            section_hits: list[SearchHit] = []
             video_summary_count = 0
+            latency_ms = 0
             async for item in service.ask_stream(
                 query=query,
-                top_k=top_k,
+                top_k=query_top_k,
                 video_id=video or current_session.video_id,
                 channel_id=channel or current_session.channel_id,
                 chat_model=chat_model,
                 use_ollama=not openai,
                 ollama_model=chat_model,
                 conversation_history=conv_history if conv_history else None,
+                cached_hits=cached_search_hits if cached_search_hits else None,
             ):
                 if isinstance(item, VideoHit):
                     # Track video summaries from phase 1
                     video_summary_count += 1
                 elif isinstance(item, SearchHit):
-                    # Track unique videos from phase 2
-                    seen_videos.add(item.video_id)
+                    # Collect section hits for display
+                    section_hits.append(item)
                 elif isinstance(item, dict):
                     if item.get("type") == "search_done":
                         count = item.get("count", 0)
                         summaries = item.get("video_summaries", 0)
-                        total_summary_matches = item.get("total_summary_matches", 0)
                         if count == 0 and summaries == 0:
                             console.print("[yellow]No relevant sources found.[/yellow]")
-                        else:
-                            # Show accurate match count from summaries
-                            console.print(
-                                f"[dim]Found {total_summary_matches} relevant videos[/dim]\n"
-                            )
+                    elif item.get("type") == "followup":
+                        # Follow-up query detected - results will come from cached hits
+                        console.print("[dim](Using previous search results)[/dim]")
                     elif item.get("type") == "error":
                         console.print(f"[red]{item.get('message')}[/red]")
                     elif item.get("type") == "done":
-                        latency = item.get("latency_ms", 0)
-                        console.print(f"\n[dim]({latency}ms)[/dim]\n")
+                        latency_ms = item.get("latency_ms", 0)
+                        # Cache section hits for follow-up questions
+                        new_hits = item.get("section_hits", [])
+                        if new_hits:
+                            cached_search_hits = new_hits
                 elif isinstance(item, str):
                     # Stream answer chunks
                     if not answer_started:
@@ -1821,12 +2648,499 @@ def chat(
                 full_answer = "".join(answer_chunks)
                 session_mgr.add_assistant_message(full_answer)
 
+            # Show results list with rich formatting (no "Sources" header)
+            if section_hits:
+                # Count unique videos in results
+                unique_videos = len({hit.video_id for hit in section_hits})
+                console.print(f"\n[dim]Found {unique_videos} relevant video{'s' if unique_videos != 1 else ''} ({len(section_hits)} sections)[/dim]")
+                console.print()
+                for i, hit in enumerate(section_hits, 1):
+                    channel_str = f"[magenta]{hit.channel_name}[/magenta] | " if hit.channel_name else ""
+                    date_str = f" [dim]({hit.published_at.strftime('%Y-%m-%d')})[/dim]" if hit.published_at else ""
+                    content_preview = hit.section.content[:150].replace("\n", " ").strip()
+                    if len(hit.section.content) > 150:
+                        content_preview += "..."
+
+                    console.print(f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]{date_str}")
+                    console.print(f"   Section: {hit.section.title}")
+                    console.print(f"   [dim]{content_preview}[/dim]")
+                    console.print(f"   [link={hit.timestamp_url}]{hit.timestamp_url}[/link]")
+                    console.print()
+
+            console.print(f"\n[dim]({latency_ms}ms)[/dim]\n")
+
     try:
         asyncio.run(run_chat())
     finally:
         readline.write_history_file(CHAT_HISTORY_FILE)
         service.close()
         db.close()
+
+
+@app.command("test-generate")
+def test_generate(
+    step: str = typer.Option(
+        "all",
+        "--step",
+        "-s",
+        help="Step to run: prepare, analyze, build, or all",
+    ),
+    videos_per_channel: int = typer.Option(
+        5,
+        "--videos",
+        "-n",
+        help="Videos to sample per channel (prepare step)",
+    ),
+    limit: int = typer.Option(
+        None,
+        "--limit",
+        "-l",
+        help="Max videos to analyze (analyze step)",
+    ),
+    model: str = typer.Option(
+        None,
+        "--model",
+        "-m",
+        help="LLM model for analysis (default: qwen2.5:7b-instruct for local, gpt-4o-mini for OpenAI)",
+    ),
+    openai: bool = typer.Option(
+        False,
+        "--openai",
+        help="Use OpenAI API instead of local Ollama",
+    ),
+):
+    """Generate benchmark test cases from video transcripts.
+
+    Three-step workflow:
+    1. prepare: Sample videos, save raw data to tests/data/raw_videos.json
+    2. analyze: LLM extracts entities/topics/facts to tests/data/video_analysis_{model}.json
+    3. build: Generate test queries to tests/data/benchmark_generated_{model}.json
+
+    Supports both local (Ollama) and remote (OpenAI) LLMs. For OpenAI, sections are
+    analyzed individually to reduce cost and context usage.
+
+    Examples:
+        yt-rag test-generate                    # Run all steps with local LLM
+        yt-rag test-generate --step=prepare    # Only sample videos
+        yt-rag test-generate --step=analyze --limit=10  # Analyze 10 videos
+        yt-rag test-generate --openai          # Use OpenAI API (gpt-4o-mini)
+        yt-rag test-generate --openai --model=gpt-4o  # Use specific OpenAI model
+        yt-rag test-generate --model=qwen2.5:7b-instruct  # Use specific local model
+    """
+    from .config import DEFAULT_CHAT_MODEL, DEFAULT_OLLAMA_MODEL
+    from .test_generate import analyze_videos, build_tests, prepare_raw_data
+
+    db = get_db()
+
+    # Determine model to use
+    if model is None:
+        model = DEFAULT_CHAT_MODEL if openai else DEFAULT_OLLAMA_MODEL
+
+    if step in ("all", "prepare"):
+        console.print("[bold]Step 1: Preparing raw data...[/bold]")
+        result = prepare_raw_data(db, videos_per_channel=videos_per_channel)
+        console.print(f"  Sampled {result.videos_sampled} videos from {result.channels_sampled} channels")
+        console.print(f"  Output: {result.output_file}")
+
+    if step in ("all", "analyze"):
+        api_type = "OpenAI" if openai else "Ollama"
+        console.print(f"\n[bold]Step 2: Analyzing videos with {api_type} ({model})...[/bold]")
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task("Analyzing...", total=None)
+            result = analyze_videos(limit=limit, model=model, use_openai=openai)
+        console.print(f"  Analyzed {result.videos_analyzed} videos")
+        console.print(f"  Extracted: {result.total_entities} entities, {result.total_topics} topics, {result.total_facts} facts")
+        console.print(f"  Output: {result.output_file}")
+
+    if step in ("all", "build"):
+        console.print("\n[bold]Step 3: Building test cases...[/bold]")
+        result = build_tests(model=model)
+        console.print(f"  Generated {result.tests_generated} test cases")
+        console.print(f"  By type: {result.by_type}")
+        console.print(f"  Output: {result.output_file}")
+
+    db.close()
+    console.print("\n[green]Done![/green]")
+
+
+@app.command("test-report")
+def test_report(
+    results_file: str = typer.Option(
+        "tests/data/benchmark_results_gpt-4o.json",
+        "--results", "-r",
+        help="Path to benchmark results JSON file"
+    ),
+    tests_file: str = typer.Option(
+        None,
+        "--tests", "-t",
+        help="Path to benchmark tests JSON file (auto-detected from results)"
+    ),
+    output: str = typer.Option(
+        "tests/data/benchmark_report.html",
+        "--output", "-o",
+        help="Output HTML file path"
+    ),
+    filter_status: str = typer.Option(
+        None,
+        "--filter",
+        help="Filter results: 'pass', 'fail', 'disagree', 'empty', 'meta'"
+    ),
+):
+    """Generate HTML report for benchmark results.
+
+    Creates a detailed HTML report showing:
+    - Test origin (channel, video, search type, keywords)
+    - RAG answer
+    - Validation results from both Qwen and GPT-4o
+    - Keyword matching results
+
+    Examples:
+        yt-rag test-report                          # Default files
+        yt-rag test-report --filter=disagree        # Only show disagreements
+        yt-rag test-report --filter=fail            # Only show failures
+        yt-rag test-report -o report.html           # Custom output path
+    """
+    import json
+    from pathlib import Path
+
+    results_path = Path(results_file)
+    if not results_path.exists():
+        console.print(f"[red]Results file not found: {results_path}[/red]")
+        raise typer.Exit(1)
+
+    with open(results_path) as f:
+        results_data = json.load(f)
+
+    # Auto-detect tests file from results source_file
+    if tests_file is None:
+        source = results_data.get("source_file", "")
+        if source:
+            tests_path = Path(source)
+        else:
+            # Guess based on results filename
+            tests_path = results_path.parent / results_path.name.replace("results", "generated")
+    else:
+        tests_path = Path(tests_file)
+
+    if not tests_path.exists():
+        console.print(f"[red]Tests file not found: {tests_path}[/red]")
+        console.print("Use --tests to specify the benchmark tests file")
+        raise typer.Exit(1)
+
+    with open(tests_path) as f:
+        tests_data = json.load(f)
+
+    # Build lookup from tests
+    tests_lookup = {}
+    for test in tests_data.get("test_cases", []):
+        tests_lookup[test["query"]] = test
+
+    # Merge results with test metadata
+    merged = []
+    for result in results_data.get("results", []):
+        query = result["query"]
+        test_meta = tests_lookup.get(query, {})
+        merged.append({
+            **result,
+            "channel": test_meta.get("channel", "unknown"),
+            "source_video": test_meta.get("source_video", "unknown"),
+            "note": test_meta.get("note", ""),
+            "expected_video_ids": test_meta.get("expected_video_ids", []),
+        })
+
+    # Apply filter
+    if filter_status:
+        if filter_status == "disagree":
+            merged = [m for m in merged if
+                      m.get("validation_qwen", {}).get("pass") != m.get("validation_gpt4o", {}).get("pass")]
+        elif filter_status == "pass":
+            merged = [m for m in merged if
+                      m.get("validation_gpt4o", {}).get("pass") and m.get("validation_qwen", {}).get("pass")]
+        elif filter_status == "fail":
+            merged = [m for m in merged if
+                      not m.get("validation_gpt4o", {}).get("pass") or not m.get("validation_qwen", {}).get("pass")]
+        elif filter_status == "empty":
+            merged = [m for m in merged if not m.get("answer")]
+        elif filter_status == "meta":
+            merged = [m for m in merged if m.get("expected_type") == "meta"]
+
+    # Generate HTML
+    summary = results_data.get("summary", {})
+    html = _generate_html_report(merged, summary, results_data, filter_status)
+
+    output_path = Path(output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(html)
+
+    console.print(f"[green]Report generated: {output_path}[/green]")
+    console.print(f"  Total results: {len(merged)}")
+    if filter_status:
+        console.print(f"  Filter: {filter_status}")
+
+
+def _generate_html_report(results: list, summary: dict, meta: dict, filter_status: str | None) -> str:
+    """Generate HTML report content."""
+    import html
+
+    def esc(s):
+        return html.escape(str(s)) if s else ""
+
+    def status_badge(passed: bool | None, reason: str = "") -> str:
+        if passed is None:
+            return '<span class="badge badge-unknown">?</span>'
+        elif passed:
+            return f'<span class="badge badge-pass" title="{esc(reason)}">✓ Pass</span>'
+        else:
+            return f'<span class="badge badge-fail" title="{esc(reason)}">✗ Fail</span>'
+
+    def agree_badge(qwen_pass: bool | None, gpt_pass: bool | None) -> str:
+        if qwen_pass == gpt_pass:
+            return '<span class="badge badge-agree">Agree</span>'
+        elif gpt_pass and not qwen_pass:
+            return '<span class="badge badge-disagree">GPT✓ Qwen✗</span>'
+        else:
+            return '<span class="badge badge-disagree">Qwen✓ GPT✗</span>'
+
+    # Summary stats
+    llm_val = summary.get("llm_validation", {})
+    qwen_stats = llm_val.get("qwen", {})
+    gpt_stats = llm_val.get("gpt4o", {})
+    kw_stats = summary.get("keyword_match", {})
+    class_stats = summary.get("classification", {})
+
+    filter_desc = f" (filtered: {filter_status})" if filter_status else ""
+
+    rows_html = []
+    for i, r in enumerate(results, 1):
+        qwen_val = r.get("validation_qwen", {})
+        gpt_val = r.get("validation_gpt4o", {})
+
+        answer = r.get("answer", "")
+        if not answer:
+            answer_html = '<span class="empty-answer">(empty)</span>'
+        else:
+            answer_html = f'<div class="answer">{esc(answer)}</div>'
+
+        keywords_found = r.get("keywords_found", [])
+        keywords_missing = r.get("keywords_missing", [])
+        kw_html = ""
+        if keywords_found:
+            kw_html += " ".join(f'<span class="kw-found">{esc(k)}</span>' for k in keywords_found)
+        if keywords_missing:
+            kw_html += " ".join(f'<span class="kw-missing">{esc(k)}</span>' for k in keywords_missing)
+
+        # Handle None values for META queries
+        channel_str = r.get("channel") or "(global)"
+        video_str = r.get("source_video") or ""
+
+        row = f"""
+        <tr class="result-row">
+            <td class="num">{i}</td>
+            <td class="meta">
+                <div class="query"><strong>{esc(r.get("query", ""))}</strong></div>
+                <div class="channel">📺 {esc(channel_str)}</div>
+                {"<div class='video'>🎬 " + esc(video_str) + "</div>" if video_str else ""}
+                <div class="type">🏷️ {esc(r.get("expected_type", ""))}</div>
+                <div class="keywords">🔑 {kw_html if kw_html else "(none)"}</div>
+            </td>
+            <td class="answer-cell">{answer_html}</td>
+            <td class="validation">
+                <div class="val-qwen">
+                    <strong>Qwen:</strong> {status_badge(qwen_val.get("pass"), qwen_val.get("reason", ""))}
+                    <div class="reason">{esc(qwen_val.get("reason", ""))}</div>
+                </div>
+                <div class="val-gpt">
+                    <strong>GPT-4o:</strong> {status_badge(gpt_val.get("pass"), gpt_val.get("reason", ""))}
+                    <div class="reason">{esc(gpt_val.get("reason", ""))}</div>
+                </div>
+                <div class="agreement">
+                    {agree_badge(qwen_val.get("pass"), gpt_val.get("pass"))}
+                </div>
+            </td>
+            <td class="type-check">
+                {"✓" if r.get("type_passed") else "✗"} {esc(r.get("got_type", ""))}
+            </td>
+        </tr>
+        """
+        rows_html.append(row)
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Benchmark Report{filter_desc}</title>
+    <style>
+        * {{ box-sizing: border-box; }}
+        body {{
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+            font-size: 14px;
+        }}
+        .container {{ max-width: 1600px; margin: 0 auto; }}
+        h1 {{ color: #333; margin-bottom: 10px; }}
+        .summary {{
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }}
+        .summary-grid {{
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }}
+        .stat-box {{
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }}
+        .stat-box .value {{ font-size: 24px; font-weight: bold; color: #333; }}
+        .stat-box .label {{ color: #666; font-size: 12px; }}
+        table {{
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }}
+        th {{
+            background: #333;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 500;
+        }}
+        td {{
+            padding: 12px 8px;
+            border-bottom: 1px solid #eee;
+            vertical-align: top;
+        }}
+        tr:hover {{ background: #f8f9fa; }}
+        .num {{ width: 40px; text-align: center; color: #999; }}
+        .meta {{ width: 280px; }}
+        .query {{ font-size: 15px; margin-bottom: 8px; }}
+        .channel, .video, .type, .keywords {{ font-size: 12px; color: #666; margin: 2px 0; }}
+        .video {{
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 250px;
+        }}
+        .answer-cell {{ width: 35%; }}
+        .answer {{
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 13px;
+            line-height: 1.5;
+            max-height: 200px;
+            overflow-y: auto;
+        }}
+        .empty-answer {{ color: #999; font-style: italic; }}
+        .validation {{ width: 300px; }}
+        .val-qwen, .val-gpt {{ margin-bottom: 10px; }}
+        .reason {{ font-size: 11px; color: #666; margin-top: 4px; }}
+        .agreement {{ margin-top: 8px; }}
+        .badge {{
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }}
+        .badge-pass {{ background: #d4edda; color: #155724; }}
+        .badge-fail {{ background: #f8d7da; color: #721c24; }}
+        .badge-agree {{ background: #d1ecf1; color: #0c5460; }}
+        .badge-disagree {{ background: #fff3cd; color: #856404; }}
+        .badge-unknown {{ background: #e2e3e5; color: #383d41; }}
+        .type-check {{ width: 80px; text-align: center; }}
+        .kw-found {{
+            background: #d4edda;
+            color: #155724;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }}
+        .kw-missing {{
+            background: #f8d7da;
+            color: #721c24;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            margin: 1px;
+            display: inline-block;
+        }}
+        .filter-info {{
+            background: #fff3cd;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            color: #856404;
+        }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 RAG Benchmark Report</h1>
+        <p>Pipeline: {esc(meta.get("pipeline", ""))} | Validators: {", ".join(meta.get("validators", []))}</p>
+
+        <div class="summary">
+            <div class="summary-grid">
+                <div class="stat-box">
+                    <div class="value">{meta.get("total_tests", 0)}</div>
+                    <div class="label">Total Tests</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">{class_stats.get("accuracy", 0):.1f}%</div>
+                    <div class="label">Classification ({class_stats.get("correct", 0)}/{class_stats.get("total", 0)})</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">{kw_stats.get("accuracy", 0):.1f}%</div>
+                    <div class="label">Keyword Match ({kw_stats.get("hits", 0)}/{kw_stats.get("total", 0)})</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">{qwen_stats.get("rate", 0):.1f}%</div>
+                    <div class="label">Qwen Pass ({qwen_stats.get("pass", 0)})</div>
+                </div>
+                <div class="stat-box">
+                    <div class="value">{gpt_stats.get("rate", 0):.1f}%</div>
+                    <div class="label">GPT-4o Pass ({gpt_stats.get("pass", 0)})</div>
+                </div>
+            </div>
+        </div>
+
+        {"<div class='filter-info'>Filtered: " + esc(filter_status) + f" ({len(results)} results)</div>" if filter_status else ""}
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Test Info</th>
+                    <th>RAG Answer</th>
+                    <th>Validation</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                {"".join(rows_html)}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+"""
 
 
 if __name__ == "__main__":

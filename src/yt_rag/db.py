@@ -10,10 +10,12 @@ from .models import (
     ChatMessage,
     ChatSession,
     Feedback,
+    Keyword,
     QueryLog,
     Section,
     Segment,
     Summary,
+    Synonym,
     TestCase,
     Video,
 )
@@ -27,6 +29,7 @@ CREATE TABLE IF NOT EXISTS channels (
     subscriber_count INTEGER,
     tags TEXT,
     handle TEXT,
+    category TEXT,
     last_synced_at TIMESTAMP
 );
 
@@ -144,6 +147,38 @@ CREATE TABLE IF NOT EXISTS chat_messages (
 );
 
 CREATE INDEX IF NOT EXISTS idx_chat_messages_session ON chat_messages(session_id, created_at);
+
+CREATE TABLE IF NOT EXISTS keywords (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL UNIQUE,
+    frequency INTEGER DEFAULT 0,
+    video_count INTEGER DEFAULT 0,
+    category TEXT,
+    is_stopword INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_keywords_keyword ON keywords(keyword);
+CREATE INDEX IF NOT EXISTS idx_keywords_frequency ON keywords(frequency DESC);
+
+CREATE TABLE IF NOT EXISTS synonyms (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    keyword TEXT NOT NULL,
+    synonym TEXT NOT NULL,
+    source TEXT DEFAULT 'manual',
+    approved INTEGER DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(keyword, synonym)
+);
+
+CREATE INDEX IF NOT EXISTS idx_synonyms_keyword ON synonyms(keyword);
+CREATE INDEX IF NOT EXISTS idx_synonyms_approved ON synonyms(approved);
+
+CREATE TABLE IF NOT EXISTS system_info (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 """
 
 
@@ -225,8 +260,8 @@ class Database:
         conn.execute(
             """
             INSERT INTO channels
-                (id, name, url, description, subscriber_count, tags, handle, last_synced_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                (id, name, url, description, subscriber_count, tags, handle, category, last_synced_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 name = excluded.name,
                 url = excluded.url,
@@ -234,6 +269,7 @@ class Database:
                 subscriber_count = COALESCE(excluded.subscriber_count, channels.subscriber_count),
                 tags = COALESCE(excluded.tags, channels.tags),
                 handle = COALESCE(excluded.handle, channels.handle),
+                category = COALESCE(excluded.category, channels.category),
                 last_synced_at = excluded.last_synced_at
             """,
             (
@@ -244,6 +280,7 @@ class Database:
                 channel.subscriber_count,
                 tags_json,
                 channel.handle,
+                channel.category,
                 channel.last_synced_at,
             ),
         )
@@ -281,6 +318,15 @@ class Database:
         )
         conn.commit()
 
+    def set_channel_category(self, channel_id: str, category: str) -> None:
+        """Set the category for a channel."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE channels SET category = ? WHERE id = ?",
+            (category, channel_id),
+        )
+        conn.commit()
+
     def add_video(self, video: Video, update_metadata_ts: bool = True) -> None:
         """Add or update a video.
 
@@ -309,6 +355,7 @@ class Database:
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(id) DO UPDATE SET
                 title = excluded.title,
+                published_at = COALESCE(excluded.published_at, videos.published_at),
                 duration_seconds = excluded.duration_seconds,
                 view_count = COALESCE(excluded.view_count, videos.view_count),
                 like_count = COALESCE(excluded.like_count, videos.like_count),
@@ -424,6 +471,46 @@ class Database:
             params.append(status)
 
         query += " ORDER BY published_at DESC"
+        rows = conn.execute(query, params).fetchall()
+        return [self._parse_video_row(row) for row in rows]
+
+    def get_top_videos_by_views(
+        self,
+        limit: int = 10,
+        channel_id: str | None = None,
+        title_contains: str | None = None,
+        published_after: datetime | None = None,
+    ) -> list[Video]:
+        """Get top videos sorted by view count.
+
+        Args:
+            limit: Max number of videos to return
+            channel_id: Filter to specific channel
+            title_contains: Filter by title substring (case-insensitive)
+            published_after: Only include videos published after this date
+
+        Returns:
+            List of videos sorted by view_count descending
+        """
+        conn = self.connect()
+        query = "SELECT * FROM videos WHERE view_count IS NOT NULL"
+        params: list = []
+
+        if channel_id:
+            query += " AND channel_id = ?"
+            params.append(channel_id)
+
+        if title_contains:
+            query += " AND LOWER(title) LIKE ?"
+            params.append(f"%{title_contains.lower()}%")
+
+        if published_after:
+            query += " AND published_at >= ?"
+            params.append(published_after.isoformat())
+
+        query += " ORDER BY view_count DESC LIMIT ?"
+        params.append(limit)
+
         rows = conn.execute(query, params).fetchall()
         return [self._parse_video_row(row) for row in rows]
 
@@ -612,6 +699,35 @@ class Database:
             "summaries": conn.execute("SELECT COUNT(*) FROM summaries").fetchone()[0],
         }
         return stats
+
+    # System info methods
+
+    def get_system_info(self, key: str) -> str | None:
+        """Get a system info value by key."""
+        conn = self.connect()
+        row = conn.execute(
+            "SELECT value FROM system_info WHERE key = ?", (key,)
+        ).fetchone()
+        return row[0] if row else None
+
+    def set_system_info(self, key: str, value: str) -> None:
+        """Set a system info value (insert or update)."""
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO system_info (key, value, updated_at)
+            VALUES (?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP
+            """,
+            (key, value),
+        )
+        conn.commit()
+
+    def get_all_system_info(self) -> dict[str, str]:
+        """Get all system info as a dictionary."""
+        conn = self.connect()
+        rows = conn.execute("SELECT key, value FROM system_info").fetchall()
+        return {row[0]: row[1] for row in rows}
 
     # Section methods
 
@@ -960,3 +1076,148 @@ class Database:
             "SELECT COUNT(*) FROM chat_messages WHERE session_id = ?", (session_id,)
         ).fetchone()[0]
         return count
+
+    # --- Keyword methods ---
+
+    def upsert_keyword(self, keyword: str, frequency: int = 1, video_count: int = 1) -> None:
+        """Insert or update a keyword."""
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT INTO keywords (keyword, frequency, video_count)
+            VALUES (?, ?, ?)
+            ON CONFLICT(keyword) DO UPDATE SET
+                frequency = frequency + excluded.frequency,
+                video_count = video_count + excluded.video_count
+            """,
+            (keyword.lower(), frequency, video_count),
+        )
+        conn.commit()
+
+    def get_keywords(self, limit: int = 100, min_frequency: int = 1) -> list[Keyword]:
+        """Get top keywords by frequency."""
+        conn = self.connect()
+        rows = conn.execute(
+            """
+            SELECT * FROM keywords
+            WHERE frequency >= ? AND is_stopword = 0
+            ORDER BY frequency DESC
+            LIMIT ?
+            """,
+            (min_frequency, limit),
+        ).fetchall()
+        return [Keyword(**dict(row)) for row in rows]
+
+    def mark_stopword(self, keyword: str) -> None:
+        """Mark a keyword as a stopword."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE keywords SET is_stopword = 1 WHERE keyword = ?",
+            (keyword.lower(),),
+        )
+        conn.commit()
+
+    def set_keyword_category(self, keyword: str, category: str) -> None:
+        """Set category for a keyword."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE keywords SET category = ? WHERE keyword = ?",
+            (category, keyword.lower()),
+        )
+        conn.commit()
+
+    # --- Synonym methods ---
+
+    def add_synonym(
+        self, keyword: str, synonym: str, source: str = "manual", approved: bool = False
+    ) -> None:
+        """Add a synonym mapping."""
+        conn = self.connect()
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO synonyms (keyword, synonym, source, approved)
+            VALUES (?, ?, ?, ?)
+            """,
+            (keyword.lower(), synonym.lower(), source, int(approved)),
+        )
+        conn.commit()
+
+    def add_synonyms_batch(
+        self, mappings: list[tuple[str, str]], source: str = "manual", approved: bool = False
+    ) -> None:
+        """Add multiple synonym mappings."""
+        conn = self.connect()
+        conn.executemany(
+            """
+            INSERT OR IGNORE INTO synonyms (keyword, synonym, source, approved)
+            VALUES (?, ?, ?, ?)
+            """,
+            [(kw.lower(), syn.lower(), source, int(approved)) for kw, syn in mappings],
+        )
+        conn.commit()
+
+    def get_synonyms(self, keyword: str, approved_only: bool = True) -> list[str]:
+        """Get synonyms for a keyword."""
+        conn = self.connect()
+        query = "SELECT synonym FROM synonyms WHERE keyword = ?"
+        if approved_only:
+            query += " AND approved = 1"
+        rows = conn.execute(query, (keyword.lower(),)).fetchall()
+        return [row[0] for row in rows]
+
+    def get_all_synonyms(self, approved_only: bool = True) -> dict[str, list[str]]:
+        """Get all synonyms as a dict mapping keyword -> [synonyms]."""
+        conn = self.connect()
+        query = "SELECT keyword, synonym FROM synonyms"
+        if approved_only:
+            query += " WHERE approved = 1"
+        rows = conn.execute(query).fetchall()
+
+        result: dict[str, list[str]] = {}
+        for row in rows:
+            kw, syn = row[0], row[1]
+            if kw not in result:
+                result[kw] = []
+            result[kw].append(syn)
+        return result
+
+    def list_pending_synonyms(self, limit: int = 50) -> list[Synonym]:
+        """List synonyms pending approval."""
+        conn = self.connect()
+        rows = conn.execute(
+            "SELECT * FROM synonyms WHERE approved = 0 ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return [Synonym(**dict(row)) for row in rows]
+
+    def approve_synonym(self, keyword: str, synonym: str) -> None:
+        """Approve a synonym."""
+        conn = self.connect()
+        conn.execute(
+            "UPDATE synonyms SET approved = 1 WHERE keyword = ? AND synonym = ?",
+            (keyword.lower(), synonym.lower()),
+        )
+        conn.commit()
+
+    def reject_synonym(self, keyword: str, synonym: str) -> None:
+        """Reject (delete) a synonym."""
+        conn = self.connect()
+        conn.execute(
+            "DELETE FROM synonyms WHERE keyword = ? AND synonym = ?",
+            (keyword.lower(), synonym.lower()),
+        )
+        conn.commit()
+
+    def remove_synonyms_for_keyword(self, keyword: str) -> int:
+        """Remove all synonyms for a keyword.
+
+        Returns:
+            Number of synonyms deleted.
+        """
+        conn = self.connect()
+        cursor = conn.execute(
+            "DELETE FROM synonyms WHERE keyword = ?",
+            (keyword.lower(),),
+        )
+        conn.commit()
+        return cursor.rowcount
