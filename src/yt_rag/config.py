@@ -8,7 +8,6 @@ from pathlib import Path
 DATA_DIR = Path.home() / ".yt-rag"
 DB_PATH = DATA_DIR / "db.sqlite"
 ENV_PATH = DATA_DIR / ".env"
-CONFIG_PATH = DATA_DIR / "config.toml"
 
 # Export defaults
 DEFAULT_CHUNK_SIZE = 500  # words
@@ -71,6 +70,20 @@ DEFAULT_MAX_TOKENS = 1000
 KEYWORD_BOOST_VIDEO_TITLE = 0.35  # Boost if query term in video title
 KEYWORD_BOOST_SECTION_TITLE = 0.20  # Boost if query term in section title
 KEYWORD_BOOST_SECTION_CONTENT = 0.10  # Boost if query term in section content
+
+# Default synonyms (used if database is empty or unavailable)
+DEFAULT_SYNONYMS: dict[str, list[str]] = {
+    "mpg": ["fuel", "efficiency", "economy", "mileage", "consumption"],
+    "fuel": ["mpg", "efficiency", "economy", "mileage", "gas"],
+    "hp": ["horsepower", "power", "engine"],
+    "horsepower": ["hp", "power", "engine"],
+    "torque": ["power", "engine", "lb-ft"],
+    "price": ["cost", "msrp", "expensive", "cheap", "value"],
+    "cost": ["price", "msrp", "expensive", "value"],
+    "interior": ["cabin", "inside", "seats", "dashboard"],
+    "exterior": ["outside", "body", "styling", "design"],
+    "reliability": ["reliable", "dependable", "issues", "problems"],
+}
 
 # Video availability values that restrict transcript access
 RESTRICTED_AVAILABILITY = frozenset(
@@ -147,29 +160,6 @@ def save_env_var(key: str, value: str, path: Path | None = None) -> None:
     os.environ[key] = value
 
 
-def load_config(path: Path | None = None) -> dict:
-    """Load configuration from TOML file.
-
-    Note: Requires Python 3.11+ for tomllib, or install tomli for 3.10.
-    Currently unused - placeholder for future config file support.
-    """
-    path = path or CONFIG_PATH
-    if not path.exists():
-        return {}
-
-    try:
-        import tomllib
-    except ImportError:
-        try:
-            import tomli as tomllib
-        except ImportError:
-            # Neither available - return empty config
-            return {}
-
-    with open(path, "rb") as f:
-        return tomllib.load(f)
-
-
 def get_api_key(key_name: str) -> str | None:
     """Get API key from environment (loads .env first)."""
     load_env_file()
@@ -236,6 +226,28 @@ def has_nvidia_gpu() -> bool:
         return False
 
 
+def get_gpu_free_memory_mb() -> int | None:
+    """Get free GPU memory in MB.
+
+    Returns:
+        Free memory in MB, or None if unavailable
+    """
+    import subprocess
+
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return int(result.stdout.strip().split("\n")[0])
+    except Exception:
+        pass
+    return None
+
+
 def gpu_check_done() -> bool:
     """Check if GPU detection has already been performed."""
     return GPU_CHECK_FILE.exists()
@@ -245,3 +257,5 @@ def mark_gpu_check_done() -> None:
     """Mark GPU detection as complete so we don't prompt again."""
     ensure_data_dir()
     GPU_CHECK_FILE.touch()
+
+

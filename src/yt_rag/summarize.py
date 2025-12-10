@@ -1,11 +1,11 @@
-"""GPT-based video summarization."""
+"""Video summarization using LLM."""
 
 from dataclasses import dataclass
 
-from .config import DEFAULT_CHAT_MODEL
+from .config import DEFAULT_CHAT_MODEL, DEFAULT_OLLAMA_MODEL
 from .db import Database
 from .models import Section, Summary
-from .openai_client import simple_chat
+from .openai_client import chat_completion, ollama_chat_completion
 
 
 @dataclass
@@ -76,16 +76,18 @@ def format_sections_for_summary(sections: list[Section]) -> str:
 def summarize_video(
     video_id: str,
     db: Database | None = None,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
     use_sections: bool = True,
+    use_openai: bool = False,
 ) -> SummarizeResult:
-    """Generate a summary for a video using GPT.
+    """Generate a summary for a video using LLM.
 
     Args:
         video_id: Video ID to summarize
         db: Database instance (creates one if not provided)
-        model: Chat model to use
+        model: Chat model to use (defaults based on backend)
         use_sections: Use sections if available, otherwise use raw transcript
+        use_openai: If True, use OpenAI API; if False, use local Ollama
 
     Returns:
         SummarizeResult with summary and token usage
@@ -93,6 +95,10 @@ def summarize_video(
     if db is None:
         db = Database()
         db.init()
+
+    # Determine model based on backend
+    if model is None:
+        model = DEFAULT_CHAT_MODEL if use_openai else DEFAULT_OLLAMA_MODEL
 
     # Get video
     video = db.get_video(video_id)
@@ -125,14 +131,26 @@ def summarize_video(
             transcript=transcript,
         )
 
-    # Call GPT
-    result = simple_chat(
-        prompt=prompt,
-        system=SUMMARIZE_SYSTEM,
-        model=model,
-        temperature=0.3,
-        max_tokens=1500,
-    )
+    # Build messages
+    messages = [
+        {"role": "system", "content": SUMMARIZE_SYSTEM},
+        {"role": "user", "content": prompt},
+    ]
+
+    # Call LLM
+    if use_openai:
+        result = chat_completion(
+            messages=messages,
+            model=model,
+            temperature=0.3,
+            max_tokens=1500,
+        )
+    else:
+        result = ollama_chat_completion(
+            messages=messages,
+            model=model,
+            temperature=0.3,
+        )
 
     # Create summary object
     summary = Summary(
@@ -153,18 +171,20 @@ def summarize_video(
 def summarize_batch(
     video_ids: list[str],
     db: Database | None = None,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
     skip_existing: bool = True,
     use_sections: bool = True,
+    use_openai: bool = False,
 ) -> list[SummarizeResult]:
     """Summarize multiple videos.
 
     Args:
         video_ids: List of video IDs to process
         db: Database instance
-        model: Chat model to use
+        model: Chat model to use (defaults based on backend)
         skip_existing: Skip videos that already have summaries
         use_sections: Use sections if available
+        use_openai: If True, use OpenAI API; if False, use local Ollama
 
     Returns:
         List of SummarizeResult for processed videos
@@ -182,7 +202,9 @@ def summarize_batch(
                 continue
 
         try:
-            result = summarize_video(video_id, db, model, use_sections)
+            result = summarize_video(
+                video_id, db, model, use_sections, use_openai=use_openai
+            )
             results.append(result)
         except Exception as e:
             # Log error but continue with other videos

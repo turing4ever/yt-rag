@@ -33,19 +33,9 @@ def _check_gpu_memory_available(min_free_mb: int = 512) -> bool:
     """
     if not FAISS_GPU_AVAILABLE:
         return False
-    try:
-        import subprocess
-        result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        if result.returncode == 0:
-            free_mb = int(result.stdout.strip().split("\n")[0])
-            return free_mb >= min_free_mb
-    except Exception:
-        pass
+    free_mb = get_gpu_free_memory_mb()
+    if free_mb is not None:
+        return free_mb >= min_free_mb
     return True  # Assume available if we can't check
 
 logger = logging.getLogger(__name__)
@@ -80,6 +70,7 @@ from .config import (
     OLLAMA_EMBEDDING_DIMENSION,
     OPENAI_EMBEDDING_DIMENSION,
     ensure_data_dir,
+    get_gpu_free_memory_mb,
 )
 
 
@@ -94,8 +85,8 @@ class VectorMetadata:
 
 
 @dataclass
-class SearchResult:
-    """Result from a vector search."""
+class VectorSearchResult:
+    """Result from a vector search (low-level FAISS result)."""
 
     id: str
     video_id: str
@@ -251,7 +242,7 @@ class VectorStore:
         top_k: int = 10,
         filter_video_id: str | None = None,
         filter_channel_id: str | None = None,
-    ) -> list[SearchResult]:
+    ) -> list[VectorSearchResult]:
         """Search for similar vectors.
 
         Args:
@@ -261,7 +252,7 @@ class VectorStore:
             filter_channel_id: Only return results from this channel
 
         Returns:
-            List of SearchResult sorted by score descending
+            List of VectorSearchResult sorted by score descending
         """
         if self._index is None or self._index.ntotal == 0:
             return []
@@ -298,7 +289,7 @@ class VectorStore:
                 continue
 
             results.append(
-                SearchResult(
+                VectorSearchResult(
                     id=meta.id,
                     video_id=meta.video_id,
                     channel_id=meta.channel_id,

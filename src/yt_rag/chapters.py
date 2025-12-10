@@ -1,7 +1,7 @@
 """Chapter-based sectionizing of video transcripts.
 
 Uses YouTube chapters when available, falls back to time-based chunking.
-Optionally generates GPT titles for time-based chunks.
+Optionally generates LLM titles for time-based chunks.
 
 Chapter duration is calculated based on analysis of human-labeled YouTube chapters:
 - Short videos (<10min): ~1.7 min chapters, ~6 per 10min
@@ -12,11 +12,11 @@ Chapter duration is calculated based on analysis of human-labeled YouTube chapte
 
 from dataclasses import dataclass
 
-from .config import DEFAULT_CHAT_MODEL, DEFAULT_CHUNK_DURATION
+from .config import DEFAULT_CHAT_MODEL, DEFAULT_CHUNK_DURATION, DEFAULT_OLLAMA_MODEL
 from .db import Database
 from .discovery import get_video_chapters
 from .models import Chapter, Section, Segment
-from .openai_client import simple_chat
+from .openai_client import chat_completion, ollama_chat_completion
 
 
 def get_optimal_chunk_duration(video_duration_seconds: float | None) -> float:
@@ -141,13 +141,18 @@ def _generate_section_title(
     content: str,
     video_title: str,
     timestamp: str,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
+    use_openai: bool = False,
 ) -> str:
-    """Generate a title for a section using GPT."""
+    """Generate a title for a section using LLM."""
     # Truncate content to ~500 words to keep costs low
     words = content.split()
     if len(words) > 500:
         content = " ".join(words[:500]) + "..."
+
+    # Determine model based on backend
+    if model is None:
+        model = DEFAULT_CHAT_MODEL if use_openai else DEFAULT_OLLAMA_MODEL
 
     prompt = TITLE_PROMPT.format(
         video_title=video_title,
@@ -155,7 +160,13 @@ def _generate_section_title(
         content=content,
     )
 
-    result = simple_chat(prompt, model=model, temperature=0.3, max_tokens=50)
+    messages = [{"role": "user", "content": prompt}]
+
+    if use_openai:
+        result = chat_completion(messages, model=model, temperature=0.3, max_tokens=50)
+    else:
+        result = ollama_chat_completion(messages, model=model, temperature=0.3)
+
     return result.content.strip().strip('"')
 
 
@@ -165,7 +176,8 @@ def sectionize_by_time(
     video_title: str,
     chunk_duration: float = DEFAULT_CHUNK_DURATION,
     generate_titles: bool = False,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
+    use_openai: bool = False,
 ) -> list[Section]:
     """Create sections by splitting transcript into time-based chunks.
 
@@ -174,8 +186,9 @@ def sectionize_by_time(
         segments: Transcript segments
         video_title: Video title (used for naming)
         chunk_duration: Duration of each chunk in seconds
-        generate_titles: Whether to generate GPT titles for chunks
-        model: Model to use for title generation
+        generate_titles: Whether to generate LLM titles for chunks
+        model: Model to use for title generation (defaults based on backend)
+        use_openai: If True, use OpenAI API; if False, use local Ollama
 
     Returns:
         List of Section objects
@@ -201,7 +214,9 @@ def sectionize_by_time(
             timestamp = f"{minutes}:{int(chunk_start % 60):02d}"
 
             if generate_titles:
-                title = _generate_section_title(content, video_title, timestamp, model)
+                title = _generate_section_title(
+                    content, video_title, timestamp, model, use_openai=use_openai
+                )
             else:
                 title = f"Part {chunk_idx + 1} ({timestamp})"
 
@@ -228,21 +243,23 @@ def sectionize_video(
     db: Database | None = None,
     chunk_duration: float | None = None,
     generate_titles: bool = False,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
+    use_openai: bool = False,
 ) -> SectionizeResult:
     """Sectionize a video transcript using chapters or time-based fallback.
 
     Priority:
     1. YouTube chapters (if available)
-    2. Time-based chunks with optional GPT titles (fallback)
+    2. Time-based chunks with optional LLM titles (fallback)
 
     Args:
         video_id: Video ID to process
         db: Database instance (creates one if not provided)
         chunk_duration: Duration for time-based chunks (seconds).
             If None, uses data-driven optimal duration based on video length.
-        generate_titles: Generate GPT titles for time-based chunks
-        model: Model for title generation
+        generate_titles: Generate LLM titles for time-based chunks
+        model: Model for title generation (defaults based on backend)
+        use_openai: If True, use OpenAI API; if False, use local Ollama
 
     Returns:
         SectionizeResult with sections and method used
@@ -283,8 +300,9 @@ def sectionize_video(
             chunk_duration=chunk_duration,
             generate_titles=generate_titles,
             model=model,
+            use_openai=use_openai,
         )
-        method = "time_chunks_gpt" if generate_titles else "time_chunks"
+        method = "time_chunks_llm" if generate_titles else "time_chunks"
 
     # Save to database
     if sections:
@@ -303,7 +321,8 @@ def sectionize_batch(
     chunk_duration: float | None = None,
     skip_existing: bool = True,
     generate_titles: bool = False,
-    model: str = DEFAULT_CHAT_MODEL,
+    model: str | None = None,
+    use_openai: bool = False,
 ) -> list[SectionizeResult]:
     """Sectionize multiple videos.
 
@@ -312,8 +331,9 @@ def sectionize_batch(
         db: Database instance
         chunk_duration: Duration for time-based chunks (None = auto based on video length)
         skip_existing: Skip videos that already have sections
-        generate_titles: Generate GPT titles for time-based chunks
-        model: Model for title generation
+        generate_titles: Generate LLM titles for time-based chunks
+        model: Model for title generation (defaults based on backend)
+        use_openai: If True, use OpenAI API; if False, use local Ollama
 
     Returns:
         List of SectionizeResult for processed videos
@@ -331,7 +351,12 @@ def sectionize_batch(
 
         try:
             result = sectionize_video(
-                video_id, db, chunk_duration, generate_titles=generate_titles, model=model
+                video_id,
+                db,
+                chunk_duration,
+                generate_titles=generate_titles,
+                model=model,
+                use_openai=use_openai,
             )
             results.append(result)
         except Exception as e:

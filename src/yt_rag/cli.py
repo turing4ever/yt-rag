@@ -219,7 +219,8 @@ def update(
     workers: int = typer.Option(
         DEFAULT_FETCH_WORKERS, "-w", "--workers", help="Parallel workers for transcript fetch"
     ),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI for embeddings"),
+    model: str = typer.Option(None, "-m", "--model", help="Override default LLM model"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
 ):
     """Run the full update pipeline.
 
@@ -231,18 +232,17 @@ def update(
     5. embed: Build/update vector index
     6. synonyms: Generate synonyms for new videos (or all with --force-synonym)
 
-    Use --test to run a test with 5 videos per channel through the entire pipeline.
+    By default uses local Ollama. Use --openai to use OpenAI API.
+    Use --model to override the default model for either backend.
 
     Examples:
-        yt-rag update                      # Run full pipeline
+        yt-rag update                      # Run full pipeline (local Ollama)
+        yt-rag update --openai             # Use OpenAI API for all steps
+        yt-rag update --openai --model gpt-4o  # Use specific OpenAI model
+        yt-rag update --model qwen3:8b     # Use specific local model
         yt-rag update --test               # Test run: 5 videos per channel
         yt-rag update --skip-sync          # Skip channel sync
-        yt-rag update --skip-meta          # Skip metadata refresh
-        yt-rag update --force-transcript   # Re-fetch ALL transcripts
-        yt-rag update --force-meta         # Force refresh all metadata
         yt-rag update --force-embed        # Rebuild all embeddings
-        yt-rag update --force-synonym      # Regenerate all synonyms
-        yt-rag update --openai             # Use OpenAI for embeddings
     """
     from datetime import datetime, timedelta
 
@@ -465,7 +465,7 @@ def update(
                 if not existing_sections:
                     try:
                         progress.update(task, description=f"Sectionizing: {title}")
-                        sectionize_video(video.id, db)
+                        sectionize_video(video.id, db, model=model, use_openai=openai)
                         sectionized += 1
                     except Exception as e:
                         console.print(f"\n[red]Sectionize error[/red] {video.id}: {e}")
@@ -478,7 +478,7 @@ def update(
                 if not existing_summary:
                     try:
                         progress.update(task, description=f"Summarizing: {title}")
-                        summarize_video(video.id, db)
+                        summarize_video(video.id, db, model=model, use_openai=openai)
                         summarized += 1
                     except Exception as e:
                         console.print(f"\n[red]Summarize error[/red] {video.id}: {e}")
@@ -507,7 +507,7 @@ def update(
                 sections = db.get_sections(video_id)
                 if sections:
                     result = embed_video(video_id, db, model=None, force=True, use_local=use_local)
-                    total_sections += result.sections_embedded
+                    total_sections += result.items_embedded
                     total_tokens += result.tokens_used
                 summary = db.get_summary(video_id)
                 if summary:
@@ -536,9 +536,9 @@ def update(
                         db, model=None, rebuild=force_embed, use_local=use_local
                     )
 
-                if result.sections_embedded > 0:
+                if result.items_embedded > 0:
                     console.print(
-                        f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+                        f"[green]✓[/green] Embedded {result.items_embedded} sections "
                         f"({result.tokens_used} tokens)"
                     )
                 else:
@@ -556,8 +556,8 @@ def update(
                             db, model=None, rebuild=force_embed, use_local=use_local
                         )
 
-                    if summary_result.sections_embedded > 0:
-                        embed_count = summary_result.sections_embedded
+                    if summary_result.items_embedded > 0:
+                        embed_count = summary_result.items_embedded
                         tokens = summary_result.tokens_used
                         console.print(
                             f"[green]✓[/green] Embedded {embed_count} summaries ({tokens} tokens)"
@@ -892,11 +892,11 @@ def status():
     local_summaries_loaded = local_summaries.load()
 
     if local_sections_loaded or local_summaries_loaded:
-        table.add_row(f"  Model", f"[cyan]{DEFAULT_OLLAMA_EMBED_MODEL}[/cyan]")
+        table.add_row("  Model", f"[cyan]{DEFAULT_OLLAMA_EMBED_MODEL}[/cyan]")
         if local_sections_loaded:
-            table.add_row(f"  Sections", f"[cyan]{local_sections.size:,}[/cyan] ({local_sections.dimension}d)")
+            table.add_row("  Sections", f"[cyan]{local_sections.size:,}[/cyan] ({local_sections.dimension}d)")
         if local_summaries_loaded:
-            table.add_row(f"  Summaries", f"[cyan]{local_summaries.size:,}[/cyan] ({local_summaries.dimension}d)")
+            table.add_row("  Summaries", f"[cyan]{local_summaries.size:,}[/cyan] ({local_summaries.dimension}d)")
     else:
         table.add_row("  [dim]No index[/dim]", "[yellow]Run 'yt-rag embed'[/yellow]")
 
@@ -967,15 +967,17 @@ def process_transcript(
     limit: int = typer.Option(None, "-l", "--limit", help="Max videos to process"),
     sectionize_only: bool = typer.Option(False, "--sectionize", help="Only run sectionization"),
     summarize_only: bool = typer.Option(False, "--summarize", help="Only run summarization"),
-    gpt_titles: bool = typer.Option(False, "--gpt-titles", help="Generate GPT titles for chunks"),
-    model: str = typer.Option(DEFAULT_CHAT_MODEL, "-m", "--model", help="Model for GPT operations"),
+    model: str = typer.Option(None, "-m", "--model", help="Override default model"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
     force: bool = typer.Option(False, "--force", help="Re-process even if already done"),
 ):
     """Process videos: sectionize (using YouTube chapters) and summarize.
 
-    Sectionizing uses YouTube chapters when available, falling back to
-    time-based chunks. Use --gpt-titles to generate descriptive titles for
-    videos without chapters.
+    By default uses local Ollama. Use --openai to use OpenAI API.
+    Use --model to override the default model for either backend.
+
+    Sectionizing uses YouTube chapters when available. For videos without
+    chapters, LLM-generated titles are created for time-based chunks.
     """
     db = get_db()
 
@@ -1030,7 +1032,11 @@ def process_transcript(
                     try:
                         progress.update(task, description=f"Sectionizing: {title}")
                         result = sectionize_video(
-                            video.id, db, generate_titles=gpt_titles, model=model
+                            video.id,
+                            db,
+                            generate_titles=True,
+                            model=model,
+                            use_openai=openai,
                         )
                         sectionized += 1
                         if result.method == "chapters":
@@ -1049,7 +1055,7 @@ def process_transcript(
                 if not existing_summary or force:
                     try:
                         progress.update(task, description=f"Summarizing: {title}")
-                        summarize_video(video.id, db, model)
+                        summarize_video(video.id, db, model=model, use_openai=openai)
                         summarized += 1
                     except Exception as e:
                         console.print(f"\n[red]Summarize error[/red] {video.id}: {e}")
@@ -1082,7 +1088,7 @@ def embed(
 ):
     """Embed sections and summaries into FAISS vector indexes for search.
 
-    By default uses local Ollama embeddings (nomic-embed-text).
+    By default uses local Ollama embeddings (mxbai-embed-large).
     Use --openai to use OpenAI embeddings (text-embedding-3-small).
 
     Local and OpenAI indexes are stored separately, so you can switch between them.
@@ -1127,7 +1133,7 @@ def embed(
             result = embed_video(video_id, db, model, force, use_local=use_local)
 
         console.print(
-            f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+            f"[green]✓[/green] Embedded {result.items_embedded} sections "
             f"({result.tokens_used} tokens)"
         )
     else:
@@ -1155,9 +1161,9 @@ def embed(
             result = embed_all_sections(db, model, rebuild=rebuild, use_local=use_local)
             total_tokens += result.tokens_used
 
-        if result.sections_embedded > 0:
+        if result.items_embedded > 0:
             console.print(
-                f"[green]✓[/green] Embedded {result.sections_embedded} sections "
+                f"[green]✓[/green] Embedded {result.items_embedded} sections "
                 f"({result.tokens_used} tokens)"
             )
         else:
@@ -1180,9 +1186,9 @@ def embed(
                 )
                 total_tokens += summary_result.tokens_used
 
-            if summary_result.sections_embedded > 0:
+            if summary_result.items_embedded > 0:
                 console.print(
-                    f"[green]✓[/green] Embedded {summary_result.sections_embedded} video summaries "
+                    f"[green]✓[/green] Embedded {summary_result.items_embedded} video summaries "
                     f"({summary_result.tokens_used} tokens)"
                 )
             else:
@@ -1205,13 +1211,20 @@ def ask(
     video: str = typer.Option(None, "-v", "--video", help="Filter to specific video ID"),
     channel: str = typer.Option(None, "-c", "--channel", help="Filter to specific channel ID"),
     no_answer: bool = typer.Option(False, "--no-answer", help="Skip answer generation"),
-    model: str = typer.Option(DEFAULT_OLLAMA_MODEL, "-m", "--model", help="Chat model"),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI instead of local Ollama"),
+    model: str = typer.Option(None, "-m", "--model", help="Override default model"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
 ):
-    """Ask a question about video content using RAG."""
+    """Ask a question about video content using RAG.
+
+    By default uses local Ollama. Use --openai to use OpenAI API.
+    Use --model to override the default model for either backend.
+    """
+    # Determine backend and model
     use_local = not openai
-    # Use the specified model, or switch to OpenAI model if --openai is set
-    chat_model = model if use_local else (DEFAULT_CHAT_MODEL if model == DEFAULT_OLLAMA_MODEL else model)
+    if model:
+        chat_model = model
+    else:
+        chat_model = DEFAULT_OLLAMA_MODEL if use_local else DEFAULT_CHAT_MODEL
     db = get_db()
 
     # For list/show queries, skip LLM answer generation (CLI formats the output)
@@ -1489,20 +1502,23 @@ def test_benchmark(
         "-o",
         help="Save results to JSON file (auto-named if not specified)",
     ),
+    model: str = typer.Option(None, "-m", "--model", help="Override default LLM model for RAG pipeline"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
     validate_openai: bool = typer.Option(
-        False, "--validate-openai", help="Also validate with OpenAI (compares Qwen vs GPT-4o validators)"
+        False, "--validate-openai", help="Also validate with OpenAI (compares validators)"
     ),
     verbose: bool = typer.Option(False, "-v", "--verbose", help="Show all results, not just failures"),
 ):
     """Benchmark full RAG pipeline: classification, retrieval, and answer quality.
 
-    Pipeline always uses local models (Qwen + Ollama embeddings).
+    By default uses local Ollama. Use --openai to use OpenAI API.
+    Use --model to override the default model for either backend.
 
     Validation includes:
     - Keyword matching: expected keywords found in answer
-    - LLM validation: Qwen judges answer quality (and GPT-4o if --validate-openai)
+    - LLM validation: Uses same backend as pipeline (and GPT-4o if --validate-openai)
 
-    Use --validate-openai to compare Qwen vs GPT-4o as validators side-by-side.
+    Use --validate-openai to compare local vs GPT-4o as validators side-by-side.
     """
     import json
     from pathlib import Path
@@ -1536,7 +1552,10 @@ def test_benchmark(
         base_name = data_path.name.replace("benchmark_generated", "benchmark_results")
         output_path = data_path.parent / base_name
 
-    _run_full_pipeline_test(test_cases, data_path, output_path, verbose, validate_openai=validate_openai)
+    _run_full_pipeline_test(
+        test_cases, data_path, output_path, verbose,
+        model=model, use_openai=openai, validate_openai=validate_openai
+    )
 
 
 # LLM validation prompt for judging answer quality
@@ -1555,8 +1574,21 @@ Respond with JSON only:
 {{"pass": true/false, "reason": "brief explanation"}}"""
 
 
-def _validate_with_llm(query: str, answer: str, expected_keywords: list, use_openai: bool = False) -> dict:
+def _validate_with_llm(
+    query: str,
+    answer: str,
+    expected_keywords: list,
+    use_openai: bool = False,
+    model: str | None = None,
+) -> dict:
     """Use LLM to validate answer quality.
+
+    Args:
+        query: The query that was asked
+        answer: The RAG answer to validate
+        expected_keywords: Keywords expected in the answer
+        use_openai: Use OpenAI API instead of local Ollama
+        model: Override default model (if None, uses default based on use_openai)
 
     Returns:
         dict with 'pass' (bool) and 'reason' (str)
@@ -1577,16 +1609,18 @@ def _validate_with_llm(query: str, answer: str, expected_keywords: list, use_ope
 
     try:
         if use_openai:
+            actual_model = model if model else DEFAULT_CHAT_MODEL
             response = chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                model=DEFAULT_CHAT_MODEL,
+                model=actual_model,
                 temperature=0.0,
                 max_tokens=100,
             )
         else:
+            actual_model = model if model else DEFAULT_OLLAMA_MODEL
             response = ollama_chat_completion(
                 messages=[{"role": "user", "content": prompt}],
-                model=DEFAULT_OLLAMA_MODEL,
+                model=actual_model,
                 temperature=0.0,
             )
 
@@ -1606,43 +1640,73 @@ def _validate_with_llm(query: str, answer: str, expected_keywords: list, use_ope
         return {"pass": False, "reason": f"Validation error: {e}"}
 
 
-def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: bool, validate_openai: bool = False):
+def _run_full_pipeline_test(
+    test_cases: list,
+    data_path,
+    output_path,
+    verbose: bool,
+    model: str | None = None,
+    use_openai: bool = False,
+    validate_openai: bool = False,
+):
     """Run full pipeline test with timing breakdown.
 
-    Pipeline always uses local models (Qwen + Ollama embeddings).
+    By default uses local Ollama. Set use_openai=True for OpenAI.
     Validation uses both keyword matching and LLM-based judging.
-    If validate_openai=True, compares Qwen vs GPT-4o as validators.
+    If validate_openai=True, also validates with GPT-4o for comparison.
 
     Args:
         test_cases: List of test case dicts
         data_path: Path to input data file
         output_path: Path for output results
         verbose: Show detailed output
+        model: Override default LLM model
+        use_openai: Use OpenAI API instead of local Ollama
         validate_openai: Also validate with OpenAI for comparison
     """
     import json
     import time
     from concurrent.futures import ThreadPoolExecutor
 
-    from .config import DEFAULT_OLLAMA_EMBED_MODEL, DEFAULT_OLLAMA_MODEL
-    from .openai_client import ollama_chat_completion, ollama_embed_text
+    from .config import (
+        DEFAULT_CHAT_MODEL,
+        DEFAULT_EMBEDDING_MODEL,
+        DEFAULT_OLLAMA_EMBED_MODEL,
+        DEFAULT_OLLAMA_MODEL,
+    )
+    from .openai_client import (
+        chat_completion,
+        embed_text,
+        ollama_chat_completion,
+        ollama_embed_text,
+    )
     from .search import (
         RAG_SYSTEM_PROMPT,
         RAG_USER_PROMPT,
         analyze_query_with_llm,
         format_context,
         get_sections_store,
-        get_synonyms_map,
     )
 
+    # Determine models based on flags
+    use_local = not use_openai
+    if use_local:
+        chat_model = model if model else DEFAULT_OLLAMA_MODEL
+        embed_model = DEFAULT_OLLAMA_EMBED_MODEL
+        backend_name = f"local Ollama ({chat_model})"
+    else:
+        chat_model = model if model else DEFAULT_CHAT_MODEL
+        embed_model = DEFAULT_EMBEDDING_MODEL
+        backend_name = f"OpenAI ({chat_model})"
+
     console.print(f"[bold]Running {len(test_cases)} full pipeline tests[/bold]")
-    console.print(f"Pipeline: Qwen (local Ollama)")
-    console.print(f"Validators: Qwen" + (" + GPT-4o" if validate_openai else ""))
+    console.print(f"Pipeline: {backend_name}")
+    console.print(f"Validators: {backend_name}" + (" + GPT-4o" if validate_openai else ""))
     console.print(f"Data file: {data_path}")
     console.print(f"Output file: {output_path}\n")
 
     db = get_db()
-    store = get_sections_store(use_local=True)
+    store = get_sections_store(use_local=use_local)
 
     if store.size == 0:
         console.print("[red]No vectors indexed. Run 'yt-rag embed' first.[/red]")
@@ -1664,7 +1728,7 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
     classification_correct = 0
     keyword_hits = 0
     keyword_total = 0
-    qwen_validation_pass = 0
+    main_validation_pass = 0
     gpt_validation_pass = 0
 
     with Progress(
@@ -1685,7 +1749,7 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
 
             # Handle META queries specially - no search/LLM needed
             if expected_type == "meta":
-                from .search import classify_query, QueryType
+                from .search import classify_query
                 t_classify = time.time()
                 got_type = classify_query(query).value
                 type_passed = got_type == "meta"
@@ -1710,12 +1774,13 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
                     "keywords_found": [],
                     "keywords_missing": [],
                     "answer": answer,
-                    "validation_qwen": {"pass": True, "reason": "Meta query - stats returned"},
+                    "validation_main": {"pass": True, "reason": "Meta query - stats returned"},
+                    "validation_model": chat_model,
                 }
                 if validate_openai:
                     result_entry["validation_gpt4o"] = {"pass": True, "reason": "Meta query - stats returned"}
                     gpt_validation_pass += 1
-                qwen_validation_pass += 1
+                main_validation_pass += 1
                 results.append(result_entry)
 
                 # Minimal timing entries
@@ -1728,14 +1793,17 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
                 progress.update(task, advance=1)
                 continue
 
-            # Stage 1: Parallel parsing and embedding (always local)
+            # Stage 1: Parallel parsing and embedding
             t_parallel_start = time.time()
 
             def do_parse():
-                return analyze_query_with_llm(query, use_local=True)
+                return analyze_query_with_llm(query, use_local=use_local, model=chat_model)
 
             def do_embed():
-                return ollama_embed_text(query, DEFAULT_OLLAMA_EMBED_MODEL)
+                if use_local:
+                    return ollama_embed_text(query, embed_model)
+                else:
+                    return embed_text(query, embed_model)
 
             with ThreadPoolExecutor(max_workers=2) as executor:
                 parse_future = executor.submit(do_parse)
@@ -1811,7 +1879,10 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
                     {"role": "system", "content": RAG_SYSTEM_PROMPT},
                     {"role": "user", "content": RAG_USER_PROMPT.format(context=context, question=query)},
                 ]
-                response = ollama_chat_completion(messages=messages, model=DEFAULT_OLLAMA_MODEL, temperature=0.1)
+                if use_local:
+                    response = ollama_chat_completion(messages=messages, model=chat_model, temperature=0.1)
+                else:
+                    response = chat_completion(messages=messages, model=chat_model, temperature=0.1)
                 answer = response.content
 
             t_answer_end = time.time()
@@ -1827,12 +1898,14 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
             keyword_hits += len(keywords_found)
             keyword_total += len(expected_keywords)
 
-            # LLM validation (Qwen)
-            qwen_result = _validate_with_llm(query, answer, expected_keywords, use_openai=False)
-            if qwen_result["pass"]:
-                qwen_validation_pass += 1
+            # LLM validation (same backend as pipeline)
+            main_validation = _validate_with_llm(
+                query, answer, expected_keywords, use_openai=use_openai, model=chat_model
+            )
+            if main_validation["pass"]:
+                main_validation_pass += 1
 
-            # LLM validation (GPT-4o) if requested
+            # LLM validation (GPT-4o) if requested - always uses OpenAI
             gpt_result = None
             if validate_openai:
                 gpt_result = _validate_with_llm(query, answer, expected_keywords, use_openai=True)
@@ -1855,7 +1928,8 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
                 "keywords_found": keywords_found,
                 "keywords_missing": keywords_missing,
                 "answer": answer[:500],
-                "validation_qwen": qwen_result,
+                "validation_main": main_validation,
+                "validation_model": chat_model,
             }
             if gpt_result:
                 result_entry["validation_gpt4o"] = gpt_result
@@ -1908,48 +1982,50 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
     val_table.add_column("Rate", justify="right")
 
     total = len(test_cases)
+    validator_name = chat_model if use_local else f"OpenAI ({chat_model})"
     val_table.add_row(
-        "Qwen (local)",
-        str(qwen_validation_pass),
-        str(total - qwen_validation_pass),
-        f"{qwen_validation_pass / total * 100:.1f}%",
+        validator_name,
+        str(main_validation_pass),
+        str(total - main_validation_pass),
+        f"{main_validation_pass / total * 100:.1f}%",
     )
 
     if validate_openai:
         val_table.add_row(
-            "GPT-4o-mini",
+            "GPT-4o (comparison)",
             str(gpt_validation_pass),
             str(total - gpt_validation_pass),
             f"{gpt_validation_pass / total * 100:.1f}%",
         )
 
         # Agreement analysis
-        agree = sum(1 for r in results if r["validation_qwen"]["pass"] == r.get("validation_gpt4o", {}).get("pass"))
+        agree = sum(1 for r in results if r["validation_main"]["pass"] == r.get("validation_gpt4o", {}).get("pass"))
         console.print(val_table)
         console.print(f"\n  Agreement: {agree}/{total} ({agree / total * 100:.1f}%)")
 
         # Disagreements
-        qwen_only = [r for r in results if r["validation_qwen"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")]
-        gpt_only = [r for r in results if not r["validation_qwen"]["pass"] and r.get("validation_gpt4o", {}).get("pass")]
-        console.print(f"  Qwen pass, GPT fail: {len(qwen_only)}")
-        console.print(f"  GPT pass, Qwen fail: {len(gpt_only)}")
+        main_only = [r for r in results if r["validation_main"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")]
+        gpt_only = [r for r in results if not r["validation_main"]["pass"] and r.get("validation_gpt4o", {}).get("pass")]
+        console.print(f"  Main pass, GPT fail: {len(main_only)}")
+        console.print(f"  GPT pass, Main fail: {len(gpt_only)}")
     else:
         console.print(val_table)
 
     # Show failures if verbose
     if verbose:
-        failures = [r for r in results if not r["validation_qwen"]["pass"]]
+        failures = [r for r in results if not r["validation_main"]["pass"]]
         if failures:
-            console.print(f"\n[yellow]Qwen Validation Failures ({len(failures)}):[/yellow]")
+            console.print(f"\n[yellow]Validation Failures ({len(failures)}):[/yellow]")
             for r in failures[:10]:
                 console.print(f"  {r['query'][:50]}")
-                console.print(f"    Reason: {r['validation_qwen']['reason']}")
+                console.print(f"    Reason: {r['validation_main']['reason']}")
 
     # Save results
     output_data = {
         "source_file": str(data_path),
-        "pipeline": "qwen (local)",
-        "validators": ["qwen"] + (["gpt-4o-mini"] if validate_openai else []),
+        "pipeline": backend_name,
+        "pipeline_model": chat_model,
+        "validators": [chat_model] + (["gpt-4o"] if validate_openai else []),
         "total_tests": len(test_cases),
         "summary": {
             "classification": {
@@ -1963,7 +2039,7 @@ def _run_full_pipeline_test(test_cases: list, data_path, output_path, verbose: b
                 "accuracy": keyword_hits / keyword_total * 100 if keyword_total else 0,
             },
             "llm_validation": {
-                "qwen": {"pass": qwen_validation_pass, "rate": qwen_validation_pass / total * 100},
+                "main": {"model": chat_model, "pass": main_validation_pass, "rate": main_validation_pass / total * 100},
             },
             "timing_avg_ms": {k: sum(v) / len(v) if v else 0 for k, v in timings.items()},
         },
@@ -2295,24 +2371,30 @@ def synonyms(
     synonym: str = typer.Option(None, "-s", "--synonym", help="Synonym to add/approve/reject"),
     pending: bool = typer.Option(False, "--pending", help="Show pending synonyms only"),
     limit: int = typer.Option(10, "-n", "--limit", help="Number of keywords to process"),
+    model: str = typer.Option(None, "-m", "--model", help="Override default LLM model (for generate)"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama (for generate)"),
 ):
     """Manage synonym mappings for search boosting.
 
     Actions:
       list     - List current synonyms
-      generate - Generate synonym suggestions for top keywords
+      generate - Generate synonym suggestions using LLM
       approve  - Approve a synonym (keyword + synonym required)
       reject   - Reject a synonym (keyword + synonym required)
       add      - Add a manual synonym (keyword + synonym required)
       remove   - Remove all synonyms for keyword(s)
 
+    By default uses local Ollama for generation. Use --openai for OpenAI API.
+
     Examples:
       yt-rag synonyms list
+      yt-rag synonyms generate                    # Generate with local LLM
+      yt-rag synonyms generate --openai           # Generate with OpenAI
       yt-rag synonyms remove car truck vehicle
       yt-rag synonyms add -k mpg -s "fuel economy"
     """
-    from .keywords import suggest_synonyms_for_keyword
-    from .search import DEFAULT_SYNONYMS, refresh_synonyms_cache
+    from .config import DEFAULT_SYNONYMS
+    from .search import refresh_synonyms_cache
 
     db = get_db()
 
@@ -2335,6 +2417,8 @@ def synonyms(
                     console.print(f"  [green]{kw}[/green] -> {', '.join(syns_list)}")
 
     elif action == "generate":
+        from .keywords import generate_synonyms_with_llm
+
         # Get top keywords from database or generate fresh
         top_keywords = db.get_keywords(limit=limit)
         if not top_keywords:
@@ -2342,15 +2426,33 @@ def synonyms(
             db.close()
             return
 
-        console.print(f"[bold]Generating synonyms for top {len(top_keywords)} keywords:[/bold]\n")
+        use_local = not openai
+        backend_name = "local Ollama" if use_local else "OpenAI"
+        console.print(f"[bold]Generating synonyms for top {len(top_keywords)} keywords using {backend_name}:[/bold]\n")
+
+        # Get keywords as list of strings
+        keyword_strings = [kw.keyword for kw in top_keywords]
+
+        # Generate synonyms with LLM
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            console=console,
+        ) as progress:
+            progress.add_task("Generating synonyms with LLM...", total=None)
+            llm_synonyms = generate_synonyms_with_llm(
+                keyword_strings,
+                category="general",
+                use_local=use_local,
+                model=model,
+            )
 
         count = 0
-        for kw in top_keywords:
-            synonyms_list = suggest_synonyms_for_keyword(kw.keyword)
+        for kw_str, synonyms_list in llm_synonyms.items():
             if synonyms_list:
-                console.print(f"  [green]{kw.keyword}[/green] -> {', '.join(synonyms_list)}")
+                console.print(f"  [green]{kw_str}[/green] -> {', '.join(synonyms_list)}")
                 for syn in synonyms_list:
-                    db.add_synonym(kw.keyword, syn, source="heuristic", approved=False)
+                    db.add_synonym(kw_str, syn, source="llm", approved=False)
                     count += 1
 
         console.print(f"\n[green]✓[/green] Added {count} synonym suggestions (pending approval)")
@@ -2419,8 +2521,8 @@ def chat(
     video: str = typer.Option(None, "-v", "--video", help="Filter to specific video ID"),
     channel: str = typer.Option(None, "-c", "--channel", help="Filter to specific channel ID"),
     top_k: int = typer.Option(10, "-k", "--top-k", help="Number of sections to retrieve"),
-    model: str = typer.Option(DEFAULT_OLLAMA_MODEL, "-m", "--model", help="Model name"),
-    openai: bool = typer.Option(False, "--openai", help="Use OpenAI instead of local Ollama"),
+    model: str = typer.Option(None, "-m", "--model", help="Override default model"),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
     new: bool = typer.Option(False, "--new", help="Start a new chat session"),
     session: str = typer.Option(None, "-s", "--session", help="Resume session by ID prefix"),
     list_sessions: bool = typer.Option(False, "--list", help="List recent chat sessions"),
@@ -2429,6 +2531,7 @@ def chat(
     """Interactive chat with your video library.
 
     By default uses local Ollama. Use --openai to use OpenAI API.
+    Use --model to override the default model for either backend.
 
     Sessions persist conversation history:
       --new         Start a fresh session
@@ -2479,15 +2582,21 @@ def chat(
         db.close()
         return
 
-    # Check Ollama is running unless using OpenAI
-    if not openai and not check_ollama_running():
+    # Determine backend and model
+    use_local = not openai
+    if model:
+        chat_model = model
+    else:
+        chat_model = DEFAULT_OLLAMA_MODEL if use_local else DEFAULT_CHAT_MODEL
+
+    # Check Ollama is running if using local backend
+    if use_local and not check_ollama_running():
         console.print("[red]Error: Ollama is not running[/red]")
         console.print("Start it with: sudo systemctl start ollama")
         console.print("Or use --openai to use OpenAI API")
         db.close()
         raise typer.Exit(1)
 
-    use_local = not openai
     service = RAGService(use_local=use_local)
     session_mgr = ChatSessionManager(db)
 
@@ -2515,15 +2624,10 @@ def chat(
             current_session = session_mgr.create_session(video_id=video, channel_id=channel)
             console.print(f"[dim]New session: {current_session.id[:8]}[/dim]")
 
-    # Use appropriate model based on backend
-    if openai:
-        chat_model = DEFAULT_CHAT_MODEL if model == DEFAULT_OLLAMA_MODEL else model
-        console.print("[bold]yt-rag Chat[/bold] [dim](OpenAI)[/dim]")
-        console.print(f"[dim]Model: {chat_model}[/dim]")
-    else:
-        chat_model = model
-        console.print("[bold]yt-rag Chat[/bold] [dim](Ollama)[/dim]")
-        console.print(f"[dim]Model: {chat_model}[/dim]")
+    # Show model info
+    backend_name = "Ollama" if use_local else "OpenAI"
+    console.print(f"[bold]yt-rag Chat[/bold] [dim]({backend_name})[/dim]")
+    console.print(f"[dim]Model: {chat_model}[/dim]")
 
     console.print("Type your questions. Use 'exit' or Ctrl+C to quit.")
     console.print("[dim]Commands: /new, /sessions, /rename <title>[/dim]\n")

@@ -619,7 +619,6 @@ def build_tests(
         channel_entities: list[dict] = []  # [{entity, video_id, title}]
         channel_topics: list[dict] = []
         channel_comparisons: list[dict] = []
-        channel_facts: list[dict] = []
 
         for analysis in analyses:
             video_id = analysis["video_id"]
@@ -654,18 +653,6 @@ def build_tests(
                     channel_comparisons.append({
                         "items": items,
                         "aspect": comp.get("aspect", ""),
-                        "video_id": video_id,
-                        "title": title,
-                        "channel": channel,
-                    })
-
-            # Facts (for list/count queries)
-            for fact in analysis.get("facts", []):
-                if fact.get("keywords"):
-                    channel_facts.append({
-                        "fact": fact.get("fact", ""),
-                        "keywords": fact.get("keywords", []),
-                        "section_id": fact.get("section_id"),
                         "video_id": video_id,
                         "title": title,
                         "channel": channel,

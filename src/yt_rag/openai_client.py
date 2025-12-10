@@ -11,6 +11,7 @@ from .config import (
     DEFAULT_CHAT_MODEL,
     DEFAULT_EMBEDDING_MODEL,
     DEFAULT_MAX_TOKENS,
+    DEFAULT_OLLAMA_EMBED_MODEL,
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_TEMPERATURE,
     OLLAMA_BASE_URL,
@@ -520,13 +521,13 @@ async def aollama_chat_stream(
 
 def ollama_embed_text(
     text: str,
-    model: str = "nomic-embed-text",
+    model: str = DEFAULT_OLLAMA_EMBED_MODEL,
 ) -> EmbeddingResult:
     """Generate embedding using Ollama.
 
     Args:
         text: Text to embed
-        model: Ollama embedding model (nomic-embed-text, mxbai-embed-large, etc.)
+        model: Ollama embedding model (default: mxbai-embed-large)
 
     Returns:
         EmbeddingResult with embedding vector
@@ -554,13 +555,13 @@ def ollama_embed_text(
 
 def ollama_embed_texts(
     texts: list[str],
-    model: str = "nomic-embed-text",
+    model: str = DEFAULT_OLLAMA_EMBED_MODEL,
 ) -> list[EmbeddingResult]:
     """Generate embeddings for multiple texts using Ollama.
 
     Args:
         texts: List of texts to embed
-        model: Ollama embedding model
+        model: Ollama embedding model (default: mxbai-embed-large)
 
     Returns:
         List of EmbeddingResult, one per input text
@@ -597,7 +598,7 @@ def ollama_embed_texts(
 
 async def aollama_embed_text(
     text: str,
-    model: str = "nomic-embed-text",
+    model: str = DEFAULT_OLLAMA_EMBED_MODEL,
 ) -> EmbeddingResult:
     """Async: Generate embedding using Ollama."""
     try:
@@ -624,7 +625,7 @@ async def aollama_embed_text(
 
 async def aollama_embed_texts(
     texts: list[str],
-    model: str = "nomic-embed-text",
+    model: str = DEFAULT_OLLAMA_EMBED_MODEL,
 ) -> list[EmbeddingResult]:
     """Async: Generate embeddings for multiple texts using Ollama."""
     if not texts:
@@ -658,7 +659,7 @@ async def aollama_embed_texts(
         raise OllamaError(f"Ollama embedding failed: {e}") from e
 
 
-def get_ollama_embedding_dimension(model: str = "nomic-embed-text") -> int:
+def get_ollama_embedding_dimension(model: str = DEFAULT_OLLAMA_EMBED_MODEL) -> int:
     """Get the embedding dimension for an Ollama model by making a test call."""
     result = ollama_embed_text("test", model)
     return len(result.embedding)

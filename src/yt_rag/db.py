@@ -203,6 +203,15 @@ class Database:
             self._conn.close()
             self._conn = None
 
+    def __enter__(self) -> "Database":
+        """Context manager entry - initializes if needed."""
+        self.init()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Context manager exit - closes connection."""
+        self.close()
+
     def init(self) -> None:
         """Initialize database schema."""
         conn = self.connect()

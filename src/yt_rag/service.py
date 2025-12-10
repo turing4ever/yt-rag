@@ -316,10 +316,11 @@ class RAGService:
         score_threshold: float = DEFAULT_SCORE_THRESHOLD,
         video_id: str | None = None,
         channel_id: str | None = None,
-        embedding_model: str = DEFAULT_EMBEDDING_MODEL,
         chat_model: str = DEFAULT_CHAT_MODEL,
         temperature: float = DEFAULT_TEMPERATURE,
         max_tokens: int = DEFAULT_MAX_TOKENS,
+        use_ollama: bool = True,
+        ollama_model: str = DEFAULT_OLLAMA_MODEL,
         log_query: bool = True,
     ) -> AskResult:
         """Search and generate an answer (non-streaming).
@@ -330,22 +331,23 @@ class RAGService:
             score_threshold: Minimum similarity score
             video_id: Filter to specific video
             channel_id: Filter to specific channel
-            embedding_model: Embedding model
-            chat_model: Chat model for answer
+            chat_model: Chat model for answer (OpenAI)
             temperature: LLM temperature
             max_tokens: Max tokens in response
+            use_ollama: If True, use local Ollama; if False, use OpenAI
+            ollama_model: Ollama model for answer generation
             log_query: Whether to log the query
 
         Returns:
             AskResult with hits and answer
         """
-        from .openai_client import achat_completion
+        from .openai_client import achat_completion, aollama_chat_completion
 
         start_time = time.time()
 
-        # Search
-        embed_result = await aembed_text(query, embedding_model)
-        tokens_embedding = embed_result.tokens_used
+        # Search - uses the service's configured embedding backend
+        query_embedding = await self._embed_query(query)
+        tokens_embedding = 0  # Token counting handled by _embed_query
 
         if self.store.size == 0:
             return AskResult(
@@ -358,7 +360,7 @@ class RAGService:
             )
 
         results = self.store.search(
-            query_embedding=embed_result.embedding,
+            query_embedding=query_embedding,
             top_k=top_k,
             filter_video_id=video_id,
             filter_channel_id=channel_id,
@@ -410,12 +412,19 @@ class RAGService:
                 {"role": "user", "content": user_content},
             ]
 
-            chat_result = await achat_completion(
-                messages=messages,
-                model=chat_model,
-                temperature=temperature,
-                max_tokens=max_tokens,
-            )
+            if use_ollama:
+                chat_result = await aollama_chat_completion(
+                    messages=messages,
+                    model=ollama_model,
+                    temperature=temperature,
+                )
+            else:
+                chat_result = await achat_completion(
+                    messages=messages,
+                    model=chat_model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
             answer = chat_result.content
             tokens_chat = chat_result.tokens_input + chat_result.tokens_output
         else:
@@ -426,6 +435,8 @@ class RAGService:
 
         # Log query
         if log_query:
+            actual_model = ollama_model if use_ollama else chat_model
+            embedding_model = DEFAULT_OLLAMA_EMBED_MODEL if self.use_local else DEFAULT_EMBEDDING_MODEL
             log = QueryLog(
                 id=str(uuid.uuid4()),
                 query=query,
@@ -438,7 +449,7 @@ class RAGService:
                 tokens_embedding=tokens_embedding,
                 tokens_chat=tokens_chat,
                 model_embedding=embedding_model,
-                model_chat=chat_model,
+                model_chat=actual_model,
             )
             self.db.add_query_log(log)
 

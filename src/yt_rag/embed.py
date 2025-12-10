@@ -13,7 +13,7 @@ from .vectorstore import VectorMetadata, VectorStore, get_sections_store, get_su
 class EmbedResult:
     """Result of embedding operation."""
 
-    sections_embedded: int
+    items_embedded: int  # Sections or summaries embedded
     tokens_used: int
 
 
@@ -39,7 +39,7 @@ def embed_sections(
         EmbedResult with counts and token usage
     """
     if not sections:
-        return EmbedResult(sections_embedded=0, tokens_used=0)
+        return EmbedResult(items_embedded=0, tokens_used=0)
 
     # Select model based on backend
     if model is None:
@@ -86,7 +86,7 @@ def embed_sections(
         store.add(embeddings, metadata)
         embedded += len(batch)
 
-    return EmbedResult(sections_embedded=embedded, tokens_used=total_tokens)
+    return EmbedResult(items_embedded=embedded, tokens_used=total_tokens)
 
 
 def embed_all_sections(
@@ -135,7 +135,7 @@ def embed_all_sections(
     db.set_system_info("sections_index_size", str(store.size))
 
     if not all_sections:
-        return EmbedResult(sections_embedded=0, tokens_used=0)
+        return EmbedResult(items_embedded=0, tokens_used=0)
 
     result = embed_sections(all_sections, store, db, model, batch_size, use_local=use_local)
 
@@ -173,7 +173,7 @@ def embed_video(
 
     sections = db.get_sections(video_id)
     if not sections:
-        return EmbedResult(sections_embedded=0, tokens_used=0)
+        return EmbedResult(items_embedded=0, tokens_used=0)
 
     store = get_sections_store(use_local=use_local)
 
@@ -183,7 +183,7 @@ def embed_video(
         sections = [s for s in sections if s.id not in existing_ids]
 
     if not sections:
-        return EmbedResult(sections_embedded=0, tokens_used=0)
+        return EmbedResult(items_embedded=0, tokens_used=0)
 
     result = embed_sections(sections, store, db, model, use_local=use_local)
     store.save()
@@ -242,7 +242,7 @@ def embed_all_summaries(
         all_summaries = [s for s in all_summaries if s.video_id not in existing_ids]
 
     if not all_summaries:
-        return EmbedResult(sections_embedded=0, tokens_used=0)
+        return EmbedResult(items_embedded=0, tokens_used=0)
 
     total_tokens = 0
     embedded = 0
@@ -285,7 +285,7 @@ def embed_all_summaries(
     # Save index
     store.save()
 
-    return EmbedResult(sections_embedded=embedded, tokens_used=total_tokens)
+    return EmbedResult(items_embedded=embedded, tokens_used=total_tokens)
 
 
 def get_index_stats(use_local: bool = True) -> dict:

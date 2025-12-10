@@ -325,6 +325,7 @@ def generate_synonyms_with_llm(
     keywords: list[str],
     category: str = "general",
     use_local: bool = True,
+    model: str | None = None,
 ) -> dict[str, list[str]]:
     """Generate synonyms using an LLM.
 
@@ -332,10 +333,12 @@ def generate_synonyms_with_llm(
         keywords: List of keywords to generate synonyms for
         category: Channel category (e.g., 'automotive', 'finance')
         use_local: Use Ollama (True) or OpenAI (False)
+        model: Override default model (if None, uses default based on use_local)
 
     Returns:
         Dict mapping keyword -> list of synonyms
     """
+    from .config import DEFAULT_CHAT_MODEL, DEFAULT_OLLAMA_MODEL
     from .openai_client import chat_completion, ollama_chat_completion
 
     if not keywords:
@@ -367,9 +370,11 @@ Return ONLY valid JSON, no explanation:"""
 
     try:
         if use_local:
-            result = ollama_chat_completion(messages, temperature=0.3)
+            actual_model = model if model else DEFAULT_OLLAMA_MODEL
+            result = ollama_chat_completion(messages, model=actual_model, temperature=0.3)
         else:
-            result = chat_completion(messages, temperature=0.3)
+            actual_model = model if model else DEFAULT_CHAT_MODEL
+            result = chat_completion(messages, model=actual_model, temperature=0.3)
 
         # Parse JSON response
         import json

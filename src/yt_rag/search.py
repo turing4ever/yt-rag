@@ -16,6 +16,7 @@ from .config import (
     DEFAULT_OLLAMA_MODEL,
     DEFAULT_OLLAMA_QUERY_MODEL,
     DEFAULT_SCORE_THRESHOLD,
+    DEFAULT_SYNONYMS,
     DEFAULT_TEMPERATURE,
     DEFAULT_TOP_K,
     DEFAULT_TOP_K_OVERSAMPLE,
@@ -320,23 +321,10 @@ def _compute_keyword_boost(
     return boost
 
 
-# Cache for synonyms (refreshed on first use)
+# Cache for synonyms - avoids repeated DB queries during a single search operation.
+# Called multiple times per search (keyword boost, relevance metrics, LLM filter).
+# Refresh via refresh_synonyms_cache() when synonyms are updated.
 _synonyms_cache: dict[str, list[str]] | None = None
-
-
-# Default synonyms (used if database is empty or unavailable)
-DEFAULT_SYNONYMS = {
-    "mpg": ["fuel", "efficiency", "economy", "mileage", "consumption"],
-    "fuel": ["mpg", "efficiency", "economy", "mileage", "gas"],
-    "hp": ["horsepower", "power", "engine"],
-    "horsepower": ["hp", "power", "engine"],
-    "torque": ["power", "engine", "lb-ft"],
-    "price": ["cost", "msrp", "expensive", "cheap", "value"],
-    "cost": ["price", "msrp", "expensive", "value"],
-    "interior": ["cabin", "inside", "seats", "dashboard"],
-    "exterior": ["outside", "body", "styling", "design"],
-    "reliability": ["reliable", "dependable", "issues", "problems"],
-}
 
 
 def get_synonyms_map(refresh: bool = False) -> dict[str, list[str]]:
@@ -350,10 +338,8 @@ def get_synonyms_map(refresh: bool = False) -> dict[str, list[str]]:
         return _synonyms_cache
 
     try:
-        db = Database()
-        db.init()
-        db_synonyms = db.get_all_synonyms(approved_only=True)
-        db.close()
+        with Database() as db:
+            db_synonyms = db.get_all_synonyms(approved_only=True)
 
         if db_synonyms:
             _synonyms_cache = db_synonyms
@@ -372,64 +358,18 @@ def refresh_synonyms_cache() -> None:
     get_synonyms_map(refresh=True)
 
 
-# Patterns for entity detection (alphanumeric model names like G550, Model 3, etc.)
-ENTITY_PATTERN = re.compile(
-    r"\b(?:"
-    r"[A-Z]?\d{2,4}[A-Z]?"  # G550, 911, M3, RS7
-    r"|[A-Z]{1,3}\d{1,4}"  # GT500, S550, M5, RS6
-    r"|Model\s*[3SXY]"  # Tesla Model 3, S, X, Y
-    r"|[A-Z]-?Class"  # Mercedes S-Class, G-Class
-    r"|[A-Z]{2,}\s*\d+"  # BMW M5, AMG GT
-    r")\b",
+# Simple META pattern for fallback when LLM fails
+META_PATTERN = re.compile(
+    r"^(how many|what|list|show|stats?|info|status)\b",
     re.IGNORECASE,
 )
-
-# Comparison patterns
-COMPARISON_PATTERN = re.compile(
-    r"\b(?:vs\.?|versus|compared?\s+to|or)\b",
-    re.IGNORECASE,
-)
-
-# List/count patterns
-LIST_PATTERN = re.compile(
-    r"\b(?:how\s+many|which\s+(?:cars?|videos?)|list\s+(?:of|all)|what\s+(?:cars?|videos?))\b",
-    re.IGNORECASE,
-)
-
-# Topic keywords (not entity-specific)
-TOPIC_KEYWORDS = frozenset([
-    "mpg", "fuel", "economy", "efficiency", "mileage",
-    "reliability", "reliable", "problems", "issues",
-    "interior", "exterior", "cabin", "design",
-    "price", "cost", "value", "expensive", "cheap",
-    "performance", "speed", "acceleration", "handling",
-    "comfort", "luxury", "quality", "review",
-    "towing", "payload", "capacity", "cargo",
-    "safety", "crash", "rating",
-])
-
-
-# Patterns for META queries (library stats without specific topic)
-META_PATTERNS = [
-    r"^how many videos\??$",  # exactly "how many videos?"
-    r"^how many videos (are|do you have|are there|in total)\??$",
-    r"^how many (channels|sections|segments|summaries)\??$",
-    r"^how many (channels|videos)( and (channels|videos))?\??$",  # combined queries
-    r"^what channels\??$",
-    r"^list (all )?channels\??$",
-    r"^show (all )?channels\??$",
-    r"^what('s| is) (in )?(the |my )?library\??$",
-    r"^library stats?\??$",
-    r"^stats?\??$",
-    r"^(system |index )?(info|status|stats?)\??$",
-    r"^(is it |are you )?(using )?(gpu|cpu)\??$",
-    r"^what (embedding|model)( are you using)?\??$",
-]
-META_PATTERN = re.compile("|".join(META_PATTERNS), re.IGNORECASE)
 
 
 def classify_query(query: str) -> QueryType:
-    """Classify query intent for retrieval strategy selection.
+    """Fallback query classifier when LLM analysis fails.
+
+    This is a simplified fallback - the LLM classifier is preferred.
+    Only handles META queries; everything else returns FACTUAL.
 
     Args:
         query: The search query
@@ -437,47 +377,14 @@ def classify_query(query: str) -> QueryType:
     Returns:
         QueryType indicating the query intent
     """
-    query_lower = query.lower()
-    query_terms = set(re.findall(r"\b[a-zA-Z0-9]+\b", query_lower))
-
-    # Check for META queries (library stats) - before LIST to avoid overlap
+    # Only handle META queries in fallback - they're important for system stats
     if META_PATTERN.search(query):
-        return QueryType.META
+        query_lower = query.lower()
+        # Check for library/system stats keywords
+        if any(kw in query_lower for kw in ["channel", "video", "stats", "info", "library", "index", "gpu", "cpu"]):
+            return QueryType.META
 
-    # Check for list/count patterns first
-    if LIST_PATTERN.search(query):
-        return QueryType.LIST
-
-    # Check for comparison patterns
-    if COMPARISON_PATTERN.search(query):
-        return QueryType.COMPARISON
-
-    # Check for entity patterns (model names)
-    has_entity = bool(ENTITY_PATTERN.search(query))
-
-    # Check for topic keywords
-    has_topic = bool(query_terms & TOPIC_KEYWORDS)
-
-    # If only entity, it's an entity search
-    if has_entity and not has_topic:
-        return QueryType.ENTITY
-
-    # If entity + topic, still entity-focused but with topic filter
-    if has_entity and has_topic:
-        return QueryType.ENTITY
-
-    # Pure topic search
-    if has_topic:
-        return QueryType.TOPIC
-
-    # Short alphanumeric queries are likely entity searches
-    # e.g., "G550", "Tacoma", "Bronco"
-    if len(query_terms) <= 2:
-        # Check if any term looks entity-like (capitalized, alphanumeric mix)
-        for term in query.split():
-            if re.match(r"^[A-Z][a-z]*\d*$|^\d+[A-Z]*$|^[A-Z]{2,}\d*$", term):
-                return QueryType.ENTITY
-
+    # Default to FACTUAL for everything else - LLM should handle classification
     return QueryType.FACTUAL
 
 
@@ -492,11 +399,7 @@ def extract_entity_terms(query: str) -> set[str]:
     """
     entities = set()
 
-    # Find alphanumeric model patterns
-    for match in ENTITY_PATTERN.finditer(query):
-        entities.add(match.group().lower().replace(" ", ""))
-
-    # Also include capitalized words that might be model/brand names
+    # Simple pattern for alphanumeric model names (G550, RS7, Model 3)
     for word in query.split():
         # Alphanumeric mix (G550, RS7) or capitalized brand (Tacoma, Bronco)
         if re.match(r"^[A-Z]?[a-z]*\d+[A-Z]?$|^[A-Z][a-z]{3,}$", word):
@@ -790,71 +693,17 @@ def format_context(
 ) -> str:
     """Format search hits as context for the LLM.
 
+    Note: This is a simplified wrapper. For the full-featured version with
+    video summaries and total counts, use service._format_context directly.
+
     Args:
         hits: Search results
         db: Database to fetch all chapters for each video
         max_chars: Max context size
     """
-    parts = []
-    total_chars = 0
-    seen_videos: set[str] = set()
-
-    # Add library overview at the start
-    if db:
-        stats = db.get_stats()
-        channels = db.list_channels()
-        channel_names = [c.name for c in channels]
-        channels_str = ", ".join(channel_names) if channel_names else "None"
-        overview = (
-            f"[Library Overview]\n"
-            f"Channels: {channels_str} ({stats['channels']} total)\n"
-            f"Videos: {stats['videos_fetched']} indexed\n"
-            f"Sections: {stats['sections']}\n\n"
-        )
-        parts.append(overview)
-        total_chars += len(overview)
-
-    for i, hit in enumerate(hits, 1):
-        # Build metadata line
-        meta_parts = []
-        if hit.channel_name:
-            meta_parts.append(f"Channel: {hit.channel_name}")
-        if hit.host and hit.host != hit.channel_name:
-            meta_parts.append(f"Host: {hit.host}")
-        if hit.view_count:
-            meta_parts.append(f"Views: {hit.view_count:,}")
-        if hit.like_count:
-            meta_parts.append(f"Likes: {hit.like_count:,}")
-        if hit.tags:
-            meta_parts.append(f"Tags: {', '.join(hit.tags[:5])}")
-        meta_line = " | ".join(meta_parts) if meta_parts else ""
-
-        # Get all chapters for this video (first time we see it)
-        chapters_line = ""
-        video_id = hit.section.video_id
-        if db and video_id not in seen_videos:
-            seen_videos.add(video_id)
-            all_sections = db.get_sections(video_id)
-            if all_sections:
-                chapter_titles = [s.title for s in all_sections]
-                chapters_line = f"Chapters: {', '.join(chapter_titles)}\n"
-
-        section_text = (
-            f"[Source {i}] Video: {hit.video_title}\n"
-            + (f"{meta_line}\n" if meta_line else "")
-            + chapters_line
-            + f"Current Section: {hit.section.title}\n"
-            f"Timestamp: {hit.timestamp_url}\n"
-            f"Content: {hit.section.content}\n"
-        )
-
-        if total_chars + len(section_text) > max_chars:
-            break
-
-        parts.append(section_text)
-        total_chars += len(section_text)
-
-    return "\n---\n".join(parts)
+    # Import here to avoid circular dependency
+    from .service import _format_context
+    return _format_context(hits, db=db, max_chars=max_chars)
 
 
 def search(
@@ -964,52 +813,9 @@ def search(
     min_threshold = score_threshold * 0.7 if query_type == QueryType.ENTITY else score_threshold
     results = [r for r in results if r.score >= min_threshold]
 
-    # Apply LLM keyword filtering if analysis succeeded
+    # Apply LLM keyword filtering using the existing filter function
     if llm_analysis and llm_analysis.keywords and llm_analysis.query_type != QueryType.FOLLOWUP:
-        # Filter results using LLM-extracted keywords
-        synonyms_map = get_synonyms_map()
-        keywords = set(llm_analysis.keywords)
-
-        # Expand keywords with synonyms
-        expanded_keywords: set[str] = set()
-        for kw in keywords:
-            expanded_keywords.add(kw)
-            if kw in synonyms_map:
-                expanded_keywords.update(synonyms_map[kw])
-
-        # Determine min matches based on query type
-        if llm_analysis.query_type in (QueryType.ENTITY, QueryType.COMPARISON):
-            min_matches = len(keywords)
-        else:
-            min_matches = 1
-
-        filtered = []
-        for result in results:
-            section = db.get_section(result.id)
-            if not section:
-                continue
-            video = db.get_video(section.video_id)
-            if not video:
-                continue
-
-            all_text = f"{video.title} {section.title} {section.content}".lower()
-
-            matches = 0
-            for kw in keywords:
-                kw_variants = {kw}
-                if kw in synonyms_map:
-                    kw_variants.update(synonyms_map[kw])
-                for variant in kw_variants:
-                    pattern = r"\b" + re.escape(variant) + r"\b"
-                    if re.search(pattern, all_text):
-                        matches += 1
-                        break
-
-            if matches >= min_matches:
-                filtered.append(result)
-
-        logger.debug(f"LLM filter: {len(results)} -> {len(filtered)} candidates")
-        results = filtered
+        results, _ = filter_with_llm_analysis(query, results, db, use_local=use_local)
 
     # Handle popularity queries - search by view count instead of semantics
     if llm_analysis and llm_analysis.query_type == QueryType.POPULARITY:
