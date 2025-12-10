@@ -201,18 +201,27 @@ def analyze_query_with_llm(
             has_video_term = any(term in query_lower for term in video_terms)
             # If no video term, it's probably a topic query about a popular subject
             if not has_video_term:
-                logger.debug(
-                    "Reclassifying popularity -> topic: no video terms in query"
-                )
+                logger.debug("Reclassifying popularity -> topic: no video terms in query")
                 query_type = QueryType.TOPIC
                 # Extract keywords from query if LLM didn't provide them
                 if not keywords:
                     # Simple extraction: remove common words and use remaining terms
                     stopwords = {
-                        "what", "what's", "whats", "is", "the", "most", "in",
-                        "a", "an", "are", "how", "many", "which"
+                        "what",
+                        "what's",
+                        "whats",
+                        "is",
+                        "the",
+                        "most",
+                        "in",
+                        "a",
+                        "an",
+                        "are",
+                        "how",
+                        "many",
+                        "which",
                     }
-                    words = re.findall(r'\b\w+\b', query_lower)
+                    words = re.findall(r"\b\w+\b", query_lower)
                     keywords = [w for w in words if w not in stopwords and len(w) > 2]
 
         # Validate time_filter_days is a positive integer
@@ -681,9 +690,7 @@ def find_precise_timestamp(
     start_time = section.start_time or 0
     end_time = section.end_time or float("inf")
 
-    section_segments = [
-        s for s in segments if start_time <= s.start_time <= end_time
-    ]
+    section_segments = [s for s in segments if start_time <= s.start_time <= end_time]
 
     # Find first segment that contains any query term
     for segment in section_segments:
@@ -712,6 +719,7 @@ def format_context(
     """
     # Import here to avoid circular dependency
     from .service import _format_context
+
     return _format_context(hits, db=db, max_chars=max_chars)
 
 
@@ -909,8 +917,10 @@ def search(
                 )
             else:
                 chat_result = chat_completion(
-                    messages=messages, model=chat_model,
-                    temperature=temperature, max_tokens=max_tokens
+                    messages=messages,
+                    model=chat_model,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
                 )
             answer = chat_result.content
             tokens_chat = chat_result.tokens_input + chat_result.tokens_output

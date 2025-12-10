@@ -611,7 +611,7 @@ def update(
                     f"added {syn_result.synonyms_added} synonyms"
                 )
                 if syn_result.channels_processed:
-                    channels = ', '.join(syn_result.channels_processed)
+                    channels = ", ".join(syn_result.channels_processed)
                     console.print(f"[dim]Channels: {channels}[/dim]")
             else:
                 console.print("[green]✓[/green] No new videos to analyze")
@@ -1518,9 +1518,7 @@ def test_benchmark(
     model: str = typer.Option(
         None, "-m", "--model", help="Override default LLM model for RAG pipeline"
     ),
-    openai: bool = typer.Option(
-        False, "--openai", help="Use OpenAI API instead of local Ollama"
-    ),
+    openai: bool = typer.Option(False, "--openai", help="Use OpenAI API instead of local Ollama"),
     validate_openai: bool = typer.Option(
         False, "--validate-openai", help="Also validate with OpenAI (compares validators)"
     ),
@@ -1575,8 +1573,13 @@ def test_benchmark(
         output_path = data_path.parent / base_name
 
     _run_full_pipeline_test(
-        test_cases, data_path, output_path, verbose,
-        model=model, use_openai=openai, validate_openai=validate_openai
+        test_cases,
+        data_path,
+        output_path,
+        verbose,
+        model=model,
+        use_openai=openai,
+        validate_openai=validate_openai,
     )
 
 
@@ -1772,6 +1775,7 @@ def _run_full_pipeline_test(
             # Handle META queries specially - no search/LLM needed
             if expected_type == "meta":
                 from .search import classify_query
+
                 t_classify = time.time()
                 got_type = classify_query(query).value
                 type_passed = got_type == "meta"
@@ -1801,7 +1805,8 @@ def _run_full_pipeline_test(
                 }
                 if validate_openai:
                     result_entry["validation_gpt4o"] = {
-                        "pass": True, "reason": "Meta query - stats returned"
+                        "pass": True,
+                        "reason": "Meta query - stats returned",
                     }
                     gpt_validation_pass += 1
                 main_validation_pass += 1
@@ -1909,9 +1914,7 @@ def _run_full_pipeline_test(
                         messages=messages, model=chat_model, temperature=0.1
                     )
                 else:
-                    response = chat_completion(
-                        messages=messages, model=chat_model, temperature=0.1
-                    )
+                    response = chat_completion(messages=messages, model=chat_model, temperature=0.1)
                 answer = response.content
 
             t_answer_end = time.time()
@@ -2031,7 +2034,8 @@ def _run_full_pipeline_test(
 
         # Agreement analysis
         agree = sum(
-            1 for r in results
+            1
+            for r in results
             if r["validation_main"]["pass"] == r.get("validation_gpt4o", {}).get("pass")
         )
         console.print(val_table)
@@ -2039,11 +2043,13 @@ def _run_full_pipeline_test(
 
         # Disagreements
         main_only = [
-            r for r in results
+            r
+            for r in results
             if r["validation_main"]["pass"] and not r.get("validation_gpt4o", {}).get("pass")
         ]
         gpt_only = [
-            r for r in results
+            r
+            for r in results
             if not r["validation_main"]["pass"] and r.get("validation_gpt4o", {}).get("pass")
         ]
         console.print(f"  Main pass, GPT fail: {len(main_only)}")
@@ -2412,9 +2418,7 @@ def synonyms(
     action: str = typer.Argument("list", help="Action: list, generate, approve, reject, remove"),
     keywords: list[str] = typer.Argument(None, help="Keywords to remove (for 'remove' action)"),
     keyword: str = typer.Option(None, "-k", "--keyword", help="Keyword to work with"),
-    synonym: str = typer.Option(
-        None, "-s", "--synonym", help="Synonym to add/approve/reject"
-    ),
+    synonym: str = typer.Option(None, "-s", "--synonym", help="Synonym to add/approve/reject"),
     pending: bool = typer.Option(False, "--pending", help="Show pending synonyms only"),
     limit: int = typer.Option(10, "-n", "--limit", help="Number of keywords to process"),
     model: str = typer.Option(
@@ -2738,8 +2742,9 @@ def chat(
 
             # Parse "top N" from query to override top_k
             import re
+
             query_top_k = top_k
-            top_n_match = re.search(r'\btop\s+(\d+)\b', query.lower())
+            top_n_match = re.search(r"\btop\s+(\d+)\b", query.lower())
             if top_n_match:
                 query_top_k = int(top_n_match.group(1))
 
@@ -2808,7 +2813,7 @@ def chat(
             if section_hits:
                 # Count unique videos in results
                 unique_videos = len({hit.video_id for hit in section_hits})
-                s_suffix = 's' if unique_videos != 1 else ''
+                s_suffix = "s" if unique_videos != 1 else ""
                 sec_count = len(section_hits)
                 found_msg = f"Found {unique_videos} relevant video{s_suffix} ({sec_count} sections)"
                 console.print(f"\n[dim]{found_msg}[/dim]")
@@ -2827,8 +2832,7 @@ def chat(
                         content_preview += "..."
 
                     title_line = (
-                        f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]"
-                        f"{date_str}"
+                        f"[cyan]{i}.[/cyan] {channel_str}[bold]{hit.video_title}[/bold]{date_str}"
                     )
                     console.print(title_line)
                     console.print(f"   Section: {hit.section.title}")
@@ -2947,23 +2951,18 @@ def test_generate(
 def test_report(
     results_file: str = typer.Option(
         "tests/data/benchmark_results_gpt-4o.json",
-        "--results", "-r",
-        help="Path to benchmark results JSON file"
+        "--results",
+        "-r",
+        help="Path to benchmark results JSON file",
     ),
     tests_file: str = typer.Option(
-        None,
-        "--tests", "-t",
-        help="Path to benchmark tests JSON file (auto-detected from results)"
+        None, "--tests", "-t", help="Path to benchmark tests JSON file (auto-detected from results)"
     ),
     output: str = typer.Option(
-        "tests/data/benchmark_report.html",
-        "--output", "-o",
-        help="Output HTML file path"
+        "tests/data/benchmark_report.html", "--output", "-o", help="Output HTML file path"
     ),
     filter_status: str = typer.Option(
-        None,
-        "--filter",
-        help="Filter results: 'pass', 'fail', 'disagree', 'empty', 'meta'"
+        None, "--filter", help="Filter results: 'pass', 'fail', 'disagree', 'empty', 'meta'"
     ),
 ):
     """Generate HTML report for benchmark results.
@@ -3020,31 +3019,36 @@ def test_report(
     for result in results_data.get("results", []):
         query = result["query"]
         test_meta = tests_lookup.get(query, {})
-        merged.append({
-            **result,
-            "channel": test_meta.get("channel", "unknown"),
-            "source_video": test_meta.get("source_video", "unknown"),
-            "note": test_meta.get("note", ""),
-            "expected_video_ids": test_meta.get("expected_video_ids", []),
-        })
+        merged.append(
+            {
+                **result,
+                "channel": test_meta.get("channel", "unknown"),
+                "source_video": test_meta.get("source_video", "unknown"),
+                "note": test_meta.get("note", ""),
+                "expected_video_ids": test_meta.get("expected_video_ids", []),
+            }
+        )
 
     # Apply filter
     if filter_status:
         if filter_status == "disagree":
             merged = [
-                m for m in merged
+                m
+                for m in merged
                 if m.get("validation_qwen", {}).get("pass")
                 != m.get("validation_gpt4o", {}).get("pass")
             ]
         elif filter_status == "pass":
             merged = [
-                m for m in merged
+                m
+                for m in merged
                 if m.get("validation_gpt4o", {}).get("pass")
                 and m.get("validation_qwen", {}).get("pass")
             ]
         elif filter_status == "fail":
             merged = [
-                m for m in merged
+                m
+                for m in merged
                 if not m.get("validation_gpt4o", {}).get("pass")
                 or not m.get("validation_qwen", {}).get("pass")
             ]
@@ -3126,9 +3130,7 @@ def _generate_html_report(
         keywords_missing = r.get("keywords_missing", [])
         kw_html = ""
         if keywords_found:
-            kw_html += " ".join(
-                f'<span class="kw-found">{esc(k)}</span>' for k in keywords_found
-            )
+            kw_html += " ".join(f'<span class="kw-found">{esc(k)}</span>' for k in keywords_found)
         if keywords_missing:
             kw_html += " ".join(
                 f'<span class="kw-missing">{esc(k)}</span>' for k in keywords_missing

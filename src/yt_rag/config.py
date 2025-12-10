@@ -257,5 +257,3 @@ def mark_gpu_check_done() -> None:
     """Mark GPU detection as complete so we don't prompt again."""
     ensure_data_dir()
     GPU_CHECK_FILE.touch()
-
-

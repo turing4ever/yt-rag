@@ -224,9 +224,7 @@ class VectorStore:
                 return self._index
 
             try:
-                self._gpu_index = faiss.index_cpu_to_gpu(
-                    VectorStore._gpu_resources, 0, self._index
-                )
+                self._gpu_index = faiss.index_cpu_to_gpu(VectorStore._gpu_resources, 0, self._index)
                 logger.info(f"Created GPU index for '{self.name}' ({self._index.ntotal} vectors)")
                 return self._gpu_index
             except Exception as e:

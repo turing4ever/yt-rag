@@ -716,9 +716,7 @@ class Database:
     def get_system_info(self, key: str) -> str | None:
         """Get a system info value by key."""
         conn = self.connect()
-        row = conn.execute(
-            "SELECT value FROM system_info WHERE key = ?", (key,)
-        ).fetchone()
+        row = conn.execute("SELECT value FROM system_info WHERE key = ?", (key,)).fetchone()
         return row[0] if row else None
 
     def set_system_info(self, key: str, value: str) -> None:

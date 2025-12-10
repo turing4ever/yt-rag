@@ -128,6 +128,7 @@ def embed_all_sections(
 
     # Always update system info (even if no new sections to embed)
     from datetime import datetime
+
     actual_model = model or (DEFAULT_OLLAMA_EMBED_MODEL if use_local else DEFAULT_EMBEDDING_MODEL)
     db.set_system_info("embedding_backend", "ollama" if use_local else "openai")
     db.set_system_info("embedding_model", actual_model)

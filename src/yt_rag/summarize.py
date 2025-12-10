@@ -202,9 +202,7 @@ def summarize_batch(
                 continue
 
         try:
-            result = summarize_video(
-                video_id, db, model, use_sections, use_openai=use_openai
-            )
+            result = summarize_video(video_id, db, model, use_sections, use_openai=use_openai)
             results.append(result)
         except Exception as e:
             # Log error but continue with other videos

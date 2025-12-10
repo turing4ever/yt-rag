@@ -7,61 +7,366 @@ from dataclasses import dataclass
 from .db import Database
 
 # Common English stopwords to filter out
-STOPWORDS = frozenset([
-    # Articles, pronouns, prepositions
-    "a", "an", "the", "this", "that", "these", "those",
-    "i", "me", "my", "we", "our", "you", "your", "he", "she", "it", "they", "them",
-    "his", "her", "its", "their", "who", "what", "which", "whom", "whose",
-    "in", "on", "at", "to", "for", "of", "with", "by", "from", "as", "into",
-    "about", "after", "before", "between", "under", "over", "through",
-    # Common verbs
-    "is", "are", "was", "were", "be", "been", "being", "have", "has", "had",
-    "do", "does", "did", "will", "would", "could", "should", "may", "might",
-    "can", "must", "shall", "get", "got", "getting", "go", "going", "went",
-    "come", "coming", "came", "take", "taking", "took", "make", "making", "made",
-    "see", "seeing", "saw", "know", "knowing", "knew", "think", "thinking", "thought",
-    "want", "wanting", "wanted", "use", "using", "used", "find", "finding", "found",
-    "give", "giving", "gave", "tell", "telling", "told", "say", "saying", "said",
-    "put", "putting", "let", "keep", "keeping", "kept",
-    # Conjunctions and connectors
-    "and", "or", "but", "if", "then", "than", "so", "because", "when", "where",
-    "while", "although", "however", "also", "just", "only", "even", "still",
-    # Common adjectives/adverbs
-    "good", "bad", "great", "nice", "new", "old", "big", "small", "little",
-    "much", "many", "more", "most", "less", "very", "really", "actually",
-    "pretty", "quite", "too", "well", "now", "here", "there", "back", "out",
-    "up", "down", "off", "away", "again", "always", "never", "already",
-    # Filler words common in transcripts
-    "um", "uh", "like", "right", "okay", "yeah", "yes", "no", "oh", "ah",
-    "gonna", "wanna", "gotta", "kinda", "sorta", "thing", "things", "stuff",
-    "lot", "lots", "bit", "way", "kind", "type", "sort",
-    # Numbers as words
-    "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten",
-    "first", "second", "third", "last", "next",
-    # Other common words
-    "people", "time", "day", "year", "guy", "guys", "man", "men", "woman", "women",
-    "person", "something", "anything", "everything", "nothing", "someone", "anyone",
-    "everyone", "other", "another", "same", "different", "own", "every", "each",
-    "all", "some", "any", "both", "few", "enough", "whole",
-    # Contractions without apostrophe (from transcripts)
-    "don", "didn", "doesn", "wasn", "weren", "won", "wouldn", "couldn", "shouldn",
-    "haven", "hasn", "hadn", "isn", "aren", "ain",
-    # More filler words
-    "not", "how", "why", "mean", "doing", "look", "looks", "looking",
-    "show", "maybe", "probably", "sure", "cuz", "gonna", "cause",
-    "talk", "talking", "talked", "says", "need", "needs", "work", "working",
-    "start", "started", "starting", "done", "goes", "feel", "feels", "feeling",
-    "try", "trying", "tried", "call", "called", "hear", "heard",
-    "believe", "guess", "suppose", "happen", "happened", "happening",
-    "seem", "seems", "seemed", "matter", "mean", "means", "meant",
-    "run", "running", "ran", "turn", "turning", "turned", "play", "playing",
-    "move", "moving", "moved", "hold", "holding", "held", "leave", "leaving", "left",
-    "bring", "bringing", "brought", "sit", "sitting", "sat", "stand", "standing", "stood",
-    "set", "pull", "pulling", "pulled", "push", "pushing", "pushed",
-    "point", "points", "end", "far", "though", "around",
-    # Music marker common in transcripts
-    "music",
-])
+STOPWORDS = frozenset(
+    [
+        # Articles, pronouns, prepositions
+        "a",
+        "an",
+        "the",
+        "this",
+        "that",
+        "these",
+        "those",
+        "i",
+        "me",
+        "my",
+        "we",
+        "our",
+        "you",
+        "your",
+        "he",
+        "she",
+        "it",
+        "they",
+        "them",
+        "his",
+        "her",
+        "its",
+        "their",
+        "who",
+        "what",
+        "which",
+        "whom",
+        "whose",
+        "in",
+        "on",
+        "at",
+        "to",
+        "for",
+        "of",
+        "with",
+        "by",
+        "from",
+        "as",
+        "into",
+        "about",
+        "after",
+        "before",
+        "between",
+        "under",
+        "over",
+        "through",
+        # Common verbs
+        "is",
+        "are",
+        "was",
+        "were",
+        "be",
+        "been",
+        "being",
+        "have",
+        "has",
+        "had",
+        "do",
+        "does",
+        "did",
+        "will",
+        "would",
+        "could",
+        "should",
+        "may",
+        "might",
+        "can",
+        "must",
+        "shall",
+        "get",
+        "got",
+        "getting",
+        "go",
+        "going",
+        "went",
+        "come",
+        "coming",
+        "came",
+        "take",
+        "taking",
+        "took",
+        "make",
+        "making",
+        "made",
+        "see",
+        "seeing",
+        "saw",
+        "know",
+        "knowing",
+        "knew",
+        "think",
+        "thinking",
+        "thought",
+        "want",
+        "wanting",
+        "wanted",
+        "use",
+        "using",
+        "used",
+        "find",
+        "finding",
+        "found",
+        "give",
+        "giving",
+        "gave",
+        "tell",
+        "telling",
+        "told",
+        "say",
+        "saying",
+        "said",
+        "put",
+        "putting",
+        "let",
+        "keep",
+        "keeping",
+        "kept",
+        # Conjunctions and connectors
+        "and",
+        "or",
+        "but",
+        "if",
+        "then",
+        "than",
+        "so",
+        "because",
+        "when",
+        "where",
+        "while",
+        "although",
+        "however",
+        "also",
+        "just",
+        "only",
+        "even",
+        "still",
+        # Common adjectives/adverbs
+        "good",
+        "bad",
+        "great",
+        "nice",
+        "new",
+        "old",
+        "big",
+        "small",
+        "little",
+        "much",
+        "many",
+        "more",
+        "most",
+        "less",
+        "very",
+        "really",
+        "actually",
+        "pretty",
+        "quite",
+        "too",
+        "well",
+        "now",
+        "here",
+        "there",
+        "back",
+        "out",
+        "up",
+        "down",
+        "off",
+        "away",
+        "again",
+        "always",
+        "never",
+        "already",
+        # Filler words common in transcripts
+        "um",
+        "uh",
+        "like",
+        "right",
+        "okay",
+        "yeah",
+        "yes",
+        "no",
+        "oh",
+        "ah",
+        "gonna",
+        "wanna",
+        "gotta",
+        "kinda",
+        "sorta",
+        "thing",
+        "things",
+        "stuff",
+        "lot",
+        "lots",
+        "bit",
+        "way",
+        "kind",
+        "type",
+        "sort",
+        # Numbers as words
+        "one",
+        "two",
+        "three",
+        "four",
+        "five",
+        "six",
+        "seven",
+        "eight",
+        "nine",
+        "ten",
+        "first",
+        "second",
+        "third",
+        "last",
+        "next",
+        # Other common words
+        "people",
+        "time",
+        "day",
+        "year",
+        "guy",
+        "guys",
+        "man",
+        "men",
+        "woman",
+        "women",
+        "person",
+        "something",
+        "anything",
+        "everything",
+        "nothing",
+        "someone",
+        "anyone",
+        "everyone",
+        "other",
+        "another",
+        "same",
+        "different",
+        "own",
+        "every",
+        "each",
+        "all",
+        "some",
+        "any",
+        "both",
+        "few",
+        "enough",
+        "whole",
+        # Contractions without apostrophe (from transcripts)
+        "don",
+        "didn",
+        "doesn",
+        "wasn",
+        "weren",
+        "won",
+        "wouldn",
+        "couldn",
+        "shouldn",
+        "haven",
+        "hasn",
+        "hadn",
+        "isn",
+        "aren",
+        "ain",
+        # More filler words
+        "not",
+        "how",
+        "why",
+        "mean",
+        "doing",
+        "look",
+        "looks",
+        "looking",
+        "show",
+        "maybe",
+        "probably",
+        "sure",
+        "cuz",
+        "gonna",
+        "cause",
+        "talk",
+        "talking",
+        "talked",
+        "says",
+        "need",
+        "needs",
+        "work",
+        "working",
+        "start",
+        "started",
+        "starting",
+        "done",
+        "goes",
+        "feel",
+        "feels",
+        "feeling",
+        "try",
+        "trying",
+        "tried",
+        "call",
+        "called",
+        "hear",
+        "heard",
+        "believe",
+        "guess",
+        "suppose",
+        "happen",
+        "happened",
+        "happening",
+        "seem",
+        "seems",
+        "seemed",
+        "matter",
+        "mean",
+        "means",
+        "meant",
+        "run",
+        "running",
+        "ran",
+        "turn",
+        "turning",
+        "turned",
+        "play",
+        "playing",
+        "move",
+        "moving",
+        "moved",
+        "hold",
+        "holding",
+        "held",
+        "leave",
+        "leaving",
+        "left",
+        "bring",
+        "bringing",
+        "brought",
+        "sit",
+        "sitting",
+        "sat",
+        "stand",
+        "standing",
+        "stood",
+        "set",
+        "pull",
+        "pulling",
+        "pulled",
+        "push",
+        "pushing",
+        "pushed",
+        "point",
+        "points",
+        "end",
+        "far",
+        "though",
+        "around",
+        # Music marker common in transcripts
+        "music",
+    ]
+)
 
 # Minimum word length to consider
 MIN_WORD_LENGTH = 3
@@ -73,6 +378,7 @@ MIN_FREQUENCY = 5
 @dataclass
 class KeywordStats:
     """Statistics for a keyword."""
+
     keyword: str
     frequency: int
     video_count: int
@@ -85,10 +391,7 @@ def extract_words(text: str) -> list[str]:
     words = re.findall(r"\b[a-zA-Z][a-zA-Z0-9]*\b", text.lower())
 
     # Filter stopwords and short words
-    return [
-        w for w in words
-        if len(w) >= MIN_WORD_LENGTH and w not in STOPWORDS
-    ]
+    return [w for w in words if len(w) >= MIN_WORD_LENGTH and w not in STOPWORDS]
 
 
 def extract_keywords_from_video(
@@ -138,8 +441,7 @@ def extract_keywords_from_videos(
     # Get videos to process
     if video_ids is None:
         rows = conn.execute(
-            "SELECT id FROM videos WHERE transcript_status = 'fetched' LIMIT ?",
-            (limit or 999999,)
+            "SELECT id FROM videos WHERE transcript_status = 'fetched' LIMIT ?", (limit or 999999,)
         ).fetchall()
         video_ids = [row[0] for row in rows]
     elif limit:
@@ -204,12 +506,14 @@ def extract_keywords_from_videos(
     results = []
     for word, freq in global_counts.most_common():
         if freq >= min_total_frequency:
-            results.append(KeywordStats(
-                keyword=word,
-                frequency=freq,
-                video_count=video_presence[word],
-                sample_contexts=contexts.get(word, []),
-            ))
+            results.append(
+                KeywordStats(
+                    keyword=word,
+                    frequency=freq,
+                    video_count=video_presence[word],
+                    sample_contexts=contexts.get(word, []),
+                )
+            )
 
     return results
 
@@ -281,7 +585,6 @@ def suggest_synonyms_for_keyword(keyword: str) -> list[str]:
         "fuel": ["gas", "petrol", "diesel"],
         "economy": ["efficiency", "mileage"],
         "efficiency": ["economy", "performance"],
-
         # Power-related
         "horsepower": ["hp", "power", "performance"],
         "hp": ["horsepower", "power"],
@@ -289,28 +592,23 @@ def suggest_synonyms_for_keyword(keyword: str) -> list[str]:
         "power": ["performance", "output"],
         "engine": ["motor", "powerplant", "powertrain"],
         "motor": ["engine", "powerplant"],
-
         # Transmission-related
         "transmission": ["gearbox", "trans", "shifter"],
         "automatic": ["auto", "autobox"],
         "manual": ["stick", "standard", "stick shift"],
-
         # Body-related
         "interior": ["cabin", "inside"],
         "exterior": ["outside", "body", "styling"],
         "dashboard": ["dash", "instrument panel"],
         "steering": ["wheel", "handling"],
-
         # Performance-related
         "acceleration": ["speed", "0-60", "launch"],
         "braking": ["brakes", "stopping"],
         "handling": ["cornering", "steering", "dynamics"],
         "suspension": ["ride", "dampers", "shocks"],
-
         # Quality-related
         "reliability": ["dependable", "durable", "quality"],
         "quality": ["build", "craftsmanship", "fit and finish"],
-
         # Price-related
         "price": ["cost", "msrp", "value"],
         "expensive": ["costly", "pricey", "premium"],
@@ -395,8 +693,7 @@ Return ONLY valid JSON, no explanation:"""
             if isinstance(syns, list) and all(isinstance(s, str) for s in syns):
                 # Filter out empty strings and the keyword itself
                 cleaned_syns = [
-                    s.lower().strip() for s in syns
-                    if s.strip() and s.lower() != kw.lower()
+                    s.lower().strip() for s in syns if s.strip() and s.lower() != kw.lower()
                 ]
                 if cleaned_syns:
                     cleaned[kw.lower()] = cleaned_syns
@@ -406,6 +703,7 @@ Return ONLY valid JSON, no explanation:"""
     except Exception as e:
         # Fall back to heuristic approach on error
         import sys
+
         print(f"LLM synonym generation failed: {e}", file=sys.stderr)
         result = {}
         for kw in keywords:
@@ -461,9 +759,7 @@ def refresh_synonyms(
             (channel_id,),
         ).fetchall()
     else:
-        channel_rows = conn.execute(
-            "SELECT id, name, category FROM channels"
-        ).fetchall()
+        channel_rows = conn.execute("SELECT id, name, category FROM channels").fetchall()
 
     if not channel_rows:
         return result

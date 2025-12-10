@@ -525,10 +525,10 @@ class RAGService:
             index_type = "GPU" if sections_store.use_gpu else "CPU"
 
             # Build comprehensive stats text
-            vid_fetched = stats.get('videos_fetched', 0)
-            vid_total = stats.get('videos_total', 0)
-            emb_backend = system_info.get('embedding_backend', 'ollama')
-            emb_model = system_info.get('embedding_model', 'unknown')
+            vid_fetched = stats.get("videos_fetched", 0)
+            vid_total = stats.get("videos_total", 0)
+            emb_backend = system_info.get("embedding_backend", "ollama")
+            emb_model = system_info.get("embedding_model", "unknown")
             stats_lines = [
                 "**Library Statistics**",
                 f"- Videos: {vid_fetched:,} (fetched) / {vid_total:,} (total)",
@@ -547,14 +547,17 @@ class RAGService:
 
             # Add last embed timestamp if available
             if system_info.get("last_embed_at"):
-                last_indexed = system_info.get('last_embed_at', 'unknown')[:19]
+                last_indexed = system_info.get("last_embed_at", "unknown")[:19]
                 stats_lines.append(f"- Last indexed: {last_indexed}")
 
-            stats_lines.extend([
-                "",
-                "**Channels**",
-                ", ".join(ch.name for ch in channels[:20]) + ("..." if len(channels) > 20 else ""),
-            ])
+            stats_lines.extend(
+                [
+                    "",
+                    "**Channels**",
+                    ", ".join(ch.name for ch in channels[:20])
+                    + ("..." if len(channels) > 20 else ""),
+                ]
+            )
             stats_text = "\n".join(stats_lines)
 
             # Signal "search" complete with no results
@@ -657,6 +660,7 @@ class RAGService:
             published_after = None
             if llm_analysis.time_filter_days:
                 from datetime import datetime, timedelta
+
                 published_after = datetime.now() - timedelta(days=llm_analysis.time_filter_days)
                 days = llm_analysis.time_filter_days
                 logger.info(f"Time filter: last {days} days (after {published_after.date()})")

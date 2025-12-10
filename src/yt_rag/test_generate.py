@@ -75,6 +75,7 @@ def get_benchmark_filename(model: str) -> str:
     safe_model = sanitize_model_name(model)
     return f"benchmark_generated_{safe_model}.json"
 
+
 # Output directory for test data files
 TEST_DATA_DIR = Path(__file__).parent.parent.parent / "tests" / "data"
 
@@ -194,15 +195,17 @@ def prepare_raw_data(
                     for s in sections[:10]  # Limit sections per video
                 ],
             )
-            all_videos.append({
-                "video_id": raw.video_id,
-                "title": raw.title,
-                "channel_id": raw.channel_id,
-                "channel_name": raw.channel_name,
-                "duration_seconds": raw.duration_seconds,
-                "view_count": raw.view_count,
-                "sections": raw.sections,
-            })
+            all_videos.append(
+                {
+                    "video_id": raw.video_id,
+                    "title": raw.title,
+                    "channel_id": raw.channel_id,
+                    "channel_name": raw.channel_name,
+                    "duration_seconds": raw.duration_seconds,
+                    "view_count": raw.view_count,
+                    "sections": raw.sections,
+                }
+            )
 
     # Save to JSON
     with open(output_path, "w") as f:
@@ -326,10 +329,12 @@ def _analyze_sections_batch_openai(
         batch = sections[i : i + batch_size]
 
         # Format sections for prompt - compact format
-        sections_text = "\n\n".join([
-            f"[{s['id']}] {s.get('title', 'Untitled')}\n{s.get('content', '')[:1500]}"
-            for s in batch
-        ])
+        sections_text = "\n\n".join(
+            [
+                f"[{s['id']}] {s.get('title', 'Untitled')}\n{s.get('content', '')[:1500]}"
+                for s in batch
+            ]
+        )
 
         prompt = BATCH_SECTION_PROMPT.format(
             title=video_title,
@@ -490,10 +495,12 @@ def analyze_videos(
 
         else:
             # Ollama: Analyze multiple sections at once (cheaper, faster locally)
-            sections_text = "\n\n".join([
-                f"[{s['id']}] {s.get('title', '')}\n{s.get('content', '')[:1000]}"
-                for s in sections[:5]  # Limit sections in prompt
-            ])
+            sections_text = "\n\n".join(
+                [
+                    f"[{s['id']}] {s.get('title', '')}\n{s.get('content', '')[:1000]}"
+                    for s in sections[:5]  # Limit sections in prompt
+                ]
+            )
 
             prompt = VIDEO_ANALYSIS_PROMPT.format(
                 title=title,
@@ -632,34 +639,40 @@ def build_tests(
                 if isinstance(e, dict):
                     e = e.get("name", "")
                 if isinstance(e, str) and e and len(e) > 2:
-                    channel_entities.append({
-                        "entity": e,
-                        "video_id": video_id,
-                        "title": title,
-                        "channel": channel,
-                    })
+                    channel_entities.append(
+                        {
+                            "entity": e,
+                            "video_id": video_id,
+                            "title": title,
+                            "channel": channel,
+                        }
+                    )
 
             # Topics
             for t in analysis.get("topics", []):
                 if isinstance(t, str) and t:
-                    channel_topics.append({
-                        "topic": t,
-                        "video_id": video_id,
-                        "title": title,
-                        "channel": channel,
-                    })
+                    channel_topics.append(
+                        {
+                            "topic": t,
+                            "video_id": video_id,
+                            "title": title,
+                            "channel": channel,
+                        }
+                    )
 
             # Comparisons
             for comp in analysis.get("comparisons", []):
                 items = comp.get("items", [])
                 if len(items) >= 2:
-                    channel_comparisons.append({
-                        "items": items,
-                        "aspect": comp.get("aspect", ""),
-                        "video_id": video_id,
-                        "title": title,
-                        "channel": channel,
-                    })
+                    channel_comparisons.append(
+                        {
+                            "items": items,
+                            "aspect": comp.get("aspect", ""),
+                            "video_id": video_id,
+                            "title": title,
+                            "channel": channel,
+                        }
+                    )
 
         # Generate entity tests (sample up to n unique entities)
         seen_entities = set()
@@ -674,15 +687,17 @@ def build_tests(
                 break
 
         for item in entity_samples:
-            test_cases.append({
-                "query": item["entity"],
-                "expected_type": "entity",
-                "expected_keywords": [item["entity"].lower()],
-                "expected_video_ids": [item["video_id"]],
-                "channel": item["channel"],
-                "source_video": item["title"],
-                "note": f"Entity from {channel}: {item['title'][:30]}",
-            })
+            test_cases.append(
+                {
+                    "query": item["entity"],
+                    "expected_type": "entity",
+                    "expected_keywords": [item["entity"].lower()],
+                    "expected_video_ids": [item["video_id"]],
+                    "channel": item["channel"],
+                    "source_video": item["title"],
+                    "note": f"Entity from {channel}: {item['title'][:30]}",
+                }
+            )
             by_type["entity"] = by_type.get("entity", 0) + 1
 
         # Generate topic tests (sample up to n unique topics)
@@ -698,15 +713,17 @@ def build_tests(
                 break
 
         for item in topic_samples:
-            test_cases.append({
-                "query": item["topic"],
-                "expected_type": "topic",
-                "expected_keywords": item["topic"].lower().split()[:3],
-                "expected_video_ids": [item["video_id"]],
-                "channel": item["channel"],
-                "source_video": item["title"],
-                "note": f"Topic from {channel}: {item['title'][:30]}",
-            })
+            test_cases.append(
+                {
+                    "query": item["topic"],
+                    "expected_type": "topic",
+                    "expected_keywords": item["topic"].lower().split()[:3],
+                    "expected_video_ids": [item["video_id"]],
+                    "channel": item["channel"],
+                    "source_video": item["title"],
+                    "note": f"Topic from {channel}: {item['title'][:30]}",
+                }
+            )
             by_type["topic"] = by_type.get("topic", 0) + 1
 
         # Generate comparison tests (sample up to n)
@@ -714,37 +731,38 @@ def build_tests(
         for item in channel_comparisons[:n]:
             items = item["items"]
             query = f"{items[0]} vs {items[1]}"
-            test_cases.append({
-                "query": query,
-                "expected_type": "comparison",
-                "expected_keywords": [i.lower() for i in items[:2]],
-                "expected_video_ids": [item["video_id"]],
-                "channel": item["channel"],
-                "source_video": item["title"],
-                "note": f"Comparison from {channel}: {item['aspect']}",
-            })
+            test_cases.append(
+                {
+                    "query": query,
+                    "expected_type": "comparison",
+                    "expected_keywords": [i.lower() for i in items[:2]],
+                    "expected_video_ids": [item["video_id"]],
+                    "channel": item["channel"],
+                    "source_video": item["title"],
+                    "note": f"Comparison from {channel}: {item['aspect']}",
+                }
+            )
             by_type["comparison"] = by_type.get("comparison", 0) + 1
 
         # Generate list/count tests based on entities
         # "How many videos about X?" where X is an entity in this channel
-        count_entities = random.sample(
-            list(seen_entities), min(n, len(seen_entities))
-        )
+        count_entities = random.sample(list(seen_entities), min(n, len(seen_entities)))
         for entity in count_entities:
             # Find all videos with this entity
             matching_videos = [
-                e["video_id"] for e in channel_entities
-                if e["entity"].lower() == entity
+                e["video_id"] for e in channel_entities if e["entity"].lower() == entity
             ]
-            test_cases.append({
-                "query": f"how many videos about {entity}?",
-                "expected_type": "list",
-                "expected_keywords": [entity],
-                "expected_video_ids": list(set(matching_videos)),
-                "expected_count": len(set(matching_videos)),
-                "channel": channel,
-                "note": f"Count query for {channel}",
-            })
+            test_cases.append(
+                {
+                    "query": f"how many videos about {entity}?",
+                    "expected_type": "list",
+                    "expected_keywords": [entity],
+                    "expected_video_ids": list(set(matching_videos)),
+                    "expected_count": len(set(matching_videos)),
+                    "channel": channel,
+                    "note": f"Count query for {channel}",
+                }
+            )
             by_type["list"] = by_type.get("list", 0) + 1
 
     # Add META queries (library stats) - these are global, not per-channel
