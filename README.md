@@ -341,6 +341,25 @@ Video ID: VIDEO_ID
 - Python 3.11+
 - Ollama (default) or OpenAI API key (with `--openai`)
 
+## Development
+
+```bash
+# Install dev dependencies
+uv sync
+
+# Run linter (must pass before push)
+uv run ruff check src/
+
+# Run formatter (must pass before push)
+uv run ruff format --check src/
+
+# Auto-fix formatting
+uv run ruff format src/
+
+# Run both checks (same as CI)
+uv run ruff check src/ && uv run ruff format --check src/
+```
+
 ## License
 
 MIT
