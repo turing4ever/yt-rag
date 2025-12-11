@@ -99,10 +99,10 @@ Answer the user's question using the context above."""
 
 def _format_context(
     hits: list[SearchHit],
-    db: "Database | None" = None,
+    db: Database | None = None,
     max_chars: int = 8000,
     total_matched_videos: int | None = None,
-    video_hits: list["VideoHit"] | None = None,
+    video_hits: list[VideoHit] | None = None,
 ) -> str:
     """Format search hits as context for the LLM.
 
@@ -522,7 +522,7 @@ class RAGService:
             # Get index info
             sections_store = self.store
             summaries_store = self.summaries_store
-            index_type = "GPU" if sections_store.use_gpu else "CPU"
+            index_type = "CPU"
 
             # Build comprehensive stats text
             vid_fetched = stats.get("videos_fetched", 0)

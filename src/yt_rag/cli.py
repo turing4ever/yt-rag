@@ -870,7 +870,7 @@ def list_items(
 def status():
     """Show database statistics."""
     from .config import DEFAULT_OLLAMA_EMBED_MODEL
-    from .vectorstore import FAISS_GPU_AVAILABLE, VectorStore
+    from .vectorstore import VectorStore
 
     db = get_db()
     stats = db.get_stats()
@@ -893,8 +893,8 @@ def status():
     table.add_row("[bold]Embedding Index[/bold]", "")
 
     # Check local (Ollama) index - this is the primary/default
-    local_sections = VectorStore(name="sections", use_local=True, use_gpu=False)
-    local_summaries = VectorStore(name="summaries", use_local=True, use_gpu=False)
+    local_sections = VectorStore(name="sections", use_local=True)
+    local_summaries = VectorStore(name="summaries", use_local=True)
     local_sections_loaded = local_sections.load()
     local_summaries_loaded = local_summaries.load()
 
@@ -908,10 +908,6 @@ def status():
             table.add_row("  Summaries", sum_val)
     else:
         table.add_row("  [dim]No index[/dim]", "[yellow]Run 'yt-rag embed'[/yellow]")
-
-    # GPU status
-    gpu_status = "[green]Available[/green]" if FAISS_GPU_AVAILABLE else "[dim]Not available[/dim]"
-    table.add_row("  GPU acceleration", gpu_status)
 
     console.print(table)
     db.close()

@@ -17,9 +17,8 @@ help:
 	@echo "  make build-openai Run pipeline using OpenAI API"
 	@echo ""
 	@echo "Development:"
-	@echo "  make lint         Run linter and formatter checks"
-	@echo "  make format       Auto-fix formatting issues"
-	@echo "  make check        Run lint + format (same as CI)"
+	@echo "  make lint         Run linter and formatter (auto-fix)"
+	@echo "  make format       Alias for make lint"
 	@echo ""
 	@echo "Testing:"
 	@echo "  make test         Run benchmark tests with local Ollama"
@@ -32,7 +31,7 @@ help:
 	@echo "  make clean        Remove generated files and caches"
 	@echo ""
 	@echo "Prerequisites:"
-	@echo "  - Python 3.10+"
+	@echo "  - Python 3.14"
 	@echo "  - uv (https://docs.astral.sh/uv/)"
 	@echo "  - Ollama running locally (for default mode)"
 	@echo "  - ~/.yt-rag/.env with OPENAI_API_KEY (for --openai mode)"
@@ -64,14 +63,14 @@ ollama:
 # Full pipeline with local Ollama (default)
 build:
 	@echo "Running full update pipeline..."
-	uv run yt-rag update
+	yt-rag update
 	@echo ""
 	@echo "Pipeline complete! Run 'make status' to see statistics."
 
 # Test mode: only process 5 videos per channel
 build-test:
 	@echo "Running pipeline in test mode (5 videos per channel)..."
-	uv run yt-rag update --test
+	yt-rag update --test
 	@echo ""
 	@echo "Test pipeline complete!"
 
@@ -83,7 +82,7 @@ build-openai:
 		echo "Create the file with: OPENAI_API_KEY=sk-..."; \
 		exit 1; \
 	fi
-	uv run yt-rag update --openai
+	yt-rag update --openai
 	@echo ""
 	@echo "Pipeline complete!"
 
@@ -91,26 +90,17 @@ build-openai:
 # Development
 # =============================================================================
 
-# Run linter checks only
+# Lint and auto-fix issues
 lint:
-	@echo "Running ruff linter..."
-	uv run ruff check src/
-	@echo "Running ruff formatter check..."
-	uv run ruff format --check src/
-	@echo ""
-	@echo "All checks passed!"
-
-# Auto-fix formatting
-format:
-	@echo "Auto-fixing formatting..."
+	@echo "Running ruff formatter..."
 	uv run ruff format src/
-	@echo "Running linter with auto-fix..."
+	@echo "Running ruff linter with auto-fix..."
 	uv run ruff check --fix src/
 	@echo ""
-	@echo "Formatting complete!"
+	@echo "Lint complete!"
 
-# Combined check (same as CI)
-check: lint
+# Alias for lint
+format: lint
 
 # =============================================================================
 # Testing
@@ -128,7 +118,7 @@ test:
 		echo "Run 'make test-gen' first to generate test cases"; \
 		exit 1; \
 	fi
-	uv run yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" -v
+	yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" -v
 	@echo ""
 	@echo "Results saved to $(TEST_OUTPUT)"
 	@echo "Run 'make test-report' to generate HTML report"
@@ -141,14 +131,14 @@ test-openai:
 		echo "Run 'make test-gen' first to generate test cases"; \
 		exit 1; \
 	fi
-	uv run yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" --openai -v
+	yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" --openai -v
 	@echo ""
 	@echo "Results saved to $(TEST_OUTPUT)"
 
 # Run tests with both local and OpenAI validation (comparison mode)
 test-compare:
 	@echo "Running benchmark tests with validator comparison..."
-	uv run yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" --validate-openai -v
+	yt-rag test -d "$(TEST_DATA)" -o "$(TEST_OUTPUT)" --validate-openai -v
 	@echo ""
 	@echo "Results saved to $(TEST_OUTPUT)"
 
@@ -169,13 +159,13 @@ test-gen:
 	@echo "Generating benchmark test cases (3-step workflow)..."
 	@echo ""
 	@echo "Step 1/3: Sampling videos from library..."
-	uv run yt-rag test-generate --step=prepare
+	yt-rag test-generate --step=prepare
 	@echo ""
 	@echo "Step 2/3: Analyzing videos with LLM..."
-	uv run yt-rag test-generate --step=analyze
+	yt-rag test-generate --step=analyze
 	@echo ""
 	@echo "Step 3/3: Building test cases..."
-	uv run yt-rag test-generate --step=build
+	yt-rag test-generate --step=build
 	@echo ""
 	@echo "Test generation complete!"
 	@echo "Run 'make test' to execute the benchmark"
@@ -183,41 +173,41 @@ test-gen:
 # Generate test cases with OpenAI (higher quality)
 test-gen-openai:
 	@echo "Generating benchmark test cases with OpenAI..."
-	uv run yt-rag test-generate --openai
+	yt-rag test-generate --openai
 	@echo ""
 	@echo "Test generation complete!"
 
 # Individual test-gen steps (for debugging/customization)
 test-gen-prepare:
 	@echo "Step 1: Sampling videos..."
-	uv run yt-rag test-generate --step=prepare
+	yt-rag test-generate --step=prepare
 
 test-gen-analyze:
 	@echo "Step 2: Analyzing videos..."
-	uv run yt-rag test-generate --step=analyze
+	yt-rag test-generate --step=analyze
 
 test-gen-analyze-openai:
 	@echo "Step 2: Analyzing videos with OpenAI..."
-	uv run yt-rag test-generate --step=analyze --openai
+	yt-rag test-generate --step=analyze --openai
 
 test-gen-build:
 	@echo "Step 3: Building test cases..."
-	uv run yt-rag test-generate --step=build
+	yt-rag test-generate --step=build
 
 # Generate HTML report from test results
 test-report:
 	@echo "Generating HTML report..."
-	uv run yt-rag test-report
+	yt-rag test-report
 	@echo ""
 	@echo "Report generated! Open tests/data/benchmark_report.html"
 
 # Generate report showing only failures
 test-report-failures:
-	uv run yt-rag test-report --filter=fail
+	yt-rag test-report --filter=fail
 
 # Generate report showing validator disagreements
 test-report-disagree:
-	uv run yt-rag test-report --filter=disagree
+	yt-rag test-report --filter=disagree
 
 # =============================================================================
 # Utilities
@@ -226,7 +216,7 @@ test-report-disagree:
 status:
 	@echo "Database statistics:"
 	@echo ""
-	uv run yt-rag status
+	yt-rag status
 
 # Clean generated files
 clean:
@@ -245,12 +235,9 @@ clean:
 # CI/CD helpers
 # =============================================================================
 
-# Run the same checks as GitHub CI
-ci: check
-
 # Quick smoke test (for CI)
 smoke-test:
 	@echo "Running smoke test..."
-	uv run yt-rag --help > /dev/null
-	uv run yt-rag version
+	yt-rag --help > /dev/null
+	yt-rag version
 	@echo "Smoke test passed!"

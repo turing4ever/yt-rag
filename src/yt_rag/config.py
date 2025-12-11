@@ -39,7 +39,7 @@ PROXY_URL_ENV = "WEB_PROXY_URL"
 
 # RAG defaults - separate index directories for local vs OpenAI embeddings
 FAISS_DIR = DATA_DIR / "faiss"  # OpenAI embeddings (1536 dims)
-FAISS_LOCAL_DIR = DATA_DIR / "faiss_local"  # Ollama embeddings (768 dims)
+FAISS_LOCAL_DIR = DATA_DIR / "faiss_local"  # Ollama embeddings (1024 dims)
 CHAT_HISTORY_FILE = DATA_DIR / "chat_history"
 
 # OpenAI embedding/chat defaults
@@ -53,9 +53,6 @@ DEFAULT_OLLAMA_MODEL = "qwen2.5:7b-instruct"  # For answer generation
 DEFAULT_OLLAMA_QUERY_MODEL = "qwen2.5:7b-instruct"  # For query parsing (better accuracy)
 DEFAULT_OLLAMA_EMBED_MODEL = "mxbai-embed-large"
 OLLAMA_EMBEDDING_DIMENSION = 1024  # mxbai-embed-large dimension
-
-# FAISS GPU detection flag file
-GPU_CHECK_FILE = DATA_DIR / ".gpu_checked"
 
 # Search defaults
 DEFAULT_TOP_K = 10
@@ -198,62 +195,3 @@ def get_yt_dlp_batch_size() -> int:
         except ValueError:
             pass
     return DEFAULT_YT_DLP_BATCH_SIZE
-
-
-def has_nvidia_gpu() -> bool:
-    """Check if NVIDIA GPU is available on the system.
-
-    Uses nvidia-smi to detect CUDA-capable GPUs.
-    Returns True if at least one NVIDIA GPU is detected.
-    """
-    import shutil
-    import subprocess
-
-    nvidia_smi = shutil.which("nvidia-smi")
-    if not nvidia_smi:
-        return False
-
-    try:
-        result = subprocess.run(
-            [nvidia_smi, "-L"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        # nvidia-smi -L lists GPUs like "GPU 0: NVIDIA GeForce RTX 3080 ..."
-        return result.returncode == 0 and "GPU" in result.stdout
-    except (subprocess.TimeoutExpired, OSError):
-        return False
-
-
-def get_gpu_free_memory_mb() -> int | None:
-    """Get free GPU memory in MB.
-
-    Returns:
-        Free memory in MB, or None if unavailable
-    """
-    import subprocess
-
-    try:
-        result = subprocess.run(
-            ["nvidia-smi", "--query-gpu=memory.free", "--format=csv,noheader,nounits"],
-            capture_output=True,
-            text=True,
-            timeout=5,
-        )
-        if result.returncode == 0:
-            return int(result.stdout.strip().split("\n")[0])
-    except Exception:
-        pass
-    return None
-
-
-def gpu_check_done() -> bool:
-    """Check if GPU detection has already been performed."""
-    return GPU_CHECK_FILE.exists()
-
-
-def mark_gpu_check_done() -> None:
-    """Mark GPU detection as complete so we don't prompt again."""
-    ensure_data_dir()
-    GPU_CHECK_FILE.touch()

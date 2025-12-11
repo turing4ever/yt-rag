@@ -763,26 +763,37 @@ Local and OpenAI indexes are stored separately, so you can switch between them.
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.14
 - Ollama (default) or OpenAI API key (with `--openai`)
 
 ## Development
 
 ```bash
 # Install dev dependencies
+make install
+
+# Run linter + formatter (auto-fix)
+make lint
+
+# Run full pipeline
+make build
+
+# Run tests
+make test
+
+# See all available commands
+make help
+```
+
+Or manually:
+
+```bash
+# Install dependencies
 uv sync
 
-# Run linter (must pass before push)
-uv run ruff check src/
-
-# Run formatter (must pass before push)
-uv run ruff format --check src/
-
-# Auto-fix formatting
+# Lint and auto-fix
 uv run ruff format src/
-
-# Run both checks (same as CI)
-uv run ruff check src/ && uv run ruff format --check src/
+uv run ruff check --fix src/
 ```
 
 ## License

@@ -5,6 +5,7 @@ import logging
 from dataclasses import dataclass
 from pathlib import Path
 
+import faiss
 import numpy as np
 
 from .config import (
@@ -13,65 +14,9 @@ from .config import (
     OLLAMA_EMBEDDING_DIMENSION,
     OPENAI_EMBEDDING_DIMENSION,
     ensure_data_dir,
-    get_gpu_free_memory_mb,
-    gpu_check_done,
-    has_nvidia_gpu,
-    mark_gpu_check_done,
 )
 
-# Conditional FAISS import - prefer GPU if available
-try:
-    import faiss
-
-    # Check if GPU is available (faiss-gpu installed and CUDA working)
-    _num_gpus = faiss.get_num_gpus() if hasattr(faiss, "get_num_gpus") else 0
-    FAISS_GPU_AVAILABLE = _num_gpus > 0
-except ImportError:
-    # This shouldn't happen since faiss-cpu is a dependency, but handle gracefully
-    raise ImportError(
-        "FAISS is not installed. Install with: pip install faiss-cpu "
-        "or pip install faiss-gpu (requires CUDA)"
-    )
-
 logger = logging.getLogger(__name__)
-
-
-def _check_gpu_memory_available(min_free_mb: int = 512) -> bool:
-    """Check if GPU has enough free memory for FAISS operations.
-
-    Args:
-        min_free_mb: Minimum free memory in MB required
-
-    Returns:
-        True if enough memory is available, False otherwise
-    """
-    if not FAISS_GPU_AVAILABLE:
-        return False
-    free_mb = get_gpu_free_memory_mb()
-    if free_mb is not None:
-        return free_mb >= min_free_mb
-    return True  # Assume available if we can't check
-
-
-def check_gpu_upgrade_prompt() -> None:
-    """Check if GPU is available but faiss-gpu is not installed.
-
-    On first run, if NVIDIA GPU is detected but we're using faiss-cpu,
-    suggest upgrading to faiss-gpu for better performance.
-    Only prompts once (stores flag to avoid repeated prompts).
-    """
-    if gpu_check_done():
-        return
-
-    mark_gpu_check_done()
-
-    # Only suggest if GPU hardware exists but faiss-gpu not installed
-    if not FAISS_GPU_AVAILABLE and has_nvidia_gpu():
-        logger.info(
-            "NVIDIA GPU detected but faiss-gpu is not installed. "
-            "For faster vector search, consider upgrading:\n"
-            "  pip uninstall faiss-cpu && pip install faiss-gpu"
-        )
 
 
 @dataclass
@@ -98,16 +43,12 @@ class VectorSearchResult:
 class VectorStore:
     """FAISS-based vector store with metadata."""
 
-    _gpu_check_done = False  # Class-level flag to run GPU check only once per process
-    _gpu_resources: "faiss.StandardGpuResources | None" = None  # Shared GPU resources
-
     def __init__(
         self,
         name: str = "sections",
         dimension: int | None = None,
         index_dir: Path | None = None,
         use_local: bool = True,
-        use_gpu: bool = True,
     ):
         """Initialize vector store.
 
@@ -116,30 +57,9 @@ class VectorStore:
             dimension: Vector dimension (auto-detected from use_local if not set)
             index_dir: Directory to store index files (auto-set from use_local if not set)
             use_local: If True, use local Ollama embeddings; if False, use OpenAI
-            use_gpu: If True and GPU available, use GPU for search
         """
-        # Run GPU upgrade check once per process on first VectorStore instantiation
-        if not VectorStore._gpu_check_done:
-            VectorStore._gpu_check_done = True
-            check_gpu_upgrade_prompt()
-
         self.name = name
         self.use_local = use_local
-        self.use_gpu = use_gpu and FAISS_GPU_AVAILABLE
-
-        # Initialize shared GPU resources once, but only if enough memory available
-        # StandardGpuResources allocates ~1GB temp buffer, plus we need room for index
-        if self.use_gpu and VectorStore._gpu_resources is None:
-            if _check_gpu_memory_available(min_free_mb=1500):
-                try:
-                    VectorStore._gpu_resources = faiss.StandardGpuResources()
-                    logger.info("FAISS GPU resources initialized")
-                except Exception as e:
-                    logger.warning(f"Failed to initialize GPU resources: {e}")
-                    self.use_gpu = False
-            else:
-                logger.info("Insufficient GPU memory (<1.5GB free), using CPU for FAISS")
-                self.use_gpu = False
 
         # Set dimension and directory based on backend
         if dimension is not None:
@@ -153,7 +73,6 @@ class VectorStore:
             self.index_dir = FAISS_LOCAL_DIR if use_local else FAISS_DIR
 
         self._index: faiss.IndexFlatIP | None = None
-        self._gpu_index: faiss.GpuIndexFlatIP | None = None
         self._metadata: list[VectorMetadata] = []
 
     @property
@@ -204,37 +123,6 @@ class VectorStore:
         index.add(vectors)
         self._metadata.extend(metadata)
 
-    def _get_search_index(self):
-        """Get the appropriate index for searching (GPU if available, else CPU)."""
-        if self._index is None:
-            return None
-
-        # Use GPU index if available
-        if self.use_gpu and self._gpu_index is not None:
-            return self._gpu_index
-
-        # Create GPU index on first search if GPU enabled and enough memory
-        if self.use_gpu and VectorStore._gpu_resources is not None and self._gpu_index is None:
-            # Estimate memory needed: ~4 bytes per float32 * dimension * num_vectors + overhead
-            estimated_mb = (self._index.ntotal * self.dimension * 4) / (1024 * 1024) + 256
-            if not _check_gpu_memory_available(min_free_mb=int(estimated_mb)):
-                msg = f"Insufficient GPU memory for index ({estimated_mb:.0f}MB needed), using CPU"
-                logger.info(msg)
-                self.use_gpu = False
-                return self._index
-
-            try:
-                self._gpu_index = faiss.index_cpu_to_gpu(VectorStore._gpu_resources, 0, self._index)
-                logger.info(f"Created GPU index for '{self.name}' ({self._index.ntotal} vectors)")
-                return self._gpu_index
-            except Exception as e:
-                logger.warning(f"Failed to create GPU index: {e}, falling back to CPU")
-                # Disable GPU globally after failure to prevent segfaults from corrupted state
-                self.use_gpu = False
-                VectorStore._gpu_resources = None  # Clear corrupted resources
-
-        return self._index
-
     def search(
         self,
         query_embedding: list[float],
@@ -256,23 +144,16 @@ class VectorStore:
         if self._index is None or self._index.ntotal == 0:
             return []
 
-        # Get search index (GPU or CPU)
-        search_index = self._get_search_index()
-
         # Normalize query
         query = np.array([query_embedding], dtype=np.float32)
         faiss.normalize_L2(query)
 
         # Over-fetch if filtering, then filter down
-        # GPU has a max k limit of 2048, so cap it
-        max_k = 2048 if self.use_gpu else self._index.ntotal
         fetch_k = top_k
         if filter_video_id or filter_channel_id:
-            fetch_k = min(top_k * 10, self._index.ntotal, max_k)
-        else:
-            fetch_k = min(fetch_k, max_k)
+            fetch_k = min(top_k * 10, self._index.ntotal)
 
-        scores, indices = search_index.search(query, fetch_k)
+        scores, indices = self._index.search(query, fetch_k)
 
         results = []
         for score, idx in zip(scores[0], indices[0]):
@@ -367,7 +248,6 @@ class VectorStore:
     def clear(self) -> None:
         """Clear the index and metadata."""
         self._index = None
-        self._gpu_index = None
         self._metadata = []
 
     def delete_files(self) -> None:
