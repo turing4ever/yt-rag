@@ -6,7 +6,7 @@ Extract YouTube transcripts for RAG (Retrieval-Augmented Generation) pipelines.
 
 - **Channel Discovery**: Add YouTube channels and automatically track all videos
 - **Transcript Extraction**: Download transcripts using `youtube-transcript-api`
-- **RAG Processing**: GPT-powered semantic sectioning and summarization
+- **RAG Processing**: LLM-powered semantic sectioning and summarization
 - **Vector Search**: FAISS-based semantic search across video content
 - **Question Answering**: Ask questions and get answers with source citations
 - **SQLite Storage**: Persistent local database for videos and transcripts
@@ -43,111 +43,322 @@ yt-rag ask "What is tokenization?"
 yt-rag chat
 ```
 
-## Commands
-
-### Core Commands
+## Commands Overview
 
 | Command | Description |
 |---------|-------------|
 | `yt-rag init` | Initialize the database |
 | `yt-rag add <url>` | Add a channel or video |
-| `yt-rag update` | Run full pipeline (sync, metadata, transcripts, process, embed) |
+| `yt-rag update` | Run full pipeline |
 | `yt-rag ask "<query>"` | Ask a question using RAG |
-| `yt-rag chat` | Interactive chat with persistent sessions |
+| `yt-rag chat` | Interactive chat |
 | `yt-rag status` | Show database statistics |
 
-### Individual Pipeline Steps
+---
 
-| Command | Description |
-|---------|-------------|
-| `yt-rag sync-channel` | Discover new videos from tracked channels |
-| `yt-rag refresh-meta` | Refresh video/channel metadata from YouTube |
-| `yt-rag fetch-transcript` | Download transcripts for pending videos |
-| `yt-rag process-transcript` | Sectionize and summarize videos |
-| `yt-rag embed` | Build FAISS vector index from sections |
+## Pipeline Steps
 
-### Browsing
+The update pipeline consists of 6 steps that can be run individually or together via `yt-rag update`.
 
-| Command | Description |
-|---------|-------------|
-| `yt-rag list channels` | List tracked channels |
-| `yt-rag list videos` | List videos |
-| `yt-rag videos` | Search/filter videos by metadata |
+### Step 1: Add Content (`add`)
 
-### Evaluation & Benchmarking
+Add YouTube channels or individual videos to track.
 
-| Command | Description |
-|---------|-------------|
-| `yt-rag logs` | View query logs |
-| `yt-rag feedback <id>` | Add feedback for a query |
-| `yt-rag eval` | Run evaluation on manual test cases |
-| `yt-rag test-add "<query>"` | Add a manual test case |
-| `yt-rag test-list` | List all manual test cases |
-| `yt-rag test-generate` | Generate benchmark tests from video content |
-| `yt-rag test` | Run full RAG benchmark (classification, retrieval, answer quality) |
-| `yt-rag test-report` | Generate HTML report for benchmark results |
+**What it does:**
+- Parses YouTube URLs (channel, video, or playlist)
+- Adds the channel/video to the database for tracking
+- For channels, discovers all public videos
 
-### Search Enhancement
+**Parameters:**
+| Parameter | Description |
+|-----------|-------------|
+| `url` | YouTube URL (channel, video, or playlist) |
 
-| Command | Description |
-|---------|-------------|
-| `yt-rag keywords` | Extract and analyze keywords from transcripts |
-| `yt-rag synonyms` | Manage synonym mappings for search boosting |
-
-### Export
-
-| Command | Description |
-|---------|-------------|
-| `yt-rag export -o <file>` | Export chunks for RAG |
-| `yt-rag transcript <video_id>` | Export single video transcript |
-
-## Update Pipeline
-
-The `update` command runs the complete pipeline automatically:
-
+**Examples:**
 ```bash
-# Run full pipeline
-yt-rag update
+# Add a channel by handle
+yt-rag add https://www.youtube.com/@3blue1brown
 
-# Options
-yt-rag update --test               # Test mode: 5 videos per channel
-yt-rag update --skip-sync          # Skip channel sync
-yt-rag update --skip-embed         # Skip embedding step
-yt-rag update --force-transcript   # Re-fetch ALL transcripts
-yt-rag update --force-meta         # Force refresh all metadata
-yt-rag update --force-embed        # Rebuild all embeddings
-yt-rag update --openai             # Use OpenAI for embeddings
+# Add a channel by ID
+yt-rag add https://www.youtube.com/channel/UCYO_jab_esuFRV4b17AJtAw
+
+# Add a single video
+yt-rag add https://www.youtube.com/watch?v=kCc8FmEb1nY
 ```
 
-Pipeline steps:
-1. **Sync channels**: Pull new videos from tracked channels
-2. **Refresh metadata**: Update video info (skips if refreshed within 1 day)
-3. **Fetch transcripts**: Download transcripts for pending videos
-4. **Process transcripts**: Sectionize (using YouTube chapters) and summarize
-5. **Embed**: Build/update FAISS vector index
+---
 
-By default, each step only processes items that need work. Use `--force-*` flags to reprocess everything.
+### Step 2: Sync Channels (`sync-channel`)
+
+Discover new videos from all tracked channels.
+
+**What it does:**
+- Queries YouTube for new videos from each tracked channel
+- Adds newly discovered videos to the database
+- Skips videos that are already tracked
+
+**Parameters:**
+None
+
+**Examples:**
+```bash
+# Sync all channels
+yt-rag sync-channel
+```
+
+---
+
+### Step 3: Refresh Metadata (`refresh-meta`)
+
+Fetch or refresh video and channel metadata from YouTube.
+
+**What it does:**
+- Fetches video metadata: title, description, duration, view count, publish date, chapters
+- Fetches channel metadata: name, description, subscriber count
+- By default, skips videos refreshed within the last day
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--video` | | Refresh only video metadata |
+| `--channel` | | Refresh only channel metadata |
+| `--limit` | `-l` | Max videos to refresh |
+| `--force` | | Refresh even if metadata exists (ignore freshness check) |
+
+**Examples:**
+```bash
+# Refresh all metadata (respects 1-day freshness)
+yt-rag refresh-meta
+
+# Force refresh all video metadata
+yt-rag refresh-meta --video --force
+
+# Refresh only channel metadata
+yt-rag refresh-meta --channel
+
+# Refresh metadata for 100 videos
+yt-rag refresh-meta --video --limit 100
+```
+
+---
+
+### Step 4: Fetch Transcripts (`fetch-transcript`)
+
+Download transcripts for videos that don't have them yet.
+
+**What it does:**
+- Downloads auto-generated or manual captions from YouTube
+- Stores timestamped segments in the database
+- Skips private/premium videos and videos without captions
+- Uses parallel workers for faster fetching
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--limit` | | Max videos to fetch |
+| `--workers` | `-w` | Number of parallel workers (default: 50) |
+
+**Examples:**
+```bash
+# Fetch all pending transcripts
+yt-rag fetch-transcript
+
+# Fetch transcripts with 100 parallel workers
+yt-rag fetch-transcript -w 100
+
+# Fetch only 50 transcripts
+yt-rag fetch-transcript --limit 50
+```
+
+---
+
+### Step 5: Process Transcripts (`process-transcript`)
+
+Sectionize videos into chapters and generate summaries.
+
+**What it does:**
+- **Sectionize**: Splits transcripts into logical sections
+  - Uses YouTube chapters when available
+  - Falls back to time-based chunking with LLM-generated titles
+- **Summarize**: Generates a summary for each video using LLM
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `video_id` | | Process specific video (optional) |
+| `--limit` | `-l` | Max videos to process |
+| `--sectionize` | | Only run sectionization |
+| `--summarize` | | Only run summarization |
+| `--model` | `-m` | Override default LLM model |
+| `--openai` | | Use OpenAI API instead of local Ollama |
+| `--force` | | Re-process even if already done |
+
+**Examples:**
+```bash
+# Process all pending videos (sectionize + summarize)
+yt-rag process-transcript
+
+# Process a specific video
+yt-rag process-transcript VIDEO_ID
+
+# Only sectionize (no summaries)
+yt-rag process-transcript --sectionize
+
+# Only generate summaries
+yt-rag process-transcript --summarize
+
+# Use OpenAI for processing
+yt-rag process-transcript --openai
+
+# Use a specific model
+yt-rag process-transcript --model gpt-4o
+
+# Force re-process all videos
+yt-rag process-transcript --force --limit 100
+```
+
+---
+
+### Step 6: Embed (`embed`)
+
+Build FAISS vector indexes for semantic search.
+
+**What it does:**
+- Generates embeddings for all sections and summaries
+- Stores vectors in FAISS indexes for fast similarity search
+- Supports both local (Ollama) and OpenAI embeddings
+- Local and OpenAI indexes are stored separately
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `video_id` | | Embed specific video (optional) |
+| `--model` | `-m` | Override embedding model |
+| `--rebuild` | | Rebuild entire index from scratch |
+| `--force` | | Re-embed existing sections |
+| `--no-summaries` | | Skip embedding summaries |
+| `--openai` | | Use OpenAI embeddings instead of Ollama |
+
+**Examples:**
+```bash
+# Embed new sections (incremental)
+yt-rag embed
+
+# Embed a specific video
+yt-rag embed VIDEO_ID
+
+# Rebuild the entire index
+yt-rag embed --rebuild
+
+# Use OpenAI embeddings
+yt-rag embed --openai
+
+# Use a specific embedding model
+yt-rag embed --model text-embedding-3-large --openai
+```
+
+---
+
+### Full Pipeline (`update`)
+
+Run all pipeline steps in sequence.
+
+**What it does:**
+1. `sync-channel`: Pull new videos from tracked channels
+2. `refresh-meta`: Refresh metadata (skips if refreshed within 1 day)
+3. `fetch-transcript`: Fetch transcripts for pending videos
+4. `process-transcript`: Sectionize and summarize videos
+5. `embed`: Build/update vector index
+6. `synonyms generate`: Generate synonyms for search boosting
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--force-transcript` | | Re-fetch all transcripts |
+| `--force-meta` | | Force refresh all metadata |
+| `--force-embed` | | Rebuild all embeddings |
+| `--force-synonym` | | Regenerate all synonyms |
+| `--skip-sync` | | Skip channel sync step |
+| `--skip-meta` | | Skip metadata refresh step |
+| `--skip-embed` | | Skip embedding step |
+| `--skip-synonym` | | Skip synonym generation |
+| `--test` | | Test mode: 5 videos per channel |
+| `--workers` | `-w` | Parallel workers for transcript fetch (default: 50) |
+| `--model` | `-m` | Override default LLM model |
+| `--openai` | | Use OpenAI API for all steps |
+
+**Examples:**
+```bash
+# Run full pipeline with local Ollama
+yt-rag update
+
+# Run with OpenAI
+yt-rag update --openai
+
+# Test mode (5 videos per channel)
+yt-rag update --test
+
+# Skip sync and metadata steps
+yt-rag update --skip-sync --skip-meta
+
+# Force rebuild everything
+yt-rag update --force-transcript --force-meta --force-embed
+
+# Use specific model
+yt-rag update --model qwen3:8b
+yt-rag update --openai --model gpt-4o
+```
+
+---
 
 ## RAG Search
 
-### Ask Questions
+### Ask Questions (`ask`)
 
-Query your video content with RAG:
+Query your video content with RAG (Retrieval-Augmented Generation).
 
+**What it does:**
+- Analyzes query intent (entity search, comparison, popularity, etc.)
+- Retrieves relevant sections via semantic search
+- Generates an answer using LLM with retrieved context
+- Returns timestamped links to source videos
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `query` | | Question to ask (required) |
+| `--top-k` | `-k` | Number of sources to retrieve (default: 5) |
+| `--video` | `-v` | Filter to specific video ID |
+| `--channel` | `-c` | Filter to specific channel ID |
+| `--no-answer` | | Skip answer generation (search only) |
+| `--model` | `-m` | Override default LLM model |
+| `--openai` | | Use OpenAI API instead of local Ollama |
+
+**Examples:**
 ```bash
 # Ask a question
 yt-rag ask "What is tokenization?"
 
-# Filter by channel or video
-yt-rag ask "How does attention work?" -c CHANNEL_ID
-yt-rag ask "Explain the architecture" -v VIDEO_ID
+# Get more sources
+yt-rag ask "How does attention work?" -k 10
 
-# Options
-yt-rag ask "question" -k 10         # Retrieve more sources (default: 5)
-yt-rag ask "question" --no-answer   # Search only, skip answer generation
+# Filter by channel
+yt-rag ask "Explain neural networks" -c CHANNEL_ID
+
+# Filter by video
+yt-rag ask "What are the main points?" -v VIDEO_ID
+
+# Search only (no answer generation)
+yt-rag ask "transformer architecture" --no-answer
+
+# Use OpenAI
+yt-rag ask "What is backpropagation?" --openai
+
+# Use specific model
+yt-rag ask "Explain GPT" --model gpt-4o --openai
 ```
 
-Example output:
+**Example output:**
 ```
 Answer:
 Tokenization is the process of converting text into smaller units called tokens...
@@ -165,96 +376,331 @@ Sources (3):
 Latency: 1523ms | Tokens: 42 embed + 1205 chat
 ```
 
-### Interactive Chat
+---
 
-For multi-turn conversations with persistent sessions:
+### Interactive Chat (`chat`)
 
+Multi-turn conversations with persistent sessions.
+
+**What it does:**
+- Maintains conversation history across turns
+- Automatically detects follow-up questions
+- Supports session management (create, resume, list)
+- Retrieves fresh context for each question
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--video` | `-v` | Filter to specific video ID |
+| `--channel` | `-c` | Filter to specific channel ID |
+| `--top-k` | `-k` | Number of sections to retrieve (default: 10) |
+| `--model` | `-m` | Override default LLM model |
+| `--openai` | | Use OpenAI API instead of local Ollama |
+| `--new` | | Start a new chat session |
+| `--session` | `-s` | Resume session by ID prefix |
+| `--list` | | List recent chat sessions |
+| `--history` | | Messages to include for context (default: 10) |
+
+**Examples:**
 ```bash
 # Start or resume chat
 yt-rag chat
 
-# Use OpenAI instead of local Ollama
-yt-rag chat --openai
+# Start a new session
+yt-rag chat --new
 
-# Filter to specific channel/video
+# List recent sessions
+yt-rag chat --list
+
+# Resume a specific session
+yt-rag chat --session abc123
+
+# Filter to a channel
 yt-rag chat -c CHANNEL_ID
-yt-rag chat -v VIDEO_ID
 
-# Session management
-yt-rag chat --new             # Start fresh session
-yt-rag chat --list            # List recent sessions
-yt-rag chat --session ID      # Resume specific session
+# Use OpenAI
+yt-rag chat --openai
 ```
 
-In-chat commands:
+**In-chat commands:**
 - `/new` - Start a new session
 - `/sessions` - List sessions
 - `/rename <title>` - Rename current session
+- `exit` or `quit` - Exit chat
 
-## Evaluation & Logging
+---
 
-### Query Logs
+## Search Enhancement
 
-Every RAG query is automatically logged for analysis:
+### Keywords (`keywords`)
 
+Extract and analyze keywords from video transcripts.
+
+**What it does:**
+- Analyzes transcripts to extract important keywords
+- Shows keyword frequency and distribution
+- Optionally saves keywords to database for search boosting
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--limit` | `-n` | Number of videos to analyze (default: 10) |
+| `--top-k` | `-k` | Top keywords to show (default: 50) |
+| `--channel` | `-c` | Filter by channel ID |
+| `--save` | | Save keywords to database |
+
+**Examples:**
 ```bash
-# View recent queries
-yt-rag logs
+# Analyze keywords from recent videos
+yt-rag keywords
 
-# View more logs
-yt-rag logs -n 50
+# Analyze more videos
+yt-rag keywords -n 50
 
-# View specific query details
-yt-rag logs -q QUERY_ID
+# Show more keywords
+yt-rag keywords -k 100
+
+# Filter by channel
+yt-rag keywords -c CHANNEL_ID
+
+# Save to database
+yt-rag keywords --save
 ```
 
-### Feedback
+---
 
-Rate query results to track RAG quality:
+### Synonyms (`synonyms`)
 
+Manage synonym mappings for improved search recall.
+
+**What it does:**
+- Generates synonym suggestions using LLM
+- Manages synonym approval workflow
+- Boosts search results when synonyms match
+
+**Actions:**
+| Action | Description |
+|--------|-------------|
+| `list` | List current synonyms (default) |
+| `generate` | Generate synonym suggestions using LLM |
+| `approve` | Approve a pending synonym |
+| `reject` | Reject a pending synonym |
+| `add` | Add a manual synonym |
+| `remove` | Remove synonyms for keyword(s) |
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--keyword` | `-k` | Keyword to work with |
+| `--synonym` | `-s` | Synonym to add/approve/reject |
+| `--pending` | | Show pending synonyms only |
+| `--limit` | `-n` | Number of keywords to process (default: 10) |
+| `--model` | `-m` | Override default LLM model |
+| `--openai` | | Use OpenAI API for generation |
+
+**Examples:**
 ```bash
-# Mark a query as helpful/not helpful
-yt-rag feedback QUERY_ID --helpful
-yt-rag feedback QUERY_ID --not-helpful
+# List all synonyms
+yt-rag synonyms list
 
-# Rate source quality (1-5)
-yt-rag feedback QUERY_ID -r 4
+# Show pending synonyms
+yt-rag synonyms list --pending
 
-# Add a comment
-yt-rag feedback QUERY_ID -c "Answer was accurate but missed key details"
+# Generate synonym suggestions
+yt-rag synonyms generate
 
-# Combine options
-yt-rag feedback QUERY_ID --helpful -r 5 -c "Great answer!"
+# Generate with OpenAI
+yt-rag synonyms generate --openai
+
+# Add a manual synonym
+yt-rag synonyms add -k "mpg" -s "fuel economy"
+
+# Approve a suggestion
+yt-rag synonyms approve -k "hp" -s "horsepower"
+
+# Reject a suggestion
+yt-rag synonyms reject -k "car" -s "automobile"
+
+# Remove all synonyms for keywords
+yt-rag synonyms remove car truck vehicle
 ```
 
-### Benchmark Testing
+---
 
-Create test cases and run benchmarks to measure RAG quality:
+## Benchmarking
 
+### Generate Test Cases (`test-generate`)
+
+Automatically generate benchmark test cases from video content.
+
+**What it does:**
+- Samples videos from your library
+- Uses LLM to extract entities, topics, and comparisons
+- Generates test queries with expected results
+
+**Workflow:**
+1. `prepare`: Sample videos, save raw data
+2. `analyze`: LLM extracts entities/topics/facts
+3. `build`: Generate test queries
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--step` | `-s` | Step to run: prepare, analyze, build, or all (default: all) |
+| `--videos` | `-n` | Videos to sample per channel (default: 5) |
+| `--limit` | `-l` | Max videos to analyze |
+| `--model` | `-m` | LLM model for analysis |
+| `--openai` | | Use OpenAI API |
+
+**Examples:**
 ```bash
-# Add a test case
-yt-rag test-add "What is tokenization?" --videos VIDEO_ID1,VIDEO_ID2
-yt-rag test-add "Explain attention" --keywords "attention,transformer,query,key,value"
-yt-rag test-add "How does backprop work?" --videos VIDEO_ID --keywords "gradient,chain rule"
+# Run full test generation
+yt-rag test-generate
 
-# List test cases
-yt-rag test-list
+# Only prepare (sample videos)
+yt-rag test-generate --step=prepare
 
-# Run benchmark
-yt-rag eval
+# Analyze with specific model
+yt-rag test-generate --step=analyze --model gpt-4o --openai
 
-# Show failed tests only
-yt-rag eval --failures
-
-# Verbose output with per-test details
-yt-rag eval -v
+# Limit analysis to 20 videos
+yt-rag test-generate --limit 20
 ```
 
-Metrics calculated:
-- **Precision@K**: Fraction of top-K results that are relevant
-- **Recall**: Fraction of relevant items found
-- **MRR**: Mean Reciprocal Rank (how high is the first relevant result)
-- **Keyword Match**: Fraction of expected keywords in the answer
+---
+
+### Run Benchmark (`test`)
+
+Run the full RAG benchmark suite.
+
+**What it does:**
+- Tests query classification accuracy
+- Measures retrieval quality (precision, recall, MRR)
+- Validates answer quality using LLM
+- Compares results across different models
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--data` | `-d` | Path to test data JSON file |
+| `--output` | `-o` | Save results to JSON file |
+| `--model` | `-m` | Override LLM model for RAG pipeline |
+| `--openai` | | Use OpenAI API |
+| `--validate-openai` | | Also validate with OpenAI (compares validators) |
+| `--verbose` | `-v` | Show all results, not just failures |
+
+**Examples:**
+```bash
+# Run benchmark with local Ollama
+yt-rag test
+
+# Run with OpenAI
+yt-rag test --openai
+
+# Use specific test data
+yt-rag test -d tests/data/my_tests.json
+
+# Save results to file
+yt-rag test -o results.json
+
+# Verbose output
+yt-rag test -v
+
+# Compare local vs OpenAI validators
+yt-rag test --validate-openai
+```
+
+---
+
+### Generate Report (`test-report`)
+
+Generate HTML report for benchmark results.
+
+**What it does:**
+- Creates detailed HTML report showing test results
+- Shows validation results from multiple validators
+- Supports filtering by pass/fail/disagree
+
+**Parameters:**
+| Parameter | Short | Description |
+|-----------|-------|-------------|
+| `--results` | `-r` | Path to benchmark results JSON |
+| `--tests` | `-t` | Path to benchmark tests JSON |
+| `--output` | `-o` | Output HTML file path |
+| `--filter` | | Filter: pass, fail, disagree, empty, meta |
+
+**Examples:**
+```bash
+# Generate default report
+yt-rag test-report
+
+# Show only failures
+yt-rag test-report --filter=fail
+
+# Show only disagreements between validators
+yt-rag test-report --filter=disagree
+
+# Custom output path
+yt-rag test-report -o my_report.html
+```
+
+---
+
+## Browsing & Export
+
+### List Content (`list`)
+
+List tracked channels and videos.
+
+**Examples:**
+```bash
+# List all channels
+yt-rag list channels
+
+# List all videos
+yt-rag list videos
+```
+
+### Search Videos (`videos`)
+
+Search and filter videos by metadata.
+
+**Examples:**
+```bash
+# Search videos by title
+yt-rag videos --title "neural network"
+
+# Filter by channel
+yt-rag videos --channel CHANNEL_ID
+```
+
+### Export (`export`)
+
+Export transcript chunks for external RAG pipelines.
+
+**Examples:**
+```bash
+# Export to JSONL
+yt-rag export -o chunks.jsonl
+
+# Export to JSON
+yt-rag export -o chunks.json --format json
+```
+
+### Single Transcript (`transcript`)
+
+Export a single video's transcript.
+
+**Examples:**
+```bash
+# Export transcript to file
+yt-rag transcript VIDEO_ID -o transcript.txt
+
+# Print to stdout
+yt-rag transcript VIDEO_ID
+```
+
+---
 
 ## Configuration
 
@@ -313,38 +759,7 @@ yt-rag chat --openai
 
 Local and OpenAI indexes are stored separately, so you can switch between them.
 
-## Export Format
-
-Each chunk in the JSONL output contains:
-
-```json
-{
-  "chunk_id": "VIDEO_ID_chunk_0001",
-  "video_id": "VIDEO_ID",
-  "video_title": "Video Title",
-  "channel_id": "CHANNEL_ID",
-  "channel_name": "Channel Name",
-  "url": "https://www.youtube.com/watch?v=VIDEO_ID&t=120",
-  "start_time": 120.0,
-  "end_time": 180.0,
-  "text": "Transcript text for this chunk..."
-}
-```
-
-## Transcript Format
-
-The `transcript` command exports a text file with timestamps:
-
-```
-Title: Video Title
-URL: https://www.youtube.com/watch?v=VIDEO_ID
-Video ID: VIDEO_ID
-------------------------------------------------------------
-
-[00:00] First segment text...
-[00:06] Second segment text...
-[01:23] Later segment text...
-```
+---
 
 ## Requirements
 
