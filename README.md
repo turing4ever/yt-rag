@@ -74,15 +74,25 @@ yt-rag chat
 | `yt-rag list videos` | List videos |
 | `yt-rag videos` | Search/filter videos by metadata |
 
-### Evaluation
+### Evaluation & Benchmarking
 
 | Command | Description |
 |---------|-------------|
 | `yt-rag logs` | View query logs |
 | `yt-rag feedback <id>` | Add feedback for a query |
-| `yt-rag eval` | Run evaluation benchmark |
-| `yt-rag test-add "<query>"` | Add a test case |
-| `yt-rag test-list` | List all test cases |
+| `yt-rag eval` | Run evaluation on manual test cases |
+| `yt-rag test-add "<query>"` | Add a manual test case |
+| `yt-rag test-list` | List all manual test cases |
+| `yt-rag test-generate` | Generate benchmark tests from video content |
+| `yt-rag test` | Run full RAG benchmark (classification, retrieval, answer quality) |
+| `yt-rag test-report` | Generate HTML report for benchmark results |
+
+### Search Enhancement
+
+| Command | Description |
+|---------|-------------|
+| `yt-rag keywords` | Extract and analyze keywords from transcripts |
+| `yt-rag synonyms` | Manage synonym mappings for search boosting |
 
 ### Export
 
@@ -259,7 +269,7 @@ Data is stored in `~/.yt-rag/`:
 ├── faiss/                 # OpenAI embeddings (1536 dims)
 │   ├── sections.index
 │   └── sections_meta.jsonl
-└── faiss_local/           # Ollama embeddings (768 dims)
+└── faiss_local/           # Ollama embeddings (1024 dims, mxbai-embed-large)
     ├── sections.index
     └── sections_meta.jsonl
 ```
@@ -289,9 +299,9 @@ By default, yt-rag uses local Ollama for embeddings and chat. Use `--openai` to 
 # Start Ollama
 sudo systemctl start ollama
 
-# Pull required model
-ollama pull nomic-embed-text
-ollama pull qwen2.5:7b-instruct
+# Pull required models
+ollama pull mxbai-embed-large    # Embeddings (1024 dims)
+ollama pull qwen2.5:7b-instruct  # Chat/answer generation
 ```
 
 **OpenAI**: Requires `OPENAI_API_KEY` in `.env`.
@@ -338,7 +348,7 @@ Video ID: VIDEO_ID
 
 ## Requirements
 
-- Python 3.11+
+- Python 3.10+
 - Ollama (default) or OpenAI API key (with `--openai`)
 
 ## Development
