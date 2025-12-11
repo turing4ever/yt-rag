@@ -660,8 +660,8 @@ def filter_with_llm_analysis(
 
 def find_precise_timestamp(
     query: str,
-    section: "Section",
-    db: "Database",
+    section: Section,
+    db: Database,
 ) -> float | None:
     """Find the precise timestamp within a section where query terms appear.
 
