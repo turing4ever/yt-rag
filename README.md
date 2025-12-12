@@ -15,9 +15,9 @@ Extract YouTube transcripts for RAG (Retrieval-Augmented Generation) pipelines.
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [v0.2 Presentation](docs/v0.2_presentation.md) | Technical deep-dive slides covering RAG concepts, architecture, and benchmarks |
+| Document | Description | Video |
+|----------|-------------|-------|
+| [v0.2 Presentation](docs/v0.2_presentation.md) | Technical deep-dive slides covering RAG concepts, architecture, and benchmarks | |
 
 ## Installation
 
