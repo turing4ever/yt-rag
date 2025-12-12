@@ -13,6 +13,12 @@ Extract YouTube transcripts for RAG (Retrieval-Augmented Generation) pipelines.
 - **RAG-Ready Export**: Chunked JSONL/JSON output with metadata for vector databases
 - **CLI Interface**: Simple commands with progress indicators
 
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [v0.2 Presentation](docs/v0.2_presentation.md) | Technical deep-dive slides covering RAG concepts, architecture, and benchmarks |
+
 ## Installation
 
 ```bash
