@@ -1111,6 +1111,13 @@ def embed(
 
     Local and OpenAI indexes are stored separately, so you can switch between them.
     """
+    from .config import (
+        DEFAULT_EMBEDDING_MODEL,
+        DEFAULT_OLLAMA_EMBED_MODEL,
+        FAISS_DIR,
+        FAISS_LOCAL_DIR,
+        get_embed_batch_size,
+    )
     from .openai_client import check_ollama_running
 
     use_local = not openai
@@ -1125,7 +1132,15 @@ def embed(
 
     db = get_db()
 
-    console.print(f"[dim]Using {backend_name} embeddings[/dim]")
+    # Show configuration info
+    actual_model = model or (DEFAULT_OLLAMA_EMBED_MODEL if use_local else DEFAULT_EMBEDDING_MODEL)
+    index_dir = FAISS_LOCAL_DIR if use_local else FAISS_DIR
+    batch_size = get_embed_batch_size() if use_local else 100
+
+    console.print(f"[dim]Backend: {backend_name}[/dim]")
+    console.print(f"[dim]Model: {actual_model}[/dim]")
+    console.print(f"[dim]Batch size: {batch_size}[/dim]")
+    console.print(f"[dim]Index dir: {index_dir}[/dim]")
 
     if video_id:
         # Embed single video
@@ -1162,6 +1177,8 @@ def embed(
             console.print("Run 'yt-rag process' first to create sections.")
             db.close()
             return
+
+        console.print(f"[dim]Total sections in DB: {stats['sections']:,}[/dim]")
 
         total_tokens = 0
 
