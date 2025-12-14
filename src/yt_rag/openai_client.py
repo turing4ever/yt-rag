@@ -89,6 +89,18 @@ def _should_retry(exc: BaseException) -> bool:
     return True
 
 
+def _should_retry_ollama(exc: BaseException) -> bool:
+    """Check if Ollama exception should be retried."""
+    if isinstance(exc, OllamaNotRunning):
+        return False  # Don't retry if server is down
+    if isinstance(exc, httpx.HTTPStatusError):
+        # Retry on 5xx server errors and 404 (model loading)
+        return exc.response.status_code >= 500 or exc.response.status_code == 404
+    if isinstance(exc, (httpx.TimeoutException, httpx.ConnectError)):
+        return True
+    return False
+
+
 @retry(
     retry=retry_if_exception(_should_retry),
     stop=stop_after_attempt(3),
@@ -399,6 +411,12 @@ def get_ollama_models() -> list[str]:
         ) from e
 
 
+@retry(
+    retry=retry_if_exception(_should_retry_ollama),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    reraise=True,
+)
 def ollama_chat_completion(
     messages: list[dict],
     model: str = DEFAULT_OLLAMA_MODEL,
@@ -519,6 +537,12 @@ async def aollama_chat_stream(
 # =============================================================================
 
 
+@retry(
+    retry=retry_if_exception(_should_retry_ollama),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    reraise=True,
+)
 def ollama_embed_text(
     text: str,
     model: str = DEFAULT_OLLAMA_EMBED_MODEL,
@@ -553,6 +577,12 @@ def ollama_embed_text(
         raise OllamaError(f"Ollama embedding failed: {e}") from e
 
 
+@retry(
+    retry=retry_if_exception(_should_retry_ollama),
+    stop=stop_after_attempt(3),
+    wait=wait_exponential(multiplier=1, min=2, max=30),
+    reraise=True,
+)
 def ollama_embed_texts(
     texts: list[str],
     model: str = DEFAULT_OLLAMA_EMBED_MODEL,
