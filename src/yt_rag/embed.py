@@ -1,5 +1,6 @@
 """Embedding and indexing for RAG search."""
 
+from collections.abc import Callable
 from dataclasses import dataclass
 
 from .config import DEFAULT_EMBEDDING_MODEL, DEFAULT_OLLAMA_EMBED_MODEL, get_embed_batch_size
@@ -24,6 +25,7 @@ def embed_sections(
     model: str | None = None,
     batch_size: int = 100,
     use_local: bool = True,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> EmbedResult:
     """Embed sections and add to vector store.
 
@@ -34,6 +36,7 @@ def embed_sections(
         model: Embedding model to use (auto-selected based on use_local if None)
         batch_size: Number of sections to embed per API call
         use_local: If True, use Ollama local embeddings; if False, use OpenAI
+        progress_callback: Optional callback(embedded_count, total_count) for progress updates
 
     Returns:
         EmbedResult with counts and token usage
@@ -54,6 +57,7 @@ def embed_sections(
 
     total_tokens = 0
     embedded = 0
+    total = len(sections)
 
     # Process in batches
     for i in range(0, len(sections), batch_size):
@@ -86,6 +90,9 @@ def embed_sections(
         store.add(embeddings, metadata)
         embedded += len(batch)
 
+        if progress_callback:
+            progress_callback(embedded, total)
+
     return EmbedResult(items_embedded=embedded, tokens_used=total_tokens)
 
 
@@ -95,6 +102,7 @@ def embed_all_sections(
     batch_size: int = 100,
     rebuild: bool = False,
     use_local: bool = True,
+    progress_callback: Callable[[int, int], None] | None = None,
 ) -> EmbedResult:
     """Embed all sections in the database.
 
@@ -104,6 +112,7 @@ def embed_all_sections(
         batch_size: Sections per API call
         rebuild: If True, rebuild index from scratch
         use_local: If True, use Ollama; if False, use OpenAI
+        progress_callback: Optional callback(embedded_count, total_count) for progress updates
 
     Returns:
         EmbedResult with counts
@@ -138,7 +147,15 @@ def embed_all_sections(
     if not all_sections:
         return EmbedResult(items_embedded=0, tokens_used=0)
 
-    result = embed_sections(all_sections, store, db, model, batch_size, use_local=use_local)
+    result = embed_sections(
+        all_sections,
+        store,
+        db,
+        model,
+        batch_size,
+        use_local=use_local,
+        progress_callback=progress_callback,
+    )
 
     # Save index
     store.save()

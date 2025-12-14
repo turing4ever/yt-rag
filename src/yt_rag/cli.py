@@ -530,15 +530,28 @@ def update(
             if stats["sections"] == 0:
                 console.print("[yellow]No sections to embed[/yellow]")
             else:
-                # Embed sections
+                # Embed sections with progress bar
                 with Progress(
                     SpinnerColumn(),
                     TextColumn("[progress.description]{task.description}"),
+                    BarColumn(),
+                    MofNCompleteColumn(),
+                    TimeElapsedColumn(),
                     console=console,
                 ) as progress:
-                    progress.add_task("Embedding sections...", total=None)
+                    task = progress.add_task("Embedding sections...", total=None)
+
+                    def update_progress(embedded: int, total: int) -> None:
+                        if progress.tasks[task].total is None:
+                            progress.update(task, total=total)
+                        progress.update(task, completed=embedded)
+
                     result = embed_all_sections(
-                        db, model=None, rebuild=force_embed, use_local=use_local
+                        db,
+                        model=None,
+                        rebuild=force_embed,
+                        use_local=use_local,
+                        progress_callback=update_progress,
                     )
 
                 if result.items_embedded > 0:
@@ -1152,18 +1165,26 @@ def embed(
 
         total_tokens = 0
 
-        # Embed sections
+        # Embed sections with progress bar
         with Progress(
             SpinnerColumn(),
             TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            MofNCompleteColumn(),
+            TimeElapsedColumn(),
             console=console,
         ) as progress:
-            if rebuild:
-                progress.add_task("Rebuilding sections index...", total=None)
-            else:
-                progress.add_task("Embedding new sections...", total=None)
+            desc = "Rebuilding sections index..." if rebuild else "Embedding new sections..."
+            task = progress.add_task(desc, total=None)
 
-            result = embed_all_sections(db, model, rebuild=rebuild, use_local=use_local)
+            def update_progress(embedded: int, total: int) -> None:
+                if progress.tasks[task].total is None:
+                    progress.update(task, total=total)
+                progress.update(task, completed=embedded)
+
+            result = embed_all_sections(
+                db, model, rebuild=rebuild, use_local=use_local, progress_callback=update_progress
+            )
             total_tokens += result.tokens_used
 
         if result.items_embedded > 0:
