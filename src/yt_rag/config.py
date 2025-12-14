@@ -54,6 +54,11 @@ DEFAULT_OLLAMA_QUERY_MODEL = "qwen2.5:7b-instruct"  # For query parsing (better 
 DEFAULT_OLLAMA_EMBED_MODEL = "mxbai-embed-large"
 OLLAMA_EMBEDDING_DIMENSION = 1024  # mxbai-embed-large dimension
 
+# Embedding batch size for local Ollama
+# Default 32 is safe for 8GB VRAM, increase to 128-256 for larger GPUs
+# Override with EMBED_BATCH_SIZE env var or in .env
+DEFAULT_EMBED_BATCH_SIZE = 32
+
 # Search defaults
 DEFAULT_TOP_K = 10
 DEFAULT_TOP_K_OVERSAMPLE = 50
@@ -195,3 +200,20 @@ def get_yt_dlp_batch_size() -> int:
         except ValueError:
             pass
     return DEFAULT_YT_DLP_BATCH_SIZE
+
+
+def get_embed_batch_size() -> int:
+    """Get batch size for local embedding.
+
+    Default 32 is safe for 8GB VRAM GPUs.
+    For larger GPUs (A100, etc.), set EMBED_BATCH_SIZE=128 or 256.
+    Override with EMBED_BATCH_SIZE env var or in .env file.
+    """
+    load_env_file()
+    batch_str = os.environ.get("EMBED_BATCH_SIZE")
+    if batch_str:
+        try:
+            return int(batch_str)
+        except ValueError:
+            pass
+    return DEFAULT_EMBED_BATCH_SIZE

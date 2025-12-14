@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from .config import DEFAULT_EMBEDDING_MODEL, DEFAULT_OLLAMA_EMBED_MODEL
+from .config import DEFAULT_EMBEDDING_MODEL, DEFAULT_OLLAMA_EMBED_MODEL, get_embed_batch_size
 from .db import Database
 from .models import Section
 from .openai_client import embed_texts, ollama_embed_texts
@@ -48,9 +48,9 @@ def embed_sections(
     # Select embedding function
     embed_fn = ollama_embed_texts if use_local else embed_texts
 
-    # Use smaller batches for local to avoid memory issues
+    # Use configurable batch size for local (default 32 for 8GB VRAM)
     if use_local:
-        batch_size = min(batch_size, 32)
+        batch_size = min(batch_size, get_embed_batch_size())
 
     total_tokens = 0
     embedded = 0
@@ -224,9 +224,9 @@ def embed_all_summaries(
     # Select embedding function
     embed_fn = ollama_embed_texts if use_local else embed_texts
 
-    # Use smaller batches for local
+    # Use configurable batch size for local (default 32 for 8GB VRAM)
     if use_local:
-        batch_size = min(batch_size, 32)
+        batch_size = min(batch_size, get_embed_batch_size())
 
     store = get_summaries_store(use_local=use_local)
 
